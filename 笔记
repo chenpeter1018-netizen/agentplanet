@@ -1,0 +1,215 @@
+https://github.com/qingchencloud/clawpanel 这个是项目 参考对标的 github 上的                  
+  链接，需要分析下，
+
+'/Users/petermac/claude claw/clawpanel-main' 这个是 我在 github              
+  下载的源码库；
+'/Users/petermac/claude claw/windows'这个文件夹是下载的安装程序 和安装程序解压文件夹， 
+
+本地也已经安装好了 clawpanel
+
+
+现在需要把这个参考对标的clawpanel 做全方位的分析，和梳理，我需要完整地复刻一个这样的程序，显示 windows 版本的，是免安装的，用户收到后打开直接用，但是得要自己开发，写代码，不是直接复制，但是结果拿到的界面架构却是相似的，它里面有一部分功能我不需要或者修改。以及界面的风格也需要修改。还有它里面有一个晴辰助手不需要，模型配置里 有个晴辰云的卡片 也不需要，我还需要增加一个数字员工的界面，预配置一些智能体，……现在先 做全面分析吧，包括但不仅限于基于Tauri v2 构建，前端 Vanilla JS + Vite，后端 Rust。文件结构，架构、运行逻辑、文件内的代码等。并且形成文档保存在 obsidian。
+开发的文件夹目录：'/Users/petermac/claude claw/new'
+
+
+
+
+
+
+
+
+sk-e8de9ca76cf14dcca4883b07b865750d  
+deepseek-v4-pro
+这是我的 deepseek  key 和 模型 id  你可以配置到 claude 吗          
+
+ https://skills.sh/steipete/clawdis/tmux                                                                                                                         
+  https://skills.sh/anthropics/skills/webapp-testing                                                                                                              
+  https://skills.sh/supercent-io/skills-template/testing-strategies  
+ https://skills.sh/googleworkspace/cli/gws-docs
+  https://skills.sh/supercent-io/skills-template/code-refactoring                                                                                                 
+  https://skills.sh/supercent-io/skills-template/changelog-maintenance                                 
+  备选：
+                                                                                                                                                                  
+  https://skills.sh/wshobson/agents/changelog-automation    
+
+https://skills.sh/tavily-ai/skills/research
+
+                                                                                                              https://github.com/gsd-build/get-shit-done
+
+https://github.com/HKUDS/LightRAG
+
+https://github.com/kepano/obsidian-skills
+
+https://github.com/czlonkowski/n8n-mcp
+
+https://github.com/ConardLi/garden-skills
+
+
+
+
+
+
+new/ 是空的，准备就绪。这就是你要做的 OpenClaw + Hermes 多 Agent 控制面板 项目。                                                                                  
+                                                
+  回顾一下你现在手上的参考资源：                                                                                                                                    
+                                                                                                                                                                    
+  ┌─────────────────────────────┬────────────────────────────────────────┐                                                                                          
+  │          参考项目           │                可借鉴的                │                                                                                          
+  ├─────────────────────────────┼────────────────────────────────────────┤                                                                                          
+  │ ClawPanel (clawpanel-main/) │ Tauri v2 桌面壳 + Vite 前端架构        │                                                                                          
+  ├─────────────────────────────┼────────────────────────────────────────┤                                                                                          
+  │ Multica (multica/)          │ Agent 看板、Issue 生命周期、Skill 管理 │                                                                                          
+  ├─────────────────────────────┼────────────────────────────────────────┤                                                                                          
+  │ Rowboat (rowboat/)          │ 多 Agent 编排 UI、Copilot 面板         │                                                                                          
+  ├─────────────────────────────┼────────────────────────────────────────┤                                                                                          
+  │ Archon (Archon/)            │ YAML 工作流定义、git worktree 隔离     │
+  └─────────────────────────────┴────────────────────────────────────────┘                                                                                          
+                                                 
+  建议第一步： 我先用 /graphify 分析 clawpanel-main 的代码结构，同时 /grill-me 盘问你的具体需求（哪些 Agent 要管、控制面板要什么功能、Web 还是桌面），然后出个  SPEC。           
+
+
+
+
+
+
+
+项目和程序名称 Agent Planet
+
+这是一个 OpenClaw+Hermes+ZeroClaw  的 多智能体程序，用户可以在这个程序上 自由选择 openclaw 或者 hermes 进行对话 和配置 技能安装 使用智能体工作，以及更新版本 维护 agent 创建自己的 agent；
+ZeroClaw 独立于前面 2 个 agent，只负责安装、维护、维修备份关键文件 前面 2 个 agent， 把 ZeroClaw 二进制 + 配置 + 知识库放在一个目录里，拷贝到本地 / U 盘都能运行
+可以配置开机自启，长期后台运行，做你的 Agent 生态 “管家”
+💡 额外优势：
+做「统一入口」：用 ZeroClaw 同时管理 OpenClaw 和 Hermes，把它们的技能和知识整合到一个界面 / 指令下
+做「备份与监控中心」：定时自动备份两个框架的配置和记忆，监控它们的运行状态，出问题自动告警 / 恢复
+做「知识沉淀工具」：把两个框架的使用经验、排错方案沉淀到 ZeroClaw 的知识库，让它成为你自己的 “AI 助手说明书”
+一句话总结：ZeroClaw 完全能胜任维护 Agent 的角色，而且比 OpenClaw/Hermes 本身更轻量、稳定、适合长期运行，加上导入的知识库，就是一个完美的「AI Agent 生态管家」。
+                                                                                                                     
+                                                                                                                                                                                                                 
+  2. "数字员工" 具体是什么形态？ 你说要预配置智能体——是用户可实例化的模板？还是精选的智能体市场？还是其他形式？ 
+
+ 在 clawpanel 的 AGENT页面上进行增改，改名叫：数字员工中心，  该中心下有 2 个子 tab 页面，一个就是现在 clawpanel 的 agent 管理页面，一个叫数字员工市场，我们可以预配置几个 智能体 是用户可实例化的模板，未来在 迭代下一版本的时候 我们建设网站给用户同步，更多的智能体模板，用户点击后自动下载 新建智能体（数字员工）
+
+                                                                                          
+                                              
+  3. 只做 Windows 桌面端吗？ 你提到了 Windows 便携版（Tauri v2），确认这是唯一目标吗？还是也需要 Web 端？              
+
+开发后交付的 是 ：
+3.1、 exe 安装程序 ，关于openclaw 和 hermes 引擎主体 安装程序里不预装，关于它们 的安装 沿用 clawpanel 的模式，安装后在 服务管理页面进行安装；★开发 顺序先完成安装版的开发。
+
+3.2、不用安装的 便携拷贝版 拷贝到 U 盘 就能用，U 盘版 的 openclaw 需要预安装 openclaw 主体，采用非全局安装，这个我已经用其他电脑准备好了并且配置好了一些 技能设置，打包压缩文件在：'/Users/petermac/claude claw/openclaw.zip' 但是我不确定，openclaw 需要的环境程序，压缩包 openclaw 是否内置了如：Node.js + npm  +Python等，
+
+                                                                                           
+                                              
+  4. 移除清单确认： 根据分析，要删的是：晴辰助手页面、AI 浮动按钮、心甜Claw 引擎、晴辰云/胜算云预设、晴辰云推广卡片。还有要补充删除或保留的吗？    
+ 
+还有弹出，这个clawpanel 时不时有弹窗广告社区引导浮窗 — 适时提醒用户加群 ，我们不需要，
+关于页面 参考重新 设计我们自己的 关于介绍， 去掉 社群交流 、参与贡献、
+
+                                                             
+                                              
+  5. UI 风格方向？ 你说要改 UI 风格——有具体偏好吗？比如配色方向、参考设计、整体气质？    
+   界面3色切换：1：白晨（apple iOS 风格层级菜单 ）2、暗夜：（claude 官方 暗风格 ）3、星球（藏青色暗色系，科技感智能体星球风格、紫青粉色系，右边界面 偶尔有流星划过）
+
+                                                                                                                        
+   需要新增一个登录页 ，输入密码才进到 程序主界面，也给 启动程序加载 引擎预留几秒时间，
+封面ui 我用lovable.dev 制作好了 ：'/Users/petermac/claude claw/new/agent-planet-login' 
+
+
+      6.                                   
+
+完全复刻 clawpanel，但是所有代码需要自己重新写，文件头个性名称也要用自己的，不能在参考的时候复制 clawpanel 的代码名词 和文件名直接使用，例如：ClawPanel 、qtcool、"guideTag": "内置 AI", 需要自己的名词规则，
+
+所有注释 用中文，块级文档注释、文件头注释、类注释、单行注释等要自己重新编辑，可以参考语义相同即可，如："inputHint": "Enter 发送 · Shift+Enter 换行 · 支持粘贴/拖拽图片 · AI 助手独立于 OpenClaw", 可以换成  "inputHint": "Enter 提交 · Shift+Enter 换行 · 支持图片粘贴与拖拽 · 助手 AI 独立于 OpenClaw 单独运行",
+部分页面细节修改，我会在手续中提供
+
+左侧栏应该是这样： 
+
+logo 
+
+一个下拉菜单(openclaw、hermes agent、zeroclaw）
+
+AI 对话（固定）
+
+数字员工（固定）
+
+定时任务（固定）
+
+运行状态（固定）
+
+技能（折叠）
+
+Skills
+
+插件管理
+
+设置（折叠）
+
+服务管理
+
+模型配置
+
+手机对接
+
+路由拓扑
+
+Gateway
+
+安全设置
+
+系统设置
+
+检测修复
+
+数据（折叠）
+
+使用情况
+
+记忆文件
+
+记忆优化
+
+日志查看
+
+关于
+
+界面风格（点下切换：暗夜、晨白、星球）（固定）
+
+	
+
+ 结合你现有的 技能 工具  插件 等，给我一份详细的开发计划，同步保存到 obsidian 
+
+🚀 开始安装 Hermes Agent...
+📦 下载 uv 包管理器...
+下载: https://github.com/astral-sh/uv/releases/download/0.7.12/uv-x86_64-pc-windows-msvc.zip
+	
+https://efaa0ad6.ghelper.me/subs/clash/ee833608efaa0ad67b7b69219c63a7a0
+
+
+我以为你可以基于 参考 clawpanel ，100% 复制性开发，除了我们提出的差差异化修改，品牌名词修改，版权性替换，增删功能。
+
+
+
+
+1、现在的开发版程序目录地址是？  ⭕️/Users/petermac/claude claw/agent-planet
+2、三引擎 的 心甜 claw 要改成 zeroclaw 先改选项文字， 页面稍后修改
+3、11 国语言  改成只有  中文和英文
+4、顶部的品牌 clawpanel 去掉 logo 换成'/Users/petermac/claude claw/AGENT PLANET Logo .png'  
+⭕️logo 宽度调到好侧边栏同宽，去掉 品牌文字
+
+5、整个左侧边栏的折叠按钮也从顶部 去掉，改到左侧栏下拉滚动条的垂直中间的位置用⭕️替换
+
+
+6、程序界面开启 control+shit+I 键盘快捷键可以呼出 devtools  查看页面控制台，方便我查找代码定位告诉你 要修改的地方
+7、你有没有 webui  对话界面
+8、打开程序 登录页参考这个 修改 '/Users/petermac/claude claw/agent-planet/agent-planet-login'
+
+9、 登录后提示：当前使用的是系统生成的默认密码，为了安全请尽快修改  前往安全设置”
+  这个去除
+
+
+全局 AI 助手浮动按钮 替换成 小笔记  开发一个小笔记用于临时想法的 记录，用户 来不及和 AI 对话的记录 功能，这个小笔记可以 新建 和 保存 笔记。
+
+详细参阅 https://github.com/zeroclaw-labs/zeroclaw 需要内置预先安装好，用户不用二次安装
+
+
+

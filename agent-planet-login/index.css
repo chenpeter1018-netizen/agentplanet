@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* NEX CLAW — Futuristic AI Login Design System
+   All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 230 35% 4%;
+    --foreground: 190 100% 95%;
+
+    --card: 230 30% 8%;
+    --card-foreground: 190 100% 95%;
+
+    --popover: 230 30% 8%;
+    --popover-foreground: 190 100% 95%;
+
+    --primary: 180 100% 60%;
+    --primary-foreground: 230 40% 5%;
+
+    --secondary: 270 80% 65%;
+    --secondary-foreground: 190 100% 95%;
+
+    --muted: 230 20% 15%;
+    --muted-foreground: 190 30% 70%;
+
+    --accent: 320 100% 65%;
+    --accent-foreground: 230 40% 5%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 190 60% 40%;
+    --input: 230 30% 12%;
+    --ring: 180 100% 60%;
+
+    --radius: 1rem;
+
+    /* Brand neon palette */
+    --neon-cyan: 180 100% 60%;
+    --neon-purple: 270 90% 65%;
+    --neon-pink: 320 100% 65%;
+    --neon-blue: 210 100% 60%;
+
+    /* Gradients */
+    --gradient-brand: linear-gradient(135deg, hsl(var(--neon-cyan)), hsl(var(--neon-purple)) 50%, hsl(var(--neon-pink)));
+    --gradient-glow: radial-gradient(circle at 50% 50%, hsl(var(--neon-cyan) / 0.25), transparent 70%);
+    --gradient-bg: radial-gradient(ellipse at top, hsl(230 50% 10%) 0%, hsl(230 40% 4%) 50%, hsl(240 60% 3%) 100%);
+
+    /* Shadows / glows */
+    --glow-cyan: 0 0 40px hsl(var(--neon-cyan) / 0.5), 0 0 80px hsl(var(--neon-cyan) / 0.25);
+    --glow-purple: 0 0 30px hsl(var(--neon-purple) / 0.4);
+    --glass-shadow: 0 8px 32px 0 hsl(230 80% 2% / 0.6), inset 0 1px 0 0 hsl(190 100% 90% / 0.08);
+
+    /* Transitions */
+    --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--gradient-bg);
+    background-attachment: fixed;
+  }
+}
+
+@layer components {
+  /* Glassmorphism panel */
+  .glass-panel {
+    background: hsl(230 30% 10% / 0.4);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid hsl(190 100% 70% / 0.15);
+    box-shadow: var(--glass-shadow);
+  }
+
+  /* Neon glowing brand text */
+  .neon-text {
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 30px hsl(var(--neon-cyan) / 0.3);
+  }
+
+  /* Animated grid floor */
+  .grid-floor {
+    background-image:
+      linear-gradient(hsl(var(--neon-cyan) / 0.15) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--neon-cyan) / 0.15) 1px, transparent 1px);
+    background-size: 60px 60px;
+    transform: perspective(500px) rotateX(60deg);
+    transform-origin: center top;
+    animation: grid-move 20s linear infinite;
+  }
+
+  /* Glow orb */
+  .glow-orb {
+    background: var(--gradient-glow);
+    filter: blur(40px);
+  }
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow: 0 0 20px hsl(var(--neon-cyan) / 0.8), 0 0 40px hsl(var(--neon-cyan) / 0.4);
+  }
+
+  .border-glow {
+    box-shadow: 0 0 20px hsl(var(--neon-cyan) / 0.4), inset 0 0 20px hsl(var(--neon-cyan) / 0.05);
+  }
+}
+
+@keyframes grid-move {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 60px; }
+}
+
+@keyframes float-orb {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -40px) scale(1.1); }
+  66% { transform: translate(-30px, 30px) scale(0.9); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
