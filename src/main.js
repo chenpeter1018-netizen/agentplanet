@@ -471,10 +471,11 @@ async function boot() {
     }
 
     // 引擎启动（检测安装状态 + 初始化轮询等）
-    await engine.boot()
-
-    // 重新渲染侧边栏（引擎检测完成后状态已更新）
-    renderSidebar(sidebar)
+    // 非阻塞：先渲染界面，后台检测完成后自动更新
+    engine.boot().then(() => {
+      renderSidebar(sidebar)
+      bindEngineListeners(engine)
+    })
 
     // 监听引擎状态变化（如 setup 完成后 ready 变为 true），自动刷新侧边栏
     bindEngineListeners(engine)
