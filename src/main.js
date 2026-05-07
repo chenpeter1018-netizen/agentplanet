@@ -940,6 +940,99 @@ function startUpdateChecker() {
   _updateCheckTimer = setInterval(checkGlobalUpdate, UPDATE_CHECK_INTERVAL)
 }
 
+// ═══════════════════════════════════════════
+// 授权门禁
+// ═══════════════════════════════════════════
+
+async function checkLicenseGate() {
+  try {
+    const status = await api.checkLicense()
+    if (status.can_access) return true
+
+    // 未激活 → 显示激活锁屏
+    _hideSplash()
+    showActivationOverlay(status)
+    return false
+  } catch (e) {
+    // API 调用失败也锁屏
+    console.error('[license] 检查失败:', e)
+    _hideSplash()
+    showActivationOverlay(null)
+    return false
+  }
+}
+
+function showActivationOverlay(status) {
+  const existing = document.getElementById('activation-overlay')
+  if (existing) return
+
+  const trialInfo = status?.is_trial
+    ? `<div style="margin-top:12px;font-size:12px;color:#f59e0b">⚠ 试用模式，剩余 ${status.trial_days_left} 天</div>`
+    : status?.reason
+      ? `<div style="margin-top:12px;font-size:12px;color:#ef4444">${status.reason}</div>`
+      : ''
+
+  const overlay = document.createElement('div')
+  overlay.id = 'activation-overlay'
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#f8f9fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif'
+  overlay.innerHTML = `
+    <div style="text-align:center;max-width:420px;padding:40px">
+      <div style="font-size:56px;margin-bottom:16px">🛡️</div>
+      <h2 style="margin:0 0 4px;font-size:22px;font-weight:700;color:#18181b">激活 Agent Planet</h2>
+      <p style="margin:0 0 24px;font-size:14px;color:#71717a">请输入注册码以继续使用</p>
+      <input id="activation-key-input" type="text" placeholder="AGPT-XXXX-XXXX-..."
+        style="width:100%;padding:10px 14px;border:1px solid #d4d4d8;border-radius:8px;font-size:15px;text-align:center;font-family:monospace;outline:none;box-sizing:border-box"
+        autocomplete="off" spellcheck="false">
+      <button id="activation-submit-btn"
+        style="width:100%;margin-top:12px;padding:10px;background:#6366f1;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer">
+        激活
+      </button>
+      <div id="activation-msg" style="margin-top:12px;font-size:13px;min-height:20px"></div>
+      ${trialInfo}
+      <p style="margin-top:24px;font-size:11px;color:#a1a1aa">
+        首次激活需联网验证 · 激活后永久离线使用 · <a href="https://claw.qt.cool" target="_blank" style="color:#6366f1">获取注册码</a>
+      </p>
+    </div>
+  `
+  document.body.appendChild(overlay)
+
+  const msgEl = overlay.querySelector('#activation-msg')
+  const input = overlay.querySelector('#activation-key-input')
+  const btn = overlay.querySelector('#activation-submit-btn')
+
+  async function doActivate() {
+    const key = input.value.trim()
+    if (!key || key.length < 10) {
+      msgEl.style.color = '#ef4444'
+      msgEl.textContent = '请输入有效的注册码'
+      return
+    }
+    btn.disabled = true
+    btn.textContent = '验证中...'
+    msgEl.textContent = ''
+    try {
+      const result = await api.activateLicense(key)
+      if (result.can_access) {
+        msgEl.style.color = '#16a34a'
+        msgEl.textContent = '✅ 激活成功！正在进入...'
+        setTimeout(() => overlay.remove(), 800)
+      } else {
+        msgEl.style.color = '#ef4444'
+        msgEl.textContent = result.reason || '激活失败'
+      }
+    } catch (e) {
+      msgEl.style.color = '#ef4444'
+      msgEl.textContent = String(e).replace(/^Error:\s*/, '')
+    }
+    btn.disabled = false
+    btn.textContent = '激活'
+  }
+
+  btn.addEventListener('click', doActivate)
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doActivate() })
+  input.focus()
+}
+
 // 启动：先检查后端 → 认证 → 加载应用
 ;(async () => {
   // Web 模式：先检测后端是否在线（不在线则显示提示，不加载应用）
@@ -949,6 +1042,12 @@ function startUpdateChecker() {
       showBackendDownOverlay()
       return
     }
+  }
+
+  // 授权检查：未激活 → 锁屏
+  if (isTauri) {
+    const licenseOk = await checkLicenseGate()
+    if (!licenseOk) return
   }
 
   const auth = await checkAuth()
