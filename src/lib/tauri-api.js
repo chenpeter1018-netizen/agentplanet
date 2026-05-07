@@ -314,6 +314,8 @@ export const api = {
   invalidatePathCache: () => invoke('invalidate_path_cache'),
   copyEnvInstallers: () => invoke('copy_env_installers'),
   openInFileManager: (path) => invoke('open_in_file_manager', { path }),
+  activateLicense: (key, online = true) => invoke('activate_license', { key, online }),
+  checkLicense: () => invoke('check_license'),
   checkGit: () => cachedInvoke('check_git', {}, 60000),
   scanGitPaths: () => invoke('scan_git_paths'),
   autoInstallGit: () => invoke('auto_install_git'),

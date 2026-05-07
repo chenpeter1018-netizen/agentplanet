@@ -3,6 +3,7 @@ use crate::utils::openclaw_command;
 use serde::Deserialize;
 use serde_json::{json, Value};
 use std::collections::HashMap;
+use tauri::Manager;
 use std::fs;
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;

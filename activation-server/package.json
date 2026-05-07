@@ -1,0 +1,9 @@
+{
+  "name": "agent-planet-activation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agent Planet 在线激活服务器 — 部署到 Vercel",
+  "dependencies": {
+    "@vercel/kv": "^1.0.0"
+  }
+}

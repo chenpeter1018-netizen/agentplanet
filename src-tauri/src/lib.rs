@@ -1,4 +1,5 @@
 mod commands;
+mod license;
 mod models;
 mod tray;
 mod utils;
@@ -156,6 +157,8 @@ pub fn run() {
             config::configure_git_https,
             config::invalidate_path_cache,
             config::copy_env_installers,
+            license::activate_license,
+            license::check_license,
             config::open_in_file_manager,
             config::get_status_summary,
             config::doctor_fix,
@@ -326,7 +329,7 @@ pub fn run() {
         })
         .build(tauri::generate_context!())
         .expect("启动 Agent Planet 失败")
-        .run(|_app, event| {
+        .run(move |_app, event| {
             if let tauri::RunEvent::Exit = event {
                 // 清理单实例锁文件
                 let _ = std::fs::remove_file(&lock_file);
