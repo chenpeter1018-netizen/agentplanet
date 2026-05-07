@@ -1044,12 +1044,6 @@ function showActivationOverlay(status) {
     }
   }
 
-  // 授权检查：未激活 → 锁屏
-  if (isTauri) {
-    const licenseOk = await checkLicenseGate()
-    if (!licenseOk) return
-  }
-
   const auth = await checkAuth()
   if (!auth.ok) await showLoginOverlay(auth.defaultPw)
   try {
