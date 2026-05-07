@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-config-schema/schema.json",
-  "productName": "Agent Planet",
+  "productName": "Agent-Planet",
   "version": "0.14.0",
   "identifier": "ai.openclaw.agent-planet",
   "build": {
