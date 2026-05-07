@@ -1,7 +1,7 @@
 import { _ } from '../helper.js'
 
 export default {
-  back: _('← 返回 Agent 列表', '← Back to Agents'),
+  back: _('← 返回员工管理', '← Back to Employee Management'),
   tabOverview: _('概览', 'Overview'),
   tabFiles: _('文件', 'Files'),
   tabChannels: _('渠道', 'Channels'),

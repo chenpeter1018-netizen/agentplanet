@@ -28,7 +28,7 @@ pub fn setup_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
         .build()?;
 
     // 托盘图标（使用内嵌 32x32 PNG）
-    let icon = Image::from_bytes(include_bytes!("../icons/32x32.png"))?;
+    let icon = Image::from_bytes(include_bytes!("../icons/tray-icon.png"))?;
 
     let _tray = TrayIconBuilder::new()
         .icon(icon)

@@ -1,7 +1,7 @@
 import { _ } from '../helper.js'
 
 export default {
-  title: _('扩展工具', 'Extensions', '擴充工具', '拡張ツール', '확장 도구', 'Công cụ mở rộng', 'Herramientas de extensión', 'Ferramentas de extensão', 'Расширения', 'Outils additionnels', 'Erweiterungstools'),
+  title: _('扩展插件', 'Extensions', '擴充工具', '拡張ツール', '확장 도구', 'Công cụ mở rộng', 'Herramientas de extensión', 'Ferramentas de extensão', 'Расширения', 'Outils additionnels', 'Erweiterungstools'),
   desc: _('管理 cftunnel 内网穿透和 ClawApp 移动客户端', 'Manage cftunnel tunneling and ClawApp mobile client', '管理 cftunnel 內網穿透和 ClawApp 移動用戶端', 'cftunnel トンネリングと ClawApp モバイルクライアントの管理', 'cftunnel 터널링 및 ClawApp 모바일 클라이언트 관리', 'Quản lý cftunnel và ClawApp', 'Gestionar cftunnel y ClawApp', 'Gerenciar cftunnel e ClawApp', 'Управление cftunnel и ClawApp', 'Gérer cftunnel et ClawApp', 'cftunnel und ClawApp verwalten'),
   cftunnelTitle: _('cftunnel 内网穿透', 'cftunnel Tunneling', 'cftunnel 內網穿透', 'cftunnel トンネリング', 'cftunnel 터널링', 'cftunnel', 'cftunnel', 'cftunnel', 'cftunnel', 'cftunnel', 'cftunnel'),
   cftunnelDesc: _('通过 Cloudflare Tunnel 将本地服务暴露到公网，无需公网 IP 和端口映射。', 'Expose local services to the internet via Cloudflare Tunnel, no public IP or port mapping needed.', '通過 Cloudflare Tunnel 將本地服務暴露到公網，無需公網 IP 和連接埠映射。', 'Cloudflare Tunnel でローカルサービスを公開。パブリック IP やポートマッピング不要。', 'Cloudflare Tunnel로 로컬 서비스를 공개. 공인 IP나 포트 매핑 불필요.'),

@@ -2,7 +2,7 @@ import { _ } from '../helper.js'
 
 export default {
   title: _('Skills', 'Skills'),
-  desc: _('管理已安装的 Skills，或从社区搜索安装新技能', 'Manage installed Skills or search and install new ones from the community', '管理已安裝的 Skills，或從社區搜尋安裝新技能', 'OpenClaw Skills の管理とインストール', 'OpenClaw Skills 관리 및 설치', 'Quản lý và cài đặt OpenClaw Skills', 'Gestionar e instalar OpenClaw Skills', 'Gerenciar e instalar OpenClaw Skills', 'Управление и установка навыков OpenClaw', 'Gérer et installer les Skills OpenClaw', 'OpenClaw Skills verwalten und installieren'),
+  desc: _('管理已安装的 Skills，或从官方平台搜索安装新技能', 'Manage installed Skills or search and install new ones from the official platform'),
   tabInstalled: _('已安装', 'Installed', '已安裝'),
   tabStore: _('搜索安装', 'Search & Install', '搜尋安裝'),
   filterPlaceholder: _('过滤 Skills...', 'Filter Skills...', '篩選 Skills...'),

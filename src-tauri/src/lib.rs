@@ -109,6 +109,7 @@ pub fn run() {
             config::auto_install_git,
             config::configure_git_https,
             config::invalidate_path_cache,
+            config::open_in_file_manager,
             config::get_status_summary,
             config::doctor_fix,
             config::doctor_check,

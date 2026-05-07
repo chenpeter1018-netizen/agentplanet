@@ -17,7 +17,6 @@ export async function render() {
       <div>
         <h1 class="page-title">${t('agents.title')}</h1>
         <p class="page-desc">${t('agents.desc')}</p>
-        <p class="page-subhint">${t('agents.detailHint')}</p>
       </div>
       <div class="page-actions">
         <button class="btn btn-primary" id="btn-add-agent">${t('agents.addAgent')}</button>
@@ -37,18 +36,20 @@ export async function render() {
   return page
 }
 
+function escapeAttr(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;') }
+
 function renderSkeleton(container) {
   const item = () => `
     <div class="agent-card" style="pointer-events:none">
       <div class="agent-card-header">
-        <div class="skeleton" style="width:40px;height:40px;border-radius:50%"></div>
-        <div style="flex:1;display:flex;flex-direction:column;gap:6px">
-          <div class="skeleton" style="width:45%;height:16px;border-radius:4px"></div>
-          <div class="skeleton" style="width:60%;height:12px;border-radius:4px"></div>
+        <div class="skeleton" style="width:48px;height:48px;border-radius:10px;flex-shrink:0"></div>
+        <div class="agent-card-title" style="flex:1">
+          <div class="skeleton" style="width:60%;height:16px;border-radius:4px"></div>
+          <div class="skeleton" style="width:40%;height:12px;border-radius:4px;margin-top:6px"></div>
         </div>
       </div>
     </div>`
-  container.innerHTML = [item(), item(), item()].join('')
+  container.innerHTML = `<div class="agent-grid">${[item(), item(), item(), item()].join('')}</div>`
 }
 
 async function loadAgents(page, state) {
@@ -97,28 +98,31 @@ function renderAgents(page, state) {
     return
   }
 
-  container.innerHTML = state.agents.map(a => {
+  container.innerHTML = `<div class="agent-grid">` + state.agents.map(a => {
     const isDefault = a.isDefault || a.id === 'main'
     const name = a.identityName ? a.identityName.split(',')[0].trim() : t('agents.noDesc')
+    const avatar = a.identityEmoji || a.identity?.emoji || ''
+    const avatarHtml = avatar
+      ? (avatar.startsWith('/') || avatar.startsWith('http')
+          ? `<img class="agent-avatar" src="${escapeAttr(avatar)}" alt="${escapeAttr(name)}" />`
+          : `<span class="agent-avatar-emoji">${escapeAttr(avatar)}</span>`)
+      : `<span class="agent-avatar-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>`
     return `
       <div class="agent-card" data-id="${a.id}">
         <div class="agent-card-header">
+          ${avatarHtml}
           <div class="agent-card-title">
-            <span class="agent-id">${a.id}</span>
+            <span class="agent-id">${escapeAttr(name) || a.id}</span>
             ${isDefault ? `<span class="badge badge-success">${t('agents.default')}</span>` : ''}
           </div>
           <div class="agent-card-actions">
             <button class="btn btn-sm btn-primary" data-action="detail" data-id="${a.id}">${t('agents.detail')}</button>
-            <button class="btn btn-sm btn-secondary" data-action="backup" data-id="${a.id}">${t('agents.backup')}</button>
             <button class="btn btn-sm btn-secondary" data-action="edit" data-id="${a.id}">${t('agents.edit')}</button>
+            <button class="btn btn-sm btn-secondary" data-action="backup" data-id="${a.id}">${t('agents.backup')}</button>
             ${!isDefault ? `<button class="btn btn-sm btn-danger" data-action="delete" data-id="${a.id}">${t('agents.delete')}</button>` : ''}
           </div>
         </div>
         <div class="agent-card-body">
-          <div class="agent-info-row">
-            <span class="agent-info-label">${t('agents.labelName')}</span>
-            <span class="agent-info-value">${name}</span>
-          </div>
           <div class="agent-info-row">
             <span class="agent-info-label">${t('agents.labelModel')}</span>
             <span class="agent-info-value">${typeof a.model === 'object' ? (a.model?.primary || a.model?.id || JSON.stringify(a.model)) : (a.model || t('agents.notSet'))}</span>
@@ -134,7 +138,7 @@ function renderAgents(page, state) {
         </div>
       </div>
     `
-  }).join('')
+  }).join('') + '</div>'
 }
 
 function attachAgentEvents(page, state) {
@@ -244,7 +248,6 @@ async function showEditAgentDialog(page, state, id) {
 
   const fields = [
     { name: 'name', label: t('agents.agentName'), value: name, placeholder: t('agents.agentNamePlaceholder') },
-    { name: 'emoji', label: t('agents.agentEmoji'), value: agent.identityEmoji || '', placeholder: t('agents.agentEmojiPlaceholder') },
   ]
 
   if (models.length) {
@@ -271,24 +274,18 @@ async function showEditAgentDialog(page, state, id) {
     title: t('agents.editTitle', { id }),
     fields,
     onConfirm: async (result) => {
-      console.log('[Agent编辑] 保存数据:', result)
       const newName = (result.name || '').trim()
-      const emoji = (result.emoji || '').trim()
       const model = (result.model || '').trim()
 
       try {
-        if (newName || emoji) {
-          console.log('[Agent编辑] 更新身份信息...')
-          await api.updateAgentIdentity(id, newName || null, emoji || null)
+        if (newName) {
+          await api.updateAgentIdentity(id, newName, null)
         }
         if (model && model !== agent.model) {
-          console.log('[Agent编辑] 更新模型:', agent.model, '->', model)
           await api.updateAgentModel(id, model)
         }
 
-        // 手动更新 state 并重新渲染，确保立即生效
         if (newName) agent.identityName = newName
-        if (emoji) agent.identityEmoji = emoji
         if (model) agent.model = model
         renderAgents(page, state)
 

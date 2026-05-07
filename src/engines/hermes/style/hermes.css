@@ -1040,19 +1040,15 @@ body[data-active-engine="hermes"] #sidebar {
                'Segoe UI', 'PingFang SC', 'Noto Sans SC', sans-serif;
 }
 
-/* Header (logo + title + collapse) */
+/* Header (logo + close) */
 body[data-active-engine="hermes"] .sidebar-header {
   border-bottom: 1px solid rgba(28, 25, 23, 0.06);
-  padding: 20px 18px;
+  padding: 12px 6px;
   height: auto;
 }
-body[data-active-engine="hermes"] .sidebar-title {
-  font-family: 'Playfair Display', 'Cormorant Garamond', 'Iowan Old Style',
-               'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif;
-  font-size: 19px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: #1C1917;
+body[data-active-engine="hermes"] .sidebar-logo-full img {
+  padding: 8px;
+  border-radius: 6px;
 }
 body[data-active-engine="hermes"] .sidebar-collapse-btn,
 body[data-active-engine="hermes"] .sidebar-close-btn {
@@ -1252,9 +1248,6 @@ body[data-active-engine="hermes"][data-theme="dark"] {
 }
 [data-theme="dark"] body[data-active-engine="hermes"] .sidebar-header {
   border-bottom-color: rgba(250, 250, 249, 0.06);
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .sidebar-title {
-  color: #FAFAF9;
 }
 [data-theme="dark"] body[data-active-engine="hermes"] .engine-switcher {
   border-bottom-color: rgba(250, 250, 249, 0.06);

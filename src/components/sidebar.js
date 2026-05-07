@@ -12,49 +12,52 @@ import { isFeatureAvailable } from '../lib/feature-gates.js'
 import { getActiveEngine, getActiveEngineId, listEngines, switchEngine, onEngineChange } from '../lib/engine-manager.js'
 
 function NAV_ITEMS_FULL() { return [
+  // 固定导航项（无分组标题）
   {
-    section: t('sidebar.sectionMonitor'),
+    section: '',
     items: [
+      { route: '/chat', label: t('sidebar.aiChat'), icon: 'chat' },
+      { route: '/agents', label: t('sidebar.digitalEmployees'), icon: 'agents' },
+      { route: '/cron', label: t('sidebar.cronJobs'), icon: 'clock' },
       { route: '/dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
-      { route: '/assistant', label: t('sidebar.assistant'), icon: 'assistant' },
-      { route: '/chat', label: t('sidebar.chat'), icon: 'chat' },
-      { route: '/route-map', label: t('sidebar.routeMap'), icon: 'route-map' },
-      { route: '/services', label: t('sidebar.services'), icon: 'services' },
-      { route: '/logs', label: t('sidebar.logs'), icon: 'logs' },
     ]
   },
+  // 技能（默认折叠）
   {
-    section: t('sidebar.sectionConfig'),
-    items: [
-      { route: '/models', label: t('sidebar.models'), icon: 'models' },
-      { route: '/agents', label: t('sidebar.agents'), icon: 'agents' },
-      { route: '/gateway', label: t('sidebar.gateway'), icon: 'gateway' },
-      { route: '/channels', label: t('sidebar.channels'), icon: 'channels' },
-      { route: '/communication', label: t('sidebar.communication'), icon: 'settings' },
-      { route: '/security', label: t('sidebar.security'), icon: 'security' },
-    ]
-  },
-  {
-    section: t('sidebar.sectionData'),
-    items: [
-      { route: '/memory', label: t('sidebar.memory'), icon: 'memory', gate: 'memory' },
-      { route: '/dreaming', label: t('sidebar.dreaming'), icon: 'dreaming', gate: 'dreaming' },
-      { route: '/cron', label: t('sidebar.cron'), icon: 'clock', gate: 'cron' },
-      { route: '/usage', label: t('sidebar.usage'), icon: 'bar-chart' },
-    ]
-  },
-  {
-    section: t('sidebar.sectionExtension'),
+    section: t('sidebar.sectionSkills'),
+    collapsed: true,
+    id: 'skills',
     items: [
       { route: '/skills', label: t('sidebar.skills'), icon: 'skills', gate: 'skills' },
       { route: '/plugin-hub', label: t('sidebar.pluginHub'), icon: 'extensions' },
     ]
   },
+  // 设置（默认折叠）
   {
-    section: '',
+    section: t('sidebar.sectionSettings'),
+    collapsed: true,
+    id: 'settings-group',
     items: [
-      { route: '/settings', label: t('sidebar.settings'), icon: 'settings' },
+      { route: '/services', label: t('sidebar.engineManagement'), icon: 'services' },
+      { route: '/models', label: t('sidebar.models'), icon: 'models' },
+      { route: '/channels', label: t('sidebar.mobileConnect'), icon: 'channels' },
+      { route: '/gateway', label: t('sidebar.gateway'), icon: 'gateway' },
+      { route: '/communication', label: t('sidebar.communication'), icon: 'settings' },
+      { route: '/security', label: t('sidebar.security'), icon: 'security' },
+      { route: '/settings', label: t('sidebar.systemSettings'), icon: 'settings' },
       { route: '/chat-debug', label: t('sidebar.checkRepair'), icon: 'diagnose' },
+    ]
+  },
+  // 数据（默认折叠）
+  {
+    section: t('sidebar.sectionData'),
+    collapsed: true,
+    id: 'data',
+    items: [
+      { route: '/usage', label: t('sidebar.usage'), icon: 'bar-chart' },
+      { route: '/memory', label: t('sidebar.memory'), icon: 'memory', gate: 'memory' },
+      { route: '/dreaming', label: t('sidebar.memoryOptimization'), icon: 'dreaming', gate: 'dreaming' },
+      { route: '/logs', label: t('sidebar.logs'), icon: 'logs' },
       { route: '/about', label: t('sidebar.about'), icon: 'about' },
     ]
   }
@@ -65,7 +68,6 @@ function NAV_ITEMS_SETUP() { return [
     section: '',
     items: [
       { route: '/setup', label: t('sidebar.setup'), icon: 'setup' },
-      { route: '/assistant', label: t('sidebar.assistant'), icon: 'assistant' },
     ]
   },
   {
@@ -101,7 +103,7 @@ const ICONS = {
   'bar-chart': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>',
   settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>',
   debug: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>',
-  'route-map': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><path d="M7 6h10M7 18h10M5 8v8M19 8v8"/></svg>',
+
   diagnose: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
 }
 
@@ -172,11 +174,9 @@ export function renderSidebar(el) {
   const collapsed = _isDesktopSidebarCollapsed()
   let html = `
     <div class="sidebar-header">
-      <div class="sidebar-logo">
+      <div class="sidebar-logo-full">
         <img src="/images/agent-planet-logo.png" alt="Agent Planet">
       </div>
-      <span class="sidebar-title">Agent Planet</span>
-
       <button class="sidebar-close-btn" id="btn-sidebar-close" title="${t('sidebar.closeMenu')}">&times;</button>
     </div>
     ${_renderEngineSwitcher()}
@@ -188,8 +188,24 @@ export function renderSidebar(el) {
   const navItems = engine ? engine.getNavItems() : (isOpenclawReady() ? NAV_ITEMS_FULL() : NAV_ITEMS_SETUP())
 
   for (const section of navItems) {
-    html += `<div class="nav-section">
-      <div class="nav-section-title">${section.section}</div>`
+    const canCollapse = section.collapsed === true
+    const sectionId = section.id || ''
+    // 从 localStorage 恢复折叠状态
+    const lsKey = sectionId ? `nav-collapse-${sectionId}` : ''
+    const isCollapsed = canCollapse && sectionId
+      ? (localStorage.getItem(lsKey) !== '0')
+      : canCollapse
+
+    html += `<div class="nav-section${canCollapse ? ' nav-section-collapsible' : ''}${isCollapsed ? ' collapsed' : ''}"${sectionId ? ` data-section="${sectionId}"` : ''}>`
+
+    if (section.section) {
+      html += `<div class="nav-section-title${canCollapse ? ' nav-section-toggle' : ''}">
+        ${canCollapse ? '<svg class="nav-section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M9 18l6-6-6-6"/></svg>' : ''}
+        <span>${section.section}</span>
+      </div>`
+    }
+
+    html += `<div class="nav-section-items${canCollapse ? ' nav-section-collapse' : ''}">`
 
     for (const item of section.items) {
       if (item.gate && engine && !engine.isFeatureAvailable(item.gate)) continue
@@ -200,7 +216,7 @@ export function renderSidebar(el) {
         <span>${item.label}</span>
       </div>`
     }
-    html += '</div>'
+    html += '</div></div>'
   }
 
   html += '</nav>'
@@ -244,7 +260,6 @@ export function renderSidebar(el) {
         </div>
       </div>
       <div class="sidebar-meta">
-        <a href="https://claw.qt.cool" target="_blank" rel="noopener" class="sidebar-link">claw.qt.cool</a>
         <span class="sidebar-version">v${APP_VERSION}</span>
       </div>
     </div>
@@ -259,6 +274,19 @@ export function renderSidebar(el) {
   if (!_delegated) {
     _delegated = true
     el.addEventListener('click', (e) => {
+      // 折叠分组切换
+      const sectionToggle = e.target.closest('.nav-section-toggle')
+      if (sectionToggle) {
+        const section = sectionToggle.closest('.nav-section-collapsible')
+        if (section) {
+          const isCollapsed = section.classList.toggle('collapsed')
+          const sectionId = section.dataset.section
+          if (sectionId) {
+            localStorage.setItem(`nav-collapse-${sectionId}`, isCollapsed ? '1' : '0')
+          }
+        }
+        return
+      }
       // 导航点击
       const navItem = e.target.closest('.nav-item[data-route]')
       if (navItem) {

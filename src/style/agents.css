@@ -1,10 +1,18 @@
 /* Agent 管理页面样式 */
+.agent-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 800px) {
+  .agent-grid { grid-template-columns: 1fr; }
+}
+
 .agent-card {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-md);
   padding: 16px;
-  margin-bottom: 12px;
   cursor: pointer;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
@@ -17,14 +25,43 @@
 .agent-card-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 12px;
+}
+
+.agent-avatar {
+  width: 48px; height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.agent-avatar-emoji {
+  font-size: 36px;
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.agent-avatar-placeholder {
+  width: 48px; height: 48px;
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
 }
 
 .agent-card-title {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.agent-card-title .agent-id {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
 .agent-id {

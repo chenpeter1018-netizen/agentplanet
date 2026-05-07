@@ -1,12 +1,12 @@
 import { _ } from '../helper.js'
 
 export default {
-  title: _('消息渠道', 'Channels', '訊息頻道', 'チャンネル', '채널', 'Kênh', 'Canales', 'Canais', 'Каналы', 'Canaux', 'Kanäle'),
-  desc: _('渠道列表管理接入；在 Agent 对接页为每个 Agent 绑定多条渠道路由，配置相互独立，并支持渠道连通性测试', 'Manage channel integrations; bind multiple channel routes per Agent with independent configs and connectivity testing', '頻道列表管理接入；在 Agent 对接頁為每個 Agent 綁定多條頻道路由，設定相互獨立，並支援頻道連通性測試', 'メッセージチャンネルの管理とプラットフォーム接続', '메시지 채널 관리 및 플랫폼 연결', 'Quản lý kênh tin nhắn và kết nối nền tảng', 'Gestionar canales de mensajería y conexiones de plataforma', 'Gerenciar canais de mensagens e conexões de plataforma', 'Управление каналами сообщений и подключение платформ', 'Gérer les canaux de messagerie et les connexions de plateforme', 'Nachrichtenkanäle und Plattformverbindungen verwalten'),
+  title: _('手机IM对接', 'Mobile IM', '手機IM對接', 'モバイルIM', '모바일 IM', 'IM di động', 'IM móvil', 'IM móvel', 'Мобильный IM', 'IM mobile', 'Mobile IM'),
+  desc: _('渠道列表管理已接入。数字员工 对接页里，每个 员工 可以绑定多条渠道，各用各的配置，还能测试能不能通。', 'Channel list management is integrated. In the Digital Employee binding page, each employee can bind multiple channels with independent configs, and you can test connectivity.', '渠道列表管理已接入。数字員工 对接页里，每個 員工 可以綁定多條渠道，各用各的設定，還能測試能不能通。'),
   tabChannels: _('渠道列表', 'Channel List', '頻道列表'),
-  tabAgents: _('Agent 对接', 'Agent Binding'),
+  tabAgents: _('数字员工 IM 对接', 'Digital Employee IM', '數字員工 IM 對接'),
   configured: _('已接入', 'Connected'),
-  available: _('可接入平台', 'Available Platforms'),
+  available: _('对接平台机器人：', 'Platform Bots:'),
   accountCount: _('{count} 个账号', '{count} accounts', '{count} 個账號'),
   editAccount: _('编辑', 'Edit', '編輯'),
   addAccount: _('添加账号', 'Add Account', '新增账號'),
@@ -43,7 +43,7 @@ export default {
   feishuLabel: _('飞书', 'Feishu', '飛書'),
   feishuDesc: _('通过飞书企业自建应用接入，支持单聊和群聊', 'Connect via Feishu custom enterprise app, supports DM and group chat', '通過飛書企業自建應用接入，支援單聊和群聊', 'Feishu に接続'),
   feishuGuide1: _('前往 <a href="https://open.feishu.cn/app" target="_blank" rel="noopener">飞书开放平台</a> 创建企业自建应用', '前往 <a href="https://open.feishu.cn/app" target="_blank" rel="noopener">飞书开放平台</a> 创建企业自建应用', '前往 <a href="https://open.feishu.cn/app" target="_blank" rel="noopener">飛書開放平台</a> 建立企業自建應用'),
-  feishuGuide2: _('在「添加应用能力」中添加「机器人」', 'Add "Bot" capability under "Add App Capabilities"', '在「新增應用能力」中新增「機器人」'),
+  feishuGuide2: _('在「企业自建应用上方」创建飞书智能体应用', 'Create a Feishu AI Agent app under "Enterprise Custom App"', '在「企業自建應用上方」創建飛書智能体應用'),
   feishuGuide3: _('在「凭证与基础信息」中获取 <strong>App ID</strong> 和 <strong>App Secret</strong>', 'Get <strong>App ID</strong> and <strong>App Secret</strong> from credentials page', '在「憑證與基礎資訊」中取得 <strong>App ID</strong> 和 <strong>App Secret</strong>'),
   feishuGuide4: _('事件回调选择「长连接」方式（无需公网 IP）', 'Select "Long Connection" for event callback (no public IP needed)', '事件回調選擇「長連線」方式（無需公網 IP）'),
   feishuGuide5: _('权限管理中搜索并开通 <code>im:message</code>、<code>im:message.group_at_msg</code> 等消息权限', '权限管理中搜索并开通 <code>im:message</code>、<code>im:message.group_at_msg</code> 等消息权限', '權限管理中搜尋並開通 <code>im:message</code>、<code>im:message.group_at_msg</code> 等訊息權限'),

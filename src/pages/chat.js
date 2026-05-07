@@ -157,7 +157,7 @@ export async function render() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
             </button>
           </div>
-          <button class="btn btn-sm btn-ghost chat-workspace-trigger" id="btn-chat-workspace" title="${t('chat.openWorkspace')}">
+          <button class="btn btn-sm btn-ghost chat-workspace-trigger" id="btn-chat-workspace" title="${t('chat.openWorkspaceFolder')}">
             ${svgIcon('folder', 16)}
             <span class="chat-workspace-trigger-label">${t('chat.workspace')}</span>
             <span class="chat-workspace-trigger-agent" id="chat-workspace-trigger-agent">main</span>
@@ -232,10 +232,7 @@ export async function render() {
         <button class="chat-send-btn" id="chat-send-btn" disabled>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
-        <button class="chat-hosted-btn btn btn-sm btn-ghost" id="chat-hosted-btn" title="${t('chat.hostedAgent')}">
-          <span class="chat-hosted-label">⊕</span>
-          <span class="chat-hosted-badge idle" id="chat-hosted-badge">${t('chat.hostedBadge')}</span>
-        </button>
+        <!-- Agent 托管按钮已禁用 -->
       </div>
       <div class="hosted-agent-panel" id="hosted-agent-panel" style="display:none">
         <div class="hosted-agent-header">
@@ -435,12 +432,20 @@ function bindEvents(page) {
   page.querySelector('#btn-refresh-models')?.addEventListener('click', () => loadModelOptions(true))
   _workspaceBtn?.addEventListener('click', async (e) => {
     e.stopPropagation()
-    if (getWorkspacePanelOpen() && _workspaceDirty) {
-      const yes = await confirmWorkspaceDiscardIfNeeded()
-      if (!yes) return
-      discardWorkspaceChanges()
+    const agentId = _workspaceCurrentAgentId || 'main'
+    try {
+      const info = await api.getAgentWorkspaceInfo(agentId)
+      const dir = info?.workspacePath
+      if (!dir) {
+        toast(t('chat.workspaceUnavailable'), 'warning')
+        return
+      }
+      const { invoke } = await import('@tauri-apps/api/core')
+      await invoke('open_in_file_manager', { path: dir })
+    } catch (err) {
+      console.error('[workspace] 打开文件夹失败:', err)
+      toast(t('chat.workspaceLoadFailed') + ': ' + (err?.message || err), 'error')
     }
-    toggleWorkspacePanel()
   })
   page.querySelector('#chat-workspace-close')?.addEventListener('click', async () => {
     if (_workspaceDirty) {

@@ -1,7 +1,7 @@
 import { _ } from '../helper.js'
 
 export default {
-  title: _('面板设置', 'Settings', '面板設定', 'パネル設定', '패널 설정', 'Cài đặt panel', 'Configuración del panel', 'Configurações do painel', 'Настройки панели', 'Paramètres du panneau', 'Panel-Einstellungen'),
+  title: _('系统设置', 'System Settings', '系統設定', 'システム設定', '시스템 설정', 'Cài đặt hệ thống', 'Configuración del sistema', 'Configurações do sistema', 'Системные настройки', 'Paramètres système', 'Systemeinstellungen'),
   desc: _('管理 Agent Planet 的网络、代理和下载源配置', 'Manage Agent Planet network, proxy and download source settings', '管理 Agent Planet 的網路、代理和下載源設定', 'Agent Planet のネットワーク、プロキシ、ダウンロードソース設定を管理', 'Agent Planet 네트워크, 프록시 및 다운로드 소스 설정 관리', 'Quản lý cài đặt mạng, proxy và nguồn tải xuống', 'Gestionar configuración de red, proxy y fuentes de descarga', 'Gerenciar configurações de rede, proxy e fontes de download', 'Управление сетью, прокси и источниками загрузки', 'Gérer les paramètres réseau, proxy et sources de téléchargement', 'Netzwerk-, Proxy- und Download-Einstellungen verwalten'),
   networkProxy: _('网络代理', 'Network Proxy', '網路代理', 'ネットワークプロキシ', '네트워크 프록시', 'Proxy mạng', 'Proxy de red', 'Proxy de rede', 'Сетевой прокси', 'Proxy réseau', 'Netzwerk-Proxy'),
   modelProxy: _('模型请求代理', 'Model Request Proxy', '模型請求代理', 'モデルリクエストプロキシ', '모델 요청 프록시', 'Proxy yêu cầu mô hình', 'Proxy de solicitudes de modelo', 'Proxy de solicitações de modelo', 'Прокси для запросов моделей', 'Proxy des requêtes de modèle', 'Modell-Anfrage-Proxy'),

@@ -214,6 +214,7 @@ pub async fn list_agents() -> Result<Value, String> {
             "id": "main",
             "isDefault": true,
             "workspace": default_workspace.clone(),
+            "tools": { "profile": "full" },
         })];
         v.extend(agents_list);
         v
@@ -284,6 +285,18 @@ pub async fn list_agents() -> Result<Value, String> {
                     .as_object_mut()
                     .map(|o| o.insert("identityName".to_string(), Value::String(identity_name)));
             }
+            // 补全 identityEmoji 用于前端头像显示
+            let identity_emoji = agent
+                .get("identity")
+                .and_then(|i| i.get("emoji"))
+                .and_then(|e| e.as_str())
+                .unwrap_or("")
+                .to_string();
+            if !identity_emoji.is_empty() {
+                agent
+                    .as_object_mut()
+                    .map(|o| o.insert("identityEmoji".to_string(), Value::String(identity_emoji)));
+            }
             agent
         })
         .collect();
@@ -315,7 +328,7 @@ pub async fn get_agent_detail(id: String) -> Result<Value, String> {
                 .find(|a| a.get("id").and_then(|v| v.as_str()) == Some(id.as_str()))
                 .cloned()
         })
-        .unwrap_or_else(|| json!({ "id": id.clone(), "default": id == "main" }));
+        .unwrap_or_else(|| json!({ "id": id.clone(), "default": id == "main", "tools": { "profile": "full" } }));
 
     let workspace = resolve_agent_workspace_path(&id, &config)
         .to_string_lossy()
@@ -557,7 +570,7 @@ pub async fn update_agent_config(
     let idx = match index {
         Some(idx) => idx,
         None if id == "main" => {
-            list.insert(0, json!({ "id": "main" }));
+            list.insert(0, json!({ "id": "main", "tools": { "profile": "full" } }));
             0
         }
         None => return Err(format!("Agent「{id}」不存在")),
@@ -762,6 +775,7 @@ fn add_agent_to_config(id: &str, model: &str, workspace: &std::path::Path) -> Re
     let mut agent = serde_json::json!({
         "id": id,
         "workspace": workspace.to_string_lossy(),
+        "tools": { "profile": "full" },
     });
     if !model.is_empty() {
         agent

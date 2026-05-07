@@ -8,7 +8,7 @@ import { icon } from '../lib/icons.js'
 import { t } from '../lib/i18n.js'
 import { wsClient } from '../lib/ws-client.js'
 
-let _page = null, _config = null, _dirty = false
+let _page = null, _config = null, _dirty = false, _markdownEnabled = false
 
 export async function render() {
   const page = document.createElement('div')
@@ -56,6 +56,7 @@ async function loadConfig(page) {
   try {
     _config = await api.readOpenclawConfig()
     if (!_config) _config = {}
+    _markdownEnabled = _config?.output?.format === 'markdown'
     renderTab(page, 'messages')
   } catch (e) {
     page.querySelector('#comm-content').innerHTML = `<div style="color:var(--error)">${t('communication.loadFailed')}: ${esc(e?.message || e)}</div>`
@@ -163,6 +164,17 @@ function renderMessages(el) {
     </div>
 
     <div class="config-section">
+      <div class="config-section-title">${t('communication.markdownTitle')}</div>
+      <div class="form-group" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+        <div>
+          <label class="form-label" style="margin:0">${t('communication.markdownTitle')}</label>
+          <div class="form-hint" style="margin:0;max-width:480px">${t('communication.markdownHint')}</div>
+        </div>
+        <label class="toggle-switch"><input type="checkbox" id="msg-markdown-render" ${_markdownEnabled ? 'checked' : ''}><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <div class="config-section">
       <div class="config-section-title">${t('communication.messageQueue')}</div>
       <div class="form-group">
         <label class="form-label">${t('communication.debounceMs')}</label>
@@ -189,6 +201,31 @@ function renderMessages(el) {
     inp.addEventListener('change', markDirty)
     inp.addEventListener('input', markDirty)
   })
+
+  // Markdown 渲染开关 - 直接读写 OpenClaw 配置
+  const mdToggle = el.querySelector('#msg-markdown-render')
+  if (mdToggle) {
+    mdToggle.addEventListener('change', async () => {
+      const enabled = mdToggle.checked
+      try {
+        const cfg = await api.readOpenclawConfig() || {}
+        if (!cfg.output) cfg.output = {}
+        if (enabled) {
+          cfg.output.format = 'markdown'
+          cfg.output.theme = cfg.output.theme || 'dark'
+          if (cfg.output.showTimestamps === undefined) cfg.output.showTimestamps = false
+        } else {
+          delete cfg.output.format
+        }
+        await api.writeOpenclawConfig(cfg)
+        _markdownEnabled = enabled
+        toast(t(enabled ? 'communication.markdownEnabled' : 'communication.markdownDisabled'), 'success')
+      } catch (err) {
+        mdToggle.checked = !enabled
+        toast(t('common.operationFailed') + ': ' + (err?.message || err), 'error')
+      }
+    })
+  }
 }
 
 function collectMessages() {

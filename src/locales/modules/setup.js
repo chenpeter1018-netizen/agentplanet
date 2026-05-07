@@ -3,9 +3,8 @@ import { _ } from '../helper.js'
 export default {
   title: _('初始设置', 'Setup', '初始設定', '初期設定', '초기 설정', 'Thiết lập ban đầu', 'Configuración inicial', 'Configuração inicial', 'Начальная настройка', 'Configuration initiale', 'Ersteinrichtung'),
   desc: _('安装和配置 OpenClaw', 'Install and configure OpenClaw', '安裝和設定 OpenClaw', 'OpenClaw のインストールと設定', 'OpenClaw 설치 및 설정', 'Cài đặt và cấu hình OpenClaw', 'Instalar y configurar OpenClaw', 'Instalar e configurar OpenClaw', 'Установка и настройка OpenClaw', 'Installer et configurer OpenClaw', 'OpenClaw installieren und konfigurieren'),
-  headerTitle: _('欢迎使用 Agent Planet', 'Welcome to Agent Planet', '', 'Agent Planet へようこそ', 'Agent Planet에 오신 것을 환영합니다', 'Chào mừng đến Agent Planet', 'Bienvenido a Agent Planet', 'Bem-vindo ao Agent Planet', 'Добро пожаловать в Agent Planet', 'Bienvenue sur Agent Planet', 'Willkommen bei Agent Planet'),
-  headerDesc: _('OpenClaw AI Agent 框架的桌面管理面板', 'Desktop management panel for OpenClaw AI Agent framework', '', 'OpenClaw AI Agent フレームワークのデスクトップ管理パネル', 'OpenClaw AI Agent 프레임워크의 데스크톱 관리 패널'),
-  officialWebsite: _('官网', 'Official Website', '官網', '公式サイト', '공식 웹사이트', 'Trang chính thức', 'Sitio oficial', 'Site oficial', 'Официальный сайт', 'Site officiel', 'Offizielle Website'),
+  headerTitle: _('Agent Planet', 'Agent Planet'),
+  headerDesc: _('多智能体桌面管理系统', 'Multi-Agent Desktop Management System'),
   recheck: _('重新检测', 'Re-detect', '重新檢測', '再検出', '재감지', 'Kiểm tra lại', 'Verificar de nuevo', 'Verificar novamente', 'Проверить снова', 'Revérifier', 'Erneut prüfen'),
   stepNode: _('Node.js 环境', 'Node.js Environment', 'Node.js 環境', 'Node.js 環境', 'Node.js 환경', 'Môi trường Node.js', 'Entorno Node.js', 'Ambiente Node.js', 'Среда Node.js', 'Environnement Node.js', 'Node.js-Umgebung'),
   installed: _('已安装', 'Installed', '已安裝', 'インストール済み', '설치됨', 'Đã cài đặt', 'Instalado', 'Instalado', 'Установлено', 'Installé', 'Installiert'),
@@ -175,5 +174,6 @@ export default {
   setRegistry: _('设置 npm 镜像源: {url}', 'Setting npm registry: {url}', '設定 npm 鏡像源: {url}'),
   bgTaskStarted: _('后台安装任务已启动，请等待完成...', 'Background install task started, please wait...', '後台安裝任務已啟動，請等待完成...'),
   webModeLogHint: _('Web 模式：安装日志不可用，请等待完成...', 'Web mode: Install logs unavailable, please wait...', 'Web 模式：安裝日誌不可用，請等待完成...'),
-  installScene: _('初始安装 OpenClaw', 'Initial OpenClaw installation', '初始安裝 OpenClaw', 'OpenClaw 初期インストール'),
+  installScene: _('初始安装 OpenClaw', 'Initial OpenClaw installation'),
+  allReady: _('所有检测通过，环境已就绪', 'All checks passed, environment ready'),
 }

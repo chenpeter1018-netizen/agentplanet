@@ -1,7 +1,7 @@
 import { _ } from '../helper.js'
 
 export default {
-  title: _('扩展中心', 'Extension Center', '擴充中心', '拡張センター', '확장 센터', 'Trung tâm mở rộng', 'Centro de extensiones', 'Centro de extensões', 'Центр расширений', 'Centre d\'extensions', 'Erweiterungszentrum'),
+  title: _('扩展插件', 'Extension Center', '擴充中心', '拡張センター', '확장 센터', 'Trung tâm mở rộng', 'Centro de extensiones', 'Centro de extensões', 'Центр расширений', 'Centre d\'extensions', 'Erweiterungszentrum'),
   subtitle: _('管理已安装的扩展插件，查看状态与配置', 'Manage installed extensions, view status and configuration', '管理已安裝的擴充插件，查看狀態與設定', 'インストール済み拡張の管理', '설치된 확장 관리', 'Quản lý tiện ích mở rộng', 'Administrar extensiones instaladas', 'Gerenciar extensões instaladas', 'Управление расширениями', 'Gérer les extensions installées', 'Installierte Erweiterungen verwalten'),
   refresh: _('刷新', 'Refresh', '重新整理', '更新', '새로고침', 'Làm mới', 'Actualizar', 'Atualizar', 'Обновить', 'Actualiser', 'Aktualisieren'),
   loading: _('正在加载扩展列表…', 'Loading extensions…', '正在載入擴充列表…', '拡張を読み込み中…', '확장 로딩 중…', 'Đang tải…', 'Cargando…', 'Carregando…', 'Загрузка…', 'Chargement…', 'Laden…'),

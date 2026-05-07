@@ -842,7 +842,7 @@ pub fn write_openclaw_config(config: Value) -> Result<(), String> {
 
 const CALIBRATION_RESET_INHERIT_KEYS: &[&str] = &[
     "agents", "auth", "bindings", "browser", "channels", "commands", "env", "hooks", "models",
-    "plugins", "session", "skills", "wizard",
+    "output", "plugins", "session", "skills", "wizard",
 ];
 
 fn calibration_required_origins() -> Vec<String> {
@@ -1017,6 +1017,7 @@ fn build_calibration_baseline() -> Value {
         "agents": {
             "defaults": {
                 "workspace": calibration_default_workspace(),
+                "tools": { "profile": "full" },
             },
             "list": [],
         },
@@ -1031,6 +1032,12 @@ fn build_calibration_baseline() -> Value {
         "plugins": {},
         "session": { "dmScope": "per-channel-peer" },
         "skills": { "entries": {} },
+        "output": {
+            "format": "markdown",
+        },
+        "approvals": {
+            "exec": { "enabled": false },
+        },
         "tools": {
             "profile": "full",
             "sessions": { "visibility": "all" },
@@ -1136,6 +1143,12 @@ fn normalize_calibrated_config(mut config: Value) -> Value {
                 .unwrap_or(false)
             {
                 defaults_obj.insert("workspace".into(), Value::String(default_workspace));
+            }
+            let defaults_tools = defaults_obj.entry("tools").or_insert_with(|| json!({}));
+            if let Some(dt) = defaults_tools.as_object_mut() {
+                if !dt.get("profile").and_then(|v| v.as_str()).map(|v| !v.trim().is_empty()).unwrap_or(false) {
+                    dt.insert("profile".into(), Value::String("full".into()));
+                }
             }
         }
         let list = agents_obj.entry("list").or_insert_with(|| json!([]));
@@ -6512,5 +6525,32 @@ pub fn configure_git_https() -> Result<String, String> {
 pub fn invalidate_path_cache() -> Result<(), String> {
     super::refresh_enhanced_path();
     crate::commands::service::invalidate_cli_detection_cache();
+    Ok(())
+}
+
+/// 在系统文件管理器中打开指定路径
+#[tauri::command]
+pub fn open_in_file_manager(path: String) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| format!("Failed to open folder: {}", e))?;
+    }
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("explorer")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| format!("Failed to open folder: {}", e))?;
+    }
+    #[cfg(target_os = "linux")]
+    {
+        std::process::Command::new("xdg-open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| format!("Failed to open folder: {}", e))?;
+    }
     Ok(())
 }

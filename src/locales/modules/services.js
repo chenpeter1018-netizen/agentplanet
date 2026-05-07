@@ -1,8 +1,8 @@
 import { _ } from '../helper.js'
 
 export default {
-  title: _('服务管理', 'Services', '服務管理', 'サービス管理', '서비스 관리', 'Quản lý dịch vụ', 'Gestión de servicios', 'Gestão de serviços', 'Управление сервисами', 'Gestion des services', 'Dienstverwaltung'),
-  desc: _('管理 OpenClaw 服务、检查更新、配置备份', 'Manage OpenClaw services, check updates, config backups', '管理 OpenClaw 服務、檢查更新、設定備份', 'OpenClaw サービスの起動・停止・監視', 'OpenClaw 서비스 시작·중지·모니터링', 'Khởi động, dừng và giám sát dịch vụ OpenClaw', 'Iniciar, detener y monitorear servicios OpenClaw', 'Iniciar, parar e monitorar serviços OpenClaw', 'Запуск, остановка и мониторинг сервисов OpenClaw', 'Démarrer, arrêter et surveiller les services OpenClaw', 'OpenClaw-Dienste starten, stoppen und überwachen'),
+  title: _('引擎管理', 'Engines', '引擎管理', 'エンジン管理', '엔진 관리', 'Quản lý engine', 'Gestión de motores', 'Gestão de motores', 'Управление движками', 'Gestion des moteurs', 'Engine-Verwaltung'),
+  desc: _('管理 OpenClaw 引擎、检查更新、配置备份', 'Manage OpenClaw engines, check updates, config backups', '管理 OpenClaw 引擎、檢查更新、設定備份', 'OpenClaw エンジンの起動・停止・監視', 'OpenClaw 엔진 시작·중지·모니터링', 'Khởi động, dừng và giám sát engine OpenClaw', 'Iniciar, detener y monitorear motores OpenClaw', 'Iniciar, parar e monitorar motores OpenClaw', 'Запуск, остановка и мониторинг движков OpenClaw', 'Démarrer, arrêter et surveiller les moteurs OpenClaw', 'OpenClaw-Engines starten, stoppen und überwachen'),
   start: _('启动', 'Start', '啟動', '起動', '시작', 'Khởi động', 'Iniciar', 'Iniciar', 'Запустить', 'Démarrer', 'Starten'),
   stop: _('停止', 'Stop', '', '停止', '중지', 'Dừng', 'Detener', 'Parar', 'Остановить', 'Arrêter', 'Stoppen'),
   restart: _('重启', 'Restart', '重啟', '再起動', '재시작', 'Khởi động lại', 'Reiniciar', 'Reiniciar', 'Перезапустить', 'Redémarrer', 'Neustarten'),
@@ -188,4 +188,9 @@ export default {
   cleanupConfirmUninstallConfig: _('确定要卸载所有 OpenClaw 并删除配置目录吗？\n⚠️ 这将删除所有配置、Agent 数据和会话记录，无法恢复！', 'Uninstall all OpenClaw AND delete config directory?\n⚠️ This will delete all config, agent data, and session history permanently!', '確定要卸載所有 OpenClaw 並刪除設定目錄嗎？\n⚠️ 這將刪除所有設定、Agent 資料和會話記錄，無法恢復！'),
   cleanupUninstalling: _('正在卸载，请稍候...', 'Uninstalling, please wait...', '正在卸載，請稍候...'),
   cleanupUninstallFailed: _('卸载失败', 'Uninstall failed', '卸載失敗'),
+
+  // 三分区折叠标题
+  sectionRuntimeControl: _('运行控制', 'Runtime Control', '運行控制', '実行制御', '실행 제어', 'Kiểm soát thời gian chạy', 'Control de ejecución', 'Controle de execução', 'Управление запуском', 'Contrôle d\'exécution', 'Laufzeitsteuerung'),
+  sectionEnvConfig: _('环境配置', 'Environment Config', '環境配置', '環境設定', '환경 설정', 'Cấu hình môi trường', 'Configuración del entorno', 'Configuração do ambiente', 'Конфигурация среды', 'Configuration de l\'environnement', 'Umgebungskonfiguration'),
+  sectionConfigMgmt: _('配置管理', 'Config Management', '配置管理', '設定管理', '설정 관리', 'Quản lý cấu hình', 'Gestión de configuración', 'Gerenciamento de configuração', 'Управление конфигурацией', 'Gestion de la configuration', 'Konfigurationsverwaltung'),
 }

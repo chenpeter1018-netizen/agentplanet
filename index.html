@@ -16,6 +16,9 @@
       font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
       transition: opacity .4s ease, visibility .4s ease;
       animation: sp-fade-in .4s ease;
+    .sp-simple { font-size: 18px; font-weight: 600; position: relative; z-index: 2; animation: sp-pulse 2s ease-in-out infinite; }
+    @keyframes sp-pulse { 0%,100%{opacity:.6}50%{opacity:1} }
+    @media (prefers-color-scheme: dark) { .sp-simple { color: #F4F4F5; } }
     }
     @keyframes sp-fade-in { from { opacity: 0; } to { opacity: 1; } }
     @media (prefers-color-scheme: dark) { #splash { background: #09090B; color: #F4F4F5; } }
@@ -249,47 +252,7 @@
 <body>
   <!-- 启动加载屏 · Boot Manifest，双语（zh-CN / en，默认中文） -->
   <div id="splash">
-    <div class="sp-panel" role="status" aria-live="polite">
-      <div class="sp-head">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="4 17 10 11 4 5"/>
-          <line x1="12" y1="19" x2="20" y2="19"/>
-        </svg>
-        <span class="sp-name">Agent Planet</span>
-        <span class="sp-version" data-i18n="version">多引擎</span>
-      </div>
-      <div class="sp-steps">
-        <div class="sp-step is-active">
-          <svg class="sp-tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-          <span data-i18n="step.frontend">前端模块已就绪</span>
-        </div>
-        <div class="sp-step">
-          <svg class="sp-tick sp-tick--indigo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-          <span data-i18n="step.openclaw">引擎 · openclaw</span>
-        </div>
-        <div class="sp-step">
-          <svg class="sp-tick sp-tick--gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-          <span data-i18n="step.hermes">引擎 · hermes</span>
-        </div>
-        <div class="sp-step is-active">
-          <span class="sp-spinner" aria-hidden="true"></span>
-          <span data-i18n="step.preparing">正在准备工作空间…</span>
-        </div>
-      </div>
-      <div class="sp-divider"></div>
-      <div class="sp-phase" data-i18n="phase.boot">启动</div>
-      <div class="sp-status" data-i18n="status.boot">正在加载前端资源，请稍候…</div>
-      <div class="sp-diagnostics" hidden></div>
-      <div class="sp-actions" hidden></div>
-      <div class="sp-footer">
-        <span data-i18n="footer.left">启动 · 多引擎</span>
-        <a href="https://claw.qt.cool" target="_blank" rel="noopener">claw.qt.cool</a>
-      </div>
-    </div>
-    <div id="sp-lang" role="group" aria-label="language">
-      <button type="button" data-lang="zh-CN">中文</button>
-      <button type="button" data-lang="en">EN</button>
-    </div>
+    <div class="sp-simple">🤖 页面加载中……</div>
   </div>
   <script>
   (function () {

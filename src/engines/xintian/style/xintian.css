@@ -898,17 +898,12 @@
  * the landing page's mood.
  * ========================================================================== */
 
-/* Swap the hard-coded Agent Planet claw icon for the xintian hexagon logo.
-   The <img src="/images/logo.png"> is hard-coded in sidebar.js, so we
-   hide it and paint the new logo on the surrounding .sidebar-logo box. */
-body[data-active-engine="xintian"] .sidebar-logo {
-  background-image: url('/images/xintian/logo-icon-64.png');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  background-color: transparent;
+/* Swap the Agent Planet logo for the xintian hexagon logo */
+body[data-active-engine="xintian"] .sidebar-logo-full img {
+  content: url('/images/xintian/logo-icon-64.png');
+  max-width: 64px;
+  margin: 0 auto;
 }
-body[data-active-engine="xintian"] .sidebar-logo img { visibility: hidden; }
 
 /* Sidebar base + header — warm cream paper feel */
 body[data-active-engine="xintian"] #sidebar {
@@ -917,14 +912,7 @@ body[data-active-engine="xintian"] #sidebar {
 }
 body[data-active-engine="xintian"] .sidebar-header {
   border-bottom: 1px solid rgba(27, 20, 16, 0.06);
-  padding: 14px 16px;
-}
-body[data-active-engine="xintian"] .sidebar-title {
-  font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
-  font-weight: 500;
-  font-size: 17px;
-  letter-spacing: 0.005em;
-  color: #1B1410;
+  padding: 14px 6px;
 }
 body[data-active-engine="xintian"] .sidebar-collapse-btn,
 body[data-active-engine="xintian"] .sidebar-close-btn {
@@ -1129,9 +1117,6 @@ body[data-active-engine="xintian"] .sidebar-version { color: #A99A8B; }
 [data-theme="dark"] body[data-active-engine="xintian"] .sidebar-header {
   border-bottom-color: rgba(255, 244, 230, 0.06);
 }
-[data-theme="dark"] body[data-active-engine="xintian"] .sidebar-title {
-  color: #FFF4E6;
-}
 [data-theme="dark"] body[data-active-engine="xintian"] .engine-switcher {
   border-bottom-color: rgba(255, 244, 230, 0.06);
 }
@@ -1208,6 +1193,8 @@ body[data-active-engine="xintian"] .sidebar-version { color: #A99A8B; }
   color: #8A7560;
 }
 [data-theme="dark"] body[data-active-engine="xintian"] .sidebar-link:hover { color: #FB923C; }
-[data-theme="dark"] body[data-active-engine="xintian"] .sidebar-logo {
-  background-image: url('/images/xintian/logo-icon-128.png');
+[data-theme="dark"] body[data-active-engine="xintian"] .sidebar-logo-full img {
+  content: url('/images/xintian/logo-icon-128.png');
+  max-width: 64px;
+  margin: 0 auto;
 }

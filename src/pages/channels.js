@@ -16,6 +16,7 @@ const PLATFORM_REGISTRY = {
   qqbot: {
     label: t('channels.qqbotLabel'),
     iconName: 'message-square',
+    imgPath: '/qq.png',
     desc: t('channels.qqbotDesc'),
     guide: [
       t('channels.qqbotGuide1'),
@@ -36,6 +37,7 @@ const PLATFORM_REGISTRY = {
   dingtalk: {
     label: t('channels.dingtalkLabel'),
     iconName: 'message-square',
+    imgPath: '/dingding.png',
     desc: t('channels.dingtalkDesc'),
     guide: [
       t('channels.dingtalkGuide1'),
@@ -57,6 +59,7 @@ const PLATFORM_REGISTRY = {
   feishu: {
     label: t('channels.feishuLabel'),
     iconName: 'message-square',
+    imgPath: '/feishu.png',
     desc: t('channels.feishuDesc'),
     guide: [
       t('channels.feishuGuide1'),
@@ -86,6 +89,7 @@ const PLATFORM_REGISTRY = {
   telegram: {
     label: 'Telegram',
     iconName: 'send',
+    imgPath: '/Telegram.png',
     desc: t('channels.telegramDesc'),
     guide: [
       t('channels.telegramGuide1'),
@@ -100,60 +104,10 @@ const PLATFORM_REGISTRY = {
     configKey: 'telegram',
     pairingChannel: 'telegram',
   },
-  discord: {
-    label: 'Discord',
-    iconName: 'hash',
-    desc: t('channels.discordDesc'),
-    guide: [
-      t('channels.discordGuide1'),
-      t('channels.discordGuide2'),
-      t('channels.discordGuide3'),
-      t('channels.discordGuide4'),
-    ],
-    guideFooter: t('channels.discordGuideFooter'),
-    fields: [
-      { key: 'token', label: 'Bot Token', placeholder: 'MTExxxxxxxxx.Gxxxxxx.xxxxxxxx', secret: true, required: true },
-    ],
-    configKey: 'discord',
-    pairingChannel: 'discord',
-  },
-  slack: {
-    label: 'Slack',
-    iconName: 'hash',
-    desc: t('channels.slackDesc'),
-    guide: [
-      t('channels.slackGuide1'),
-      t('channels.slackGuide2'),
-      t('channels.slackGuide3'),
-      t('channels.slackGuide4'),
-      t('channels.slackGuide5'),
-    ],
-    guideFooter: t('channels.slackGuideFooter'),
-    fields: [
-      {
-        key: 'mode', label: t('channels.modeLabel'), type: 'select', required: true,
-        options: [
-          { value: 'socket', label: t('channels.slackSocketMode') },
-          { value: 'http', label: t('channels.slackHttpMode') },
-        ],
-      },
-      { key: 'botToken', label: 'Bot Token', placeholder: 'xoxb-xxxxxxxxxxxx', secret: true, required: true },
-      { key: 'appToken', label: 'App Token', placeholder: 'xapp-xxxxxxxxxxxx', secret: true, requiredWhen: { mode: 'socket' }, hint: t('channels.slackAppTokenHint') },
-      { key: 'signingSecret', label: 'Signing Secret', placeholder: t('channels.slackSigningSecretPh'), secret: true, requiredWhen: { mode: 'http' }, hint: t('channels.slackSigningSecretHint') },
-      { key: 'teamId', label: 'Team ID', placeholder: t('channels.slackTeamIdPh'), required: false },
-      { key: 'webhookPath', label: 'Webhook Path', placeholder: t('channels.slackWebhookPathPh'), required: false },
-      { key: 'dmPolicy', label: t('channels.dmPolicy'), type: 'select', options: [{ value: '', label: t('channels.policyDefault') }, { value: 'allow', label: t('channels.dmAllow') }, { value: 'deny', label: t('channels.dmDeny') }], required: false },
-      { key: 'groupPolicy', label: t('channels.groupPolicy'), type: 'select', options: [{ value: '', label: t('channels.policyDefault') }, { value: 'all', label: t('channels.groupAllChannels') }, { value: 'mentioned', label: t('channels.groupMentionOnly') }, { value: 'allowlist', label: t('channels.groupAllowlist') }], required: false },
-      { key: 'allowFrom', label: 'Allow From', placeholder: t('channels.allowFromPh'), required: false, hint: t('channels.allowFromHint') },
-    ],
-    configKey: 'slack',
-    pairingChannel: 'slack',
-  },
-  // WhatsApp 已移除：上游插件运行时未加载，web.login.start 返回 "not available"
-  // 等上游修复后可重新启用
   weixin: {
     label: t('channels.weixinLabel'),
     iconName: 'message-circle',
+    imgPath: '/wechat.png',
     desc: t('channels.weixinDesc'),
     guide: [
       t('channels.weixinGuide1'),
@@ -171,78 +125,6 @@ const PLATFORM_REGISTRY = {
     configKey: 'openclaw-weixin',
     panelSupport: 'action-only',
   },
-  msteams: {
-    label: 'Microsoft Teams',
-    iconName: 'users',
-    desc: t('channels.msteamsDesc'),
-    guide: [
-      t('channels.msteamsGuide1'),
-      t('channels.msteamsGuide2'),
-      t('channels.msteamsGuide3'),
-      t('channels.msteamsGuide4'),
-    ],
-    guideFooter: t('channels.msteamsGuideFooter'),
-    fields: [
-      { key: 'appId', label: 'App ID', placeholder: 'Azure AD Application ID', required: true },
-      { key: 'appPassword', label: 'App Password', placeholder: 'Azure AD Client Secret', secret: true, required: true },
-      { key: 'tenantId', label: 'Tenant ID', placeholder: t('channels.msteamsTenantIdPh'), required: false },
-      { key: 'botEndpoint', label: 'Bot Endpoint', placeholder: 'https://example.com/api/teams/messages', required: false },
-      { key: 'webhookPath', label: 'Webhook Path', placeholder: '/msteams/messages', required: false },
-      { key: 'dmPolicy', label: t('channels.dmPolicy'), type: 'select', options: [{ value: '', label: t('channels.policyDefault') }, { value: 'allow', label: t('channels.dmAllow') }, { value: 'deny', label: t('channels.dmDeny') }], required: false },
-      { key: 'groupPolicy', label: t('channels.groupPolicy'), type: 'select', options: [{ value: '', label: t('channels.policyDefault') }, { value: 'all', label: t('channels.groupAllTeams') }, { value: 'mentioned', label: t('channels.groupMentionOnly') }, { value: 'allowlist', label: t('channels.groupAllowlist') }], required: false },
-      { key: 'allowFrom', label: 'Allow From', placeholder: t('channels.msteamsAllowFromPh'), required: false },
-    ],
-    configKey: 'msteams',
-    pluginRequired: '@openclaw/msteams@latest',
-    pluginId: 'msteams',
-  },
-  signal: {
-    label: 'Signal',
-    iconName: 'shield',
-    desc: t('channels.signalDesc'),
-    guide: [
-      t('channels.signalGuide1'),
-      t('channels.signalGuide2'),
-      t('channels.signalGuide3'),
-    ],
-    guideFooter: t('channels.signalGuideFooter'),
-    fields: [
-      { key: 'account', label: t('channels.signalAccountLabel'), placeholder: t('channels.signalAccountPh'), required: true },
-      { key: 'cliPath', label: t('channels.signalCliPathLabel'), placeholder: t('channels.signalCliPathPh'), required: false },
-      { key: 'httpUrl', label: 'HTTP URL', placeholder: t('channels.optionalEg', { example: 'http://127.0.0.1:8080' }), required: false },
-      { key: 'httpHost', label: 'HTTP Host', placeholder: t('channels.optionalEg', { example: '127.0.0.1' }), required: false },
-      { key: 'httpPort', label: 'HTTP Port', placeholder: t('channels.optionalEg', { example: '8080' }), required: false },
-      { key: 'dmPolicy', label: t('channels.dmPolicy'), type: 'select', options: [{ value: '', label: t('channels.policyDefault') }, { value: 'allow', label: t('channels.dmAllow') }, { value: 'deny', label: t('channels.dmDeny') }], required: false },
-      { key: 'groupPolicy', label: t('channels.groupPolicy'), type: 'select', options: [{ value: '', label: t('channels.policyDefault') }, { value: 'all', label: t('channels.groupAllGroups') }, { value: 'mentioned', label: t('channels.groupMentionBot') }, { value: 'allowlist', label: t('channels.groupAllowlist') }], required: false },
-      { key: 'allowFrom', label: 'Allow From', placeholder: t('channels.signalAllowFromPh'), required: false },
-    ],
-    configKey: 'signal',
-  },
-  matrix: {
-    label: 'Matrix',
-    iconName: 'globe',
-    desc: t('channels.matrixDesc'),
-    guide: [
-      t('channels.matrixGuide1'),
-      t('channels.matrixGuide2'),
-      t('channels.matrixGuide3'),
-    ],
-    guideFooter: t('channels.matrixGuideFooter'),
-    fields: [
-      { key: 'homeserver', label: 'Homeserver', placeholder: 'https://matrix.org', required: true },
-      { key: 'accessToken', label: 'Access Token', placeholder: 'syt_xxxxx', secret: true, required: false, hint: t('channels.matrixAccessTokenHint') },
-      { key: 'userId', label: 'User ID', placeholder: '@bot:matrix.org', required: false },
-      { key: 'password', label: 'Password', placeholder: t('channels.matrixPasswordPh'), secret: true, required: false },
-      { key: 'deviceId', label: 'Device ID', placeholder: t('channels.optionalEg', { example: 'CLAWPANEL' }), required: false },
-      { key: 'e2ee', label: 'E2EE', type: 'select', options: [{ value: '', label: t('channels.policyDefault') }, { value: 'true', label: t('channels.enable') }, { value: 'false', label: t('channels.disable') }], required: false },
-      { key: 'dmPolicy', label: t('channels.dmPolicy'), type: 'select', options: [{ value: '', label: t('channels.policyDefault') }, { value: 'allow', label: t('channels.dmAllow') }, { value: 'deny', label: t('channels.dmDeny') }], required: false },
-      { key: 'groupPolicy', label: t('channels.groupPolicy'), type: 'select', options: [{ value: '', label: t('channels.policyDefault') }, { value: 'all', label: t('channels.groupAllRooms') }, { value: 'mentioned', label: t('channels.groupMentionBot') }, { value: 'allowlist', label: t('channels.groupAllowlist') }], required: false },
-      { key: 'allowFrom', label: 'Allow From', placeholder: t('channels.matrixAllowFromPh'), required: false },
-    ],
-    configKey: 'matrix',
-    pluginRequired: '@openclaw/matrix@latest',
-    pluginId: 'matrix',
-  },
 }
 
 function parseChannelsRouteIntent() {
@@ -255,14 +137,16 @@ function parseChannelsRouteIntent() {
 }
 
 function activateChannelsPageTab(page, key = 'channels') {
-  const activeKey = key === 'agents' ? 'agents' : 'channels'
+  const activeKey = key === 'agents' ? 'agents' : key === 'routeMap' ? 'routeMap' : 'channels'
   page.querySelectorAll('#channels-page-tabs .tab').forEach(tab => {
     tab.classList.toggle('active', tab.dataset.chTab === activeKey)
   })
   const listEl = page.querySelector('#channels-panel-list')
   const agentsEl = page.querySelector('#channels-panel-agents')
+  const routeMapEl = page.querySelector('#channels-panel-routeMap')
   if (listEl) listEl.style.display = activeKey === 'channels' ? '' : 'none'
   if (agentsEl) agentsEl.style.display = activeKey === 'agents' ? '' : 'none'
+  if (routeMapEl) routeMapEl.style.display = activeKey === 'routeMap' ? '' : 'none'
 }
 
 // ── 页面生命周期 ──
@@ -279,6 +163,7 @@ export async function render() {
     <div class="tab-bar" id="channels-page-tabs">
       <div class="tab active" data-ch-tab="channels">${t('channels.tabChannels')}</div>
       <div class="tab" data-ch-tab="agents">${t('channels.tabAgents')}</div>
+      <div class="tab" data-ch-tab="routeMap">${t('routeMap.title')}</div>
     </div>
     <div id="channels-panel-list" class="channels-tab-panel">
       <div id="platforms-configured" style="margin-bottom:var(--space-lg)"></div>
@@ -290,6 +175,9 @@ export async function render() {
     <div id="channels-panel-agents" class="channels-tab-panel" style="display:none">
       <p class="form-hint" style="margin-bottom:var(--space-md)">${t('channels.agentBindHint')}</p>
       <div id="agents-bindings-root"></div>
+    </div>
+    <div id="channels-panel-routeMap" class="channels-tab-panel" style="display:none">
+      <div class="stat-card loading-placeholder" style="height:300px"></div>
     </div>
   `
 
@@ -308,12 +196,31 @@ export async function render() {
   return page
 }
 
+let _routeMapLoaded = false
+
 function bindChannelTabs(page) {
   page.querySelectorAll('#channels-page-tabs .tab').forEach(tab => {
     tab.addEventListener('click', () => {
       activateChannelsPageTab(page, tab.dataset.chTab)
+      if (tab.dataset.chTab === 'routeMap' && !_routeMapLoaded) {
+        _routeMapLoaded = true
+        loadRouteMapTab(page)
+      }
     })
   })
+}
+
+async function loadRouteMapTab(page) {
+  const container = page.querySelector('#channels-panel-routeMap')
+  if (!container) return
+  try {
+    const mod = await import('./route-map.js')
+    const routePage = await mod.render()
+    container.innerHTML = ''
+    container.appendChild(routePage)
+  } catch (e) {
+    container.innerHTML = `<div class="stat-card" style="padding:var(--space-xl);text-align:center;color:var(--error)">${t('channels.loadFailed')}: ${e.message || e}</div>`
+  }
 }
 
 export function cleanup() {}
@@ -402,7 +309,9 @@ function renderConfigured(page, state) {
         ${state.configured.map(p => {
           const reg = PLATFORM_REGISTRY[p.id]
           const label = platformLabel(p.id)
-          const ic = icon(reg?.iconName || 'radio', 22)
+          const ic = reg?.imgPath
+            ? `<img src="${reg.imgPath}" alt="${escapeAttr(label)}" style="width:auto;height:22px">`
+            : icon(reg?.iconName || 'radio', 22)
           const channelKey = getChannelBindingKey(p.id)
           const accounts = Array.isArray(p.accounts) ? p.accounts : []
           const hasAccounts = accounts.length > 0
@@ -739,9 +648,12 @@ function renderAvailable(page, state) {
 
   el.innerHTML = Object.entries(PLATFORM_REGISTRY).map(([pid, reg]) => {
     const done = configuredIds.has(pid)
+    const platformIcon = reg.imgPath
+      ? `<img src="${reg.imgPath}" alt="${escapeAttr(reg.label)}" style="width:auto;height:28px">`
+      : icon(reg.iconName, 28)
     return `
       <button class="platform-pick" data-pid="${pid}">
-        <span class="platform-emoji">${icon(reg.iconName, 28)}</span>
+        <span class="platform-emoji">${platformIcon}</span>
         <span class="platform-pick-name">${reg.label}</span>
         <span class="platform-pick-desc">${reg.desc}</span>
         ${reg.actions?.length ? `<span class="platform-pick-badge" style="color:var(--accent)">${t('channels.supportsActions')}</span>` : ''}

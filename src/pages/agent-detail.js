@@ -31,9 +31,12 @@ export async function render() {
 
   page.innerHTML = `
     <div class="page-header">
-      <div>
-        <a class="agent-back-link" href="#/agents">${t('agentDetail.back')}</a>
-        <h1 class="page-title" id="agent-detail-title">Agent: ${esc(agentId)}</h1>
+      <div style="display:flex;align-items:center;gap:14px">
+        <div class="agent-detail-avatar" id="agent-detail-avatar"></div>
+        <div>
+          <a class="agent-back-link" href="#/agents">${t('agentDetail.back')}</a>
+          <h1 class="page-title" id="agent-detail-title" style="margin:0">${esc(agentId)}</h1>
+        </div>
       </div>
     </div>
     <div class="tab-bar" id="agent-tabs">
@@ -78,11 +81,22 @@ async function loadDetail(page, state) {
     // 解析可用模型
     state.models = parseModelList(config)
     state.skillsCatalog = Array.isArray(skillsResp?.skills) ? skillsResp.skills : []
+    // 更新头像
+    const avatarEl = page.querySelector('#agent-detail-avatar')
+    if (avatarEl) {
+      const emoji = detail.identity?.emoji || ''
+      if (emoji && (emoji.startsWith('/') || emoji.startsWith('http'))) {
+        avatarEl.innerHTML = `<img class="agent-avatar" src="${esc(emoji)}" alt="${esc(name)}" style="width:64px;height:64px;border-radius:12px;object-fit:cover" />`
+      } else if (emoji) {
+        avatarEl.innerHTML = `<span style="font-size:48px;line-height:1">${esc(emoji)}</span>`
+      } else {
+        avatarEl.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32" style="color:var(--text-tertiary)"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`
+      }
+    }
     // 更新标题
     const title = page.querySelector('#agent-detail-title')
     const name = detail.identity?.name || detail.name || detail.id
-    const emoji = detail.identity?.emoji || ''
-    title.textContent = `${emoji} ${name}`.trim()
+    title.textContent = `${name}`.trim()
     if (detail.isDefault) {
       title.insertAdjacentHTML('beforeend', ` <span class="badge badge-success">${t('agentDetail.defaultAgent')}</span>`)
     }
@@ -382,7 +396,7 @@ function renderSkills(container, state) {
 }
 
 function renderSkillCard(skill, checked) {
-  const emoji = skill.emoji || '🧩'
+  const emoji = skill.emoji || '🛠️'
   const desc = skill.description || ''
   const eligible = skill.eligible !== false
   const disabled = skill.disabled === true

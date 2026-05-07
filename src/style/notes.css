@@ -1,0 +1,319 @@
+/* ── 笔记浮动按钮 ── */
+.notes-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9000;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent, #6366f1);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+  touch-action: none;
+}
+
+.notes-fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5);
+}
+
+.notes-fab.dragging {
+  transform: scale(1.1);
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.6);
+  cursor: grabbing;
+  opacity: 0.9;
+}
+
+.notes-fab svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ── 笔记面板 ── */
+.notes-panel {
+  position: fixed;
+  z-index: 9001;
+  width: 340px;
+  max-height: 420px;
+  background: var(--bg-primary, #fff);
+  border: 1px solid var(--border-primary, #e2e8f0);
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: notes-slide-up 0.2s ease-out;
+}
+
+@keyframes notes-slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.notes-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-secondary, #e2e8f0);
+  flex-shrink: 0;
+}
+
+.notes-panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notes-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.notes-btn-new,
+.notes-btn-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary, #94a3b8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.notes-btn-new:hover {
+  background: var(--bg-glass-hover, rgba(0,0,0,0.05));
+  color: var(--accent, #6366f1);
+}
+
+.notes-btn-close:hover {
+  background: var(--bg-glass-hover, rgba(0,0,0,0.05));
+  color: var(--text-primary);
+}
+
+.notes-btn-new svg,
+.notes-btn-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── 笔记输入区 ── */
+.notes-input-area {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-secondary, #e2e8f0);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notes-input {
+  width: 100%;
+  border: 1px solid var(--border-primary, #e2e8f0);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--bg-secondary, #f8fafc);
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.notes-input:focus {
+  border-color: var(--accent, #6366f1);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.12);
+}
+
+.notes-save-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent, #6366f1);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: opacity 0.15s;
+}
+
+.notes-save-btn:hover { opacity: 0.85; }
+
+/* ── 笔记列表 ── */
+.notes-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.notes-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-tertiary, #94a3b8);
+  font-size: 13px;
+}
+
+.notes-item {
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: 1px solid transparent;
+}
+
+.notes-item:hover {
+  background: var(--bg-secondary, #f1f5f9);
+  border-color: var(--border-secondary, #e2e8f0);
+}
+
+.notes-item + .notes-item {
+  margin-top: 4px;
+}
+
+.notes-item-content {
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.notes-item-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.notes-item-time {
+  font-size: 11px;
+  color: var(--text-tertiary, #94a3b8);
+}
+
+.notes-item-delete {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary, #94a3b8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.15s;
+}
+
+.notes-item:hover .notes-item-delete {
+  opacity: 1;
+}
+
+.notes-item-delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.notes-item-delete svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── 编辑 Modal ── */
+.notes-edit-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notes-edit-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+.notes-edit-card {
+  position: relative;
+  width: 90%;
+  max-width: 400px;
+  background: var(--bg-primary, #fff);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  animation: notes-slide-up 0.2s ease-out;
+}
+
+.notes-edit-textarea {
+  width: 100%;
+  border: 1px solid var(--border-primary, #e2e8f0);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--bg-secondary, #f8fafc);
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.notes-edit-textarea:focus {
+  border-color: var(--accent, #6366f1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.notes-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.notes-edit-cancel,
+.notes-edit-save {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+}
+
+.notes-edit-cancel {
+  background: var(--bg-secondary, #f1f5f9);
+  color: var(--text-secondary);
+}
+
+.notes-edit-cancel:hover {
+  background: var(--border-secondary, #e2e8f0);
+}
+
+.notes-edit-save {
+  background: var(--accent, #6366f1);
+  color: #fff;
+}
+
+.notes-edit-save:hover {
+  opacity: 0.9;
+}

@@ -24,7 +24,10 @@ export async function render() {
   page.innerHTML = `
     <div class="page-header">
       <h1 class="page-title">${t('ext.title')}</h1>
-      <p class="page-desc">${t('ext.desc')}</p>
+      <p class="page-desc" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <span>${t('ext.desc')}</span>
+        <a href="https://www.mcpworld.com/" target="_blank" rel="noopener" style="font-size:14px;font-weight:600;color:var(--accent);text-decoration:none;line-height:25px;white-space:nowrap">MCP 广场</a>
+      </p>
     </div>
     <div id="cftunnel-card" class="config-section">
       <div class="config-section-title">${t('ext.cftunnelTitle')}</div>

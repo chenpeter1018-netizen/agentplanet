@@ -60,42 +60,34 @@ export default {
         section: '',
         items: [
           { route: '/h/setup', label: t('sidebar.setup'), icon: 'setup' },
-          { route: '/assistant', label: t('sidebar.assistant'), icon: 'assistant' },
         ]
       }, {
         section: '',
         items: [
-          { route: '/settings', label: t('sidebar.settings'), icon: 'settings' },
+          { route: '/settings', label: t('sidebar.systemSettings'), icon: 'settings' },
           { route: '/about', label: t('sidebar.about'), icon: 'about' },
         ]
       }]
     }
     // 就绪后显示完整菜单
-    return [{
-      section: t('sidebar.sectionMonitor'),
-      items: [
-        { route: '/h/dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
-        { route: '/h/chat', label: t('sidebar.chat'), icon: 'chat' },
+    return [
+      { section: '', items: [
+        { route: '/h/chat', label: t('sidebar.aiChat'), icon: 'chat' },
         { route: '/h/sessions', label: t('sidebar.sessions'), icon: 'inbox' },
-        { route: '/h/logs', label: t('sidebar.logs'), icon: 'logs' },
-        { route: '/h/usage', label: t('sidebar.usage'), icon: 'bar-chart' },
-      ]
-    }, {
-      section: t('sidebar.sectionManage'),
-      items: [
+        { route: '/h/dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
+      ]},
+      { section: t('sidebar.sectionSkills'), collapsed: true, id: 'skills', items: [
         { route: '/h/skills', label: t('sidebar.skills'), icon: 'skills' },
+        { route: '/plugin-hub', label: t('sidebar.pluginHub'), icon: 'extensions' },
+      ]},
+      { section: t('sidebar.sectionData'), collapsed: true, id: 'data', items: [
+        { route: '/h/usage', label: t('sidebar.usage'), icon: 'bar-chart' },
         { route: '/h/memory', label: t('sidebar.memory'), icon: 'memory' },
-        { route: '/h/cron', label: t('sidebar.cron'), icon: 'clock' },
-        { route: '/h/extensions', label: t('sidebar.extensions'), icon: 'package' },
-      ]
-    }, {
-      section: '',
-      items: [
-        { route: '/assistant', label: t('sidebar.assistant'), icon: 'assistant' },
-        { route: '/settings', label: t('sidebar.settings'), icon: 'settings' },
+        { route: '/h/cron', label: t('sidebar.cronJobs'), icon: 'clock' },
+        { route: '/h/logs', label: t('sidebar.logs'), icon: 'logs' },
         { route: '/about', label: t('sidebar.about'), icon: 'about' },
-      ]
-    }]
+      ]},
+    ]
   },
 
   getRoutes() {

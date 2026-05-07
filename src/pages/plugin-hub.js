@@ -196,7 +196,7 @@ function renderPluginList(page) {
 }
 
 function renderPluginCard(p) {
-  const icon = PLUGIN_ICONS[p.id.toLowerCase()] || '🧩'
+  const icon = PLUGIN_ICONS[p.id.toLowerCase()] || '🛠️'
   const statusClass = p.enabled ? 'plugin-status-enabled' : (p.installed ? 'plugin-status-disabled' : 'plugin-status-missing')
   const statusText = p.enabled ? t('extensions.enabled') : (p.installed ? t('extensions.disabled') : t('extensions.notInstalled'))
   const badges = []

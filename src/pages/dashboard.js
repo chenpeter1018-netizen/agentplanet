@@ -20,7 +20,6 @@ export async function render() {
   page.innerHTML = `
     <div class="page-header">
       <h1 class="page-title">${t('dashboard.title')}</h1>
-      <p class="page-desc">${t('dashboard.desc')}</p>
     </div>
     <div class="stat-cards" id="stat-cards">
       <div class="stat-card loading-placeholder"></div>
@@ -35,10 +34,6 @@ export async function render() {
       <button class="btn btn-secondary" id="btn-restart-gw">${t('dashboard.restartGw')}</button>
       <button class="btn btn-secondary" id="btn-check-update">${t('dashboard.checkUpdate')}</button>
       <button class="btn btn-secondary" id="btn-create-backup">${t('dashboard.createBackup')}</button>
-    </div>
-    <div class="config-section">
-      <div class="config-section-title">${t('dashboard.recentLogs')}</div>
-      <div class="log-viewer" id="recent-logs" style="max-height:300px"></div>
     </div>
   `
 
@@ -140,8 +135,6 @@ async function _loadDashboardDataInner(page, fullRefresh) {
     withTimeout(api.listBackups(), 10000),
     withTimeout(api.listConfiguredPlatforms(), 10000).catch(() => []),
   ])
-  const logsP = api.readLogTail('gateway', 20).catch(() => '')
-
   // 第一波：服务状态 + 配置 + 版本 → 立即渲染统计卡片
   const [servicesRes, configRes, versionRes, panelConfigRes] = await coreP
   const services = servicesRes.status === 'fulfilled' ? servicesRes.value : []
@@ -211,10 +204,6 @@ async function _loadDashboardDataInner(page, fullRefresh) {
 
   renderStatCards(page, services, version, agents, config, panelConfig)
   renderOverview(page, services, mcpConfig, backups, config, agents, statusSummary, channels)
-
-  // 第三波：日志（最低优先级）
-  const logs = await logsP
-  renderLogs(page, logs)
 
   _dashboardInitialized = true
 }
@@ -286,24 +275,10 @@ function renderStatCards(page, services, version, agents, config, panelConfig) {
     </div>
     <div class="stat-card">
       <div class="stat-card-header">
-        <span class="stat-card-label">${t('dashboard.agentFleet')}</span>
-      </div>
-      <div class="stat-card-value">${agents.length} ${t('common.unit')}</div>
-      <div class="stat-card-meta">${t('dashboard.defaultAgent')}: ${defaultAgent}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-header">
         <span class="stat-card-label">${t('dashboard.modelPool')}</span>
       </div>
       <div class="stat-card-value">${modelCount} ${t('common.unit')}</div>
       <div class="stat-card-meta">${t('dashboard.basedOnProviders', { count: providerCount })}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-header">
-        <span class="stat-card-label">${t('dashboard.baseServices')}</span>
-      </div>
-      <div class="stat-card-value">${runningCount}/${services.length}</div>
-      <div class="stat-card-meta">${t('common.survivalRate')} ${services.length ? Math.round(runningCount / services.length * 100) : 0}%</div>
     </div>
     <div class="stat-card stat-card-clickable" id="card-control-ui" title="${t('dashboard.controlUIDesc')}">
       <div class="stat-card-header">
@@ -398,27 +373,6 @@ function renderOverview(page, services, mcpConfig, backups, config, agents, stat
           </div>
         </div>
 
-        <div class="overview-card" data-nav="/agents">
-          <div class="overview-card-icon" style="color:var(--success)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-          </div>
-          <div class="overview-card-body">
-            <div class="overview-card-title">${t('dashboard.agentFleet')}</div>
-            <div class="overview-card-value">${agents.length}</div>
-            <div class="overview-card-meta">${t('dashboard.workspaceCount', { count: agents.filter(a => a.workspace).length })}</div>
-          </div>
-        </div>
-
-        <div class="overview-card">
-          <div class="overview-card-icon" style="color:var(--text-tertiary)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </div>
-          <div class="overview-card-body">
-            <div class="overview-card-title">${t('dashboard.runtimeVersion')}</div>
-            <div class="overview-card-value" style="font-size:var(--font-size-sm)">${runtimeVer || lastUpdate}</div>
-            <div class="overview-card-meta">${runtimeMeta}</div>
-          </div>
-        </div>
       </div>
       ${renderWsStatus()}
       ${renderChannelsOverview(channels)}
@@ -522,42 +476,6 @@ function renderChannelsOverview(channels) {
       <div class="config-section-title">${t('dashboard.connectedChannels')} <span style="font-weight:normal;color:var(--text-tertiary);font-size:var(--font-size-xs)">${channels.length}</span></div>
       <div style="display:flex;flex-wrap:wrap;gap:8px">${items.join('')}</div>
     </div>`
-}
-
-function parseLogLine(line) {
-  // 常见日志格式: [2024-01-15 14:30:25] [INFO] message 或 2024-01-15T14:30:25 INFO message
-  const m = line.match(/^[\[（]?(\d{4}[-/]\d{2}[-/]\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?)\]?\s*[\[（]?\s*(DEBUG|INFO|WARN(?:ING)?|ERROR|FATAL|TRACE)\s*[\]）]?\s*(.*)$/i)
-  if (m) return { time: m[1].replace('T', ' ').replace(/\.\d+$/, ''), level: m[2].toUpperCase().replace('WARNING', 'WARN'), msg: m[3] }
-  // 简单 level 前缀: INFO: xxx / [ERROR] xxx
-  const m2 = line.match(/^[\[（]?\s*(DEBUG|INFO|WARN(?:ING)?|ERROR|FATAL|TRACE)\s*[\]）:]\s*(.*)$/i)
-  if (m2) return { time: '', level: m2[1].toUpperCase().replace('WARNING', 'WARN'), msg: m2[2] }
-  return { time: '', level: '', msg: line }
-}
-
-const LOG_LEVEL_STYLE = {
-  ERROR: 'background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.2)',
-  FATAL: 'background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.2)',
-  WARN: 'background:rgba(234,179,8,0.12);color:#ca8a04;border:1px solid rgba(234,179,8,0.2)',
-  INFO: 'background:rgba(59,130,246,0.10);color:#3b82f6;border:1px solid rgba(59,130,246,0.15)',
-  DEBUG: 'background:rgba(148,163,184,0.10);color:#94a3b8;border:1px solid rgba(148,163,184,0.15)',
-  TRACE: 'background:rgba(148,163,184,0.08);color:#94a3b8;border:1px solid rgba(148,163,184,0.1)',
-}
-
-function renderLogs(page, logs) {
-  const logsEl = page.querySelector('#recent-logs')
-  if (!logs) {
-    logsEl.innerHTML = '<div style="color:var(--text-tertiary);padding:12px">' + t('dashboard.noLogs') + '</div>'
-    return
-  }
-  const lines = logs.trim().split('\n')
-  logsEl.innerHTML = lines.map(l => {
-    const parsed = parseLogLine(l)
-    if (!parsed.level) return `<div class="log-line">${escapeHtml(l)}</div>`
-    const badge = `<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:0.5px;${LOG_LEVEL_STYLE[parsed.level] || ''}">${parsed.level}</span>`
-    const time = parsed.time ? `<span style="color:var(--text-tertiary);font-size:11px;opacity:0.7;margin-right:4px">${escapeHtml(parsed.time)}</span>` : ''
-    return `<div class="log-line" style="display:flex;align-items:center;gap:6px">${time}${badge}<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${escapeHtml(parsed.msg)}</span></div>`
-  }).join('')
-  logsEl.scrollTop = logsEl.scrollHeight
 }
 
 function bindActions(page) {

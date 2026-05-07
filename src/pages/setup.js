@@ -82,17 +82,9 @@ export async function render() {
     <div class="setup-shell">
       <div class="setup-hero">
         <div class="setup-hero-brand">
-          <img src="/images/logo-brand.png" alt="Agent Planet" class="setup-hero-logo">
           <div class="setup-hero-copy">
             <h1 class="setup-hero-title">${t('setup.headerTitle')}</h1>
             <p class="setup-hero-desc">${t('setup.headerDesc')}</p>
-            <div class="setup-hero-site-row">
-              <a class="setup-hero-site-link" href="https://claw.qt.cool" target="_blank" rel="noopener noreferrer" title="https://claw.qt.cool">
-                ${icon('link', 14)}
-                <span class="setup-hero-site-label">${t('setup.officialWebsite')}</span>
-                <span class="setup-hero-site-value">claw.qt.cool</span>
-              </a>
-            </div>
           </div>
         </div>
         <div class="setup-hero-actions">
@@ -218,15 +210,13 @@ async function runDetect(page) {
   const nodeOk = node.installed
   const allOk = nodeOk && cliOk && config.installed
 
-  // 全部通过 → 自动跳转到仪表盘
+  // 全部通过 → 展示结果，提供手动跳转按钮
   if (allOk) {
     const engine = getActiveEngine()
     if (engine?.detect) await engine.detect()
-    window.location.hash = '/dashboard'
-    return
   }
 
-  renderSteps(page, { node, git, cliOk, config, version })
+  renderSteps(page, { node, git, cliOk, config, version, allOk })
 }
 
 function stepIcon(ok) {
@@ -234,11 +224,10 @@ function stepIcon(ok) {
   return `<span style="color:${color};font-weight:700;width:18px;display:inline-block">${ok ? '✓' : '✗'}</span>`
 }
 
-function renderSteps(page, { node, git, cliOk, config, version }) {
+function renderSteps(page, { node, git, cliOk, config, version, allOk }) {
   const stepsEl = page.querySelector('#setup-steps')
   const nodeOk = node.installed
   const gitOk = git?.installed || false
-  const allOk = nodeOk && cliOk && config.installed
   const nodeStatusMeta = nodeOk
     ? buildStatusMeta(node.version || t('setup.statusReady'), node.path)
     : t('setup.statusActionNeeded')
@@ -333,11 +322,7 @@ function renderSteps(page, { node, git, cliOk, config, version }) {
       ${cliOk
         ? `<p style="color:var(--success);font-size:var(--font-size-sm)">${t('setup.cliAvailable')}</p>
            ${renderDetectionHint(version?.cli_path, version?.cli_source ? openclawSourceLabel(version.cli_source) : '')}
-           ${version?.ahead_of_recommended && version?.recommended
-             ? `<div style="margin-top:8px;padding:8px 12px;background:var(--bg-tertiary);border-radius:var(--radius-sm);font-size:var(--font-size-xs);color:var(--warning,#f59e0b);line-height:1.6">
-                  ${t('setup.cliAheadWarning', { current: version.current || '', recommended: version.recommended })}
-                </div>`
-             : ''}`
+        `
         : renderInstallSection()
       }
     </div>
@@ -386,25 +371,6 @@ function renderSteps(page, { node, git, cliOk, config, version }) {
 
   // AI 助手入口
   html += `
-    <div class="config-section" style="text-align:left">
-      <div class="config-section-title" style="display:flex;align-items:center;gap:6px">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
-        ${t('setup.aiAssistant')}
-      </div>
-      <p style="color:var(--text-secondary);font-size:var(--font-size-sm);margin-bottom:var(--space-sm);line-height:1.5">
-        ${t('setup.aiAssistantDesc')}${!allOk ? t('setup.aiAssistantDescProblem') : ''}。
-      </p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-secondary btn-sm" id="btn-goto-assistant">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="margin-right:4px"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
-          ${t('setup.openAiAssistant')}
-        </button>
-        ${!allOk ? `<button class="btn btn-primary btn-sm" id="btn-ask-ai-help">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="margin-right:4px"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-          ${t('setup.askAiHelp')}
-        </button>` : ''}
-      </div>
-    </div>
   `
 
   html += `
@@ -422,7 +388,6 @@ function renderSteps(page, { node, git, cliOk, config, version }) {
       <div class="config-section" style="text-align:left;margin-top:var(--space-md)">
         <div class="config-section-title">${t('setup.nextStepsTitle')}</div>
         <div style="color:var(--text-secondary);font-size:var(--font-size-sm);line-height:1.7">
-          ${t('setup.nextStepsDesc')}
           <ol style="margin:8px 0 0 18px;padding:0">
             <li>${t('setup.nextStep1')}</li>
             <li>${t('setup.nextStep2')}</li>
@@ -436,6 +401,7 @@ function renderSteps(page, { node, git, cliOk, config, version }) {
         </div>
       </div>
       <div style="margin-top:var(--space-lg)">
+        ${allOk ? `<div style="text-align:center;color:var(--success);font-size:14px;font-weight:600;margin-bottom:12px">${t('setup.allReady')}</div>` : ''}
         <button class="btn btn-primary" id="btn-enter" style="min-width:200px">${t('setup.enterPanel')}</button>
       </div>
     `

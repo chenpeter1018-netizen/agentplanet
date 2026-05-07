@@ -90,5 +90,9 @@ export default {
   approvalsLoadingQueue: _('加载审批队列...', 'Loading approval queue...', '載入審批佇列...'),
   approvalsQueueEmpty: _('当前没有待处理的审批请求', 'No pending approval requests', '目前沒有待處理的審批請求'),
   approvalsGwNotReady: _('Gateway 未连接，无法加载审批队列', 'Gateway not connected, cannot load approval queue', 'Gateway 未連線，無法載入審批佇列'),
-  approvalsUnsupported: _('当前 Gateway 版本不支持审批队列查询，请升级到 OpenClaw 2026.4.9+', 'Approval queue requires OpenClaw 2026.4.9+', '目前 Gateway 版本不支援審批佇列查詢，請升級到 OpenClaw 2026.4.9+'),
+  approvalsUnsupported: _('当前 Gateway 版本不支持审批队列查询，请升级到 OpenClaw 2026.4.9+', 'Approval queue requires OpenClaw 2026.4.9+'),
+  markdownTitle: _('Markdown 渲染', 'Markdown Rendering'),
+  markdownHint: _('在回答消息的时候使用富文本更直观展示回答如：标题、加粗、列表、表格、代码块这些排版，全靠 Markdown 符号实现。', 'Use rich text in replies for formatting: headings, bold, lists, tables, code blocks — all powered by Markdown syntax.'),
+  markdownEnabled: _('已开启 Markdown 渲染', 'Markdown rendering enabled'),
+  markdownDisabled: _('已关闭 Markdown 渲染', 'Markdown rendering disabled'),
 }

@@ -36,17 +36,14 @@ export default {
   },
 
   getNavItems() {
-    return [{
-      section: '',
-      items: [
+    return [
+      { section: '', items: [
         { route: '/x/landing', label: t('engine.xintianNavHome'), icon: 'assistant' },
-      ],
-    }, {
-      section: '',
-      items: [
+      ]},
+      { section: '', items: [
         { route: '/about', label: t('sidebar.about'), icon: 'about' },
-      ],
-    }]
+      ]},
+    ]
   },
 
   getRoutes() {

@@ -2655,4 +2655,91 @@
 /* === Hermes Memory Page ===
    编辑改版后 memory.js 用 .hm-mem-overview + .hm-mem-panel 自然堆叠（见
    engines/hermes/style/hermes.css）。原来 .hm-memory-* 那一坨规则已无任何
+
+/* === 数字员工页面 === */
+.de-tabs { gap: 0; }
+.de-tab {
+  padding: 8px 20px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+.de-tab:hover { color: var(--text-secondary); }
+.de-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* 员工市场 */
+.market-hint {
+  font-size: 13px; color: var(--text-tertiary);
+  margin-bottom: 20px;
+}
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.market-card {
+  background: var(--bg-card, var(--bg-secondary));
+  border: 1px solid var(--border-secondary);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.market-card:hover {
+  border-color: var(--accent-muted);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+.market-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.market-avatar {
+  width: 60px; height: 60px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+.market-card-title { min-width: 0; }
+.market-card-name {
+  font-size: 15px; font-weight: 600;
+  color: var(--text-primary);
+}
+.market-card-name-en {
+  font-size: 11px; color: var(--text-tertiary);
+  margin-top: 2px;
+}
+.market-card-role {
+  font-size: 13px; color: var(--accent);
+  font-weight: 500;
+}
+.market-card-desc {
+  font-size: 12px; color: var(--text-secondary);
+  line-height: 1.6;
+}
+.market-card-skills {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.market-skill-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--bg-primary);
+  color: var(--text-tertiary);
+  border: 1px solid var(--border-secondary);
+}
+.market-hire-btn {
+  align-self: flex-start;
+  margin-top: 4px;
+}
    JS / CSS 引用，已在此处删除。 */

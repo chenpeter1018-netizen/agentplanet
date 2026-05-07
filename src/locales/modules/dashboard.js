@@ -1,8 +1,8 @@
 import { _ } from '../helper.js'
 
 export default {
-  title: _('仪表盘', 'Dashboard', '儀表盤', 'ダッシュボード', '대시보드', 'Bảng điều khiển', 'Panel', 'Painel', 'Панель', 'Tableau de bord'),
-  desc: _('OpenClaw 运行状态概览', 'OpenClaw runtime status overview', 'OpenClaw 執行狀態概覽', 'OpenClaw 実行状況の概要', 'OpenClaw 실행 상태 개요', 'Tổng quan trạng thái OpenClaw', 'Resumen del estado de OpenClaw', 'Visão geral do estado do OpenClaw', 'Обзор состояния OpenClaw', 'Vue d\'ensemble de l\'état OpenClaw', 'OpenClaw-Statusübersicht'),
+  title: _('运行状态', 'Running Status'),
+  desc: _('', ''),
   gateway: _('Gateway', 'Gateway'),
   portDetect: _('端口检测', 'Port detection', '連接埠檢測', 'ポート検出', '포트 감지'),
   notStarted: _('未启动', 'Not started', '未啟動', '未起動', '미시작', 'Chưa khởi động', 'No iniciado', 'Não iniciado', 'Не запущен', 'Non démarré', 'Nicht gestartet'),
@@ -15,7 +15,7 @@ export default {
   versionStable: _('稳定版 {version}', 'Stable {version}', '穩定版 {version}', '安定版 {version}', '안정 버전 {version}'),
   versionRecommend: _('推荐稳定版 {version}', 'Recommended stable {version}', '推薦穩定版 {version}', '推奨安定版 {version}', '권장 안정 버전 {version}'),
   versionLatest: _('最新上游 {version}', 'Latest upstream {version}', '', '最新アップストリーム {version}', '최신 업스트림 {version}'),
-  agentFleet: _('Agent 舰队', 'Agent Fleet', 'Agent 艦队', 'Agent フリート', 'Agent 함대', 'Đội Agent', 'Flota de Agentes', 'Frota de Agentes', 'Флот агентов', 'Flotte d\'Agents', 'Agent-Flotte'),
+  agentFleet: _('数字员工', 'Digital Employees'),
   defaultAgent: _('默认', 'Default', '預設', 'デフォルト', '기본', 'Mặc định', 'Predeterminado', 'Padrão', 'По умолчанию', 'Par défaut', 'Standard'),
   modelPool: _('模型池', 'Model Pool', '', 'モデルプール', '모델 풀', 'Nhóm mô hình', 'Pool de modelos', 'Pool de modelos', 'Пул моделей', 'Pool de modèles', 'Modell-Pool'),
   basedOnProviders: _('基于 {count} 个渠道商', 'From {count} providers', '基於 {count} 個頻道商', '{count} プロバイダーから', '{count}개 프로바이더 기반'),

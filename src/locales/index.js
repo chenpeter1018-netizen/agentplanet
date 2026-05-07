@@ -30,7 +30,6 @@ import logs from './modules/logs.js'
 import assistant from './modules/assistant.js'
 import toast from './modules/toast.js'
 import modal from './modules/modal.js'
-import engagement from './modules/engagement.js'
 import diagnose from './modules/diagnose.js'
 import routeMap from './modules/routeMap.js'
 import extensions from './modules/extensions.js'
@@ -41,7 +40,7 @@ const MODULES = {
   common, sidebar, instance, dashboard, services, settings,
   models, agents, agentDetail, gateway, security, communication, channels,
   memory, dreaming, cron, usage, skills, chat, chatDebug, setup, about,
-  ext, logs, assistant, toast, modal, engagement, diagnose, routeMap, extensions,
+  ext, logs, assistant, toast, modal, diagnose, routeMap, extensions,
   engine, ciaoBug,
 }
 

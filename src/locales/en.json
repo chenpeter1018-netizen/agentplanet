@@ -50,10 +50,10 @@
     "sectionConfig": "Config",
     "sectionData": "Data",
     "sectionExtension": "Extensions",
-    "dashboard": "Dashboard",
+    "dashboard": "Running Status",
     "assistant": "Assistant",
     "chat": "Live Chat",
-    "services": "Services",
+    "services": "Engines",
     "logs": "Logs",
     "models": "Models",
     "agents": "Agents",
@@ -96,8 +96,8 @@
     "hermesSetupIntro": "Hermes Agent is an AI assistant with tool-calling capabilities.<br>This engine is coming soon. Stay tuned!"
   },
   "dashboard": {
-    "title": "Dashboard",
-    "desc": "OpenClaw runtime status overview",
+    "title": "Running Status",
+    "desc": "",
     "gateway": "Gateway",
     "portDetect": "Port detection",
     "notStarted": "Not started",
@@ -109,7 +109,7 @@
     "versionStable": "Stable {version}",
     "versionRecommend": "Recommended stable {version}",
     "versionLatest": "Latest upstream {version}",
-    "agentFleet": "Agent Fleet",
+    "agentFleet": "Digital Employees",
     "defaultAgent": "Default",
     "modelPool": "Model Pool",
     "basedOnProviders": "From {count} providers",
@@ -177,8 +177,8 @@
     "backupFail": "Backup failed"
   },
   "services": {
-    "title": "Services",
-    "desc": "Manage OpenClaw services, check updates, config backups",
+    "title": "Engines",
+    "desc": "Manage OpenClaw engines, check updates, config backups",
     "start": "Start",
     "stop": "Stop",
     "restart": "Restart",
@@ -1765,7 +1765,7 @@
     "sectionLinks": "Quick Links",
     "sectionAboutUs": "About Us",
     "techStack": "Agent Planet is built with Tauri v2, Vanilla JS + Vite frontend, Rust backend.",
-    "copyright": "MIT License © 2026 Wuhan Qingchen Tianxia Network Technology Co., Ltd.",
+    "copyright": "MIT License © 2026 Shanghai Baoxi E-Commerce Co., Ltd.",
     "checkingUpdate": "Checking for updates...",
     "official": "Official",
     "chinese": "Chinese",
@@ -1863,7 +1863,7 @@
     "contributeGuide": "Contributing Guide",
     "viewIssues": "View Issues",
     "domesticMirrorHint": "China mirror: <a href=\"https://gitee.com/QtCodeCreators/agent-planet\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--accent)\">Gitee</a> (use when GitHub is inaccessible)",
-    "companyName": "Wuhan Qingchen Tianxia Network Technology Co., Ltd.",
+    "companyName": "Shanghai Baoxi E-Commerce Co., Ltd.",
     "officialWebsite": "Official Website",
     "productWebsite": "Product Website",
     "openSourceRepo": "Open Source Repo",
@@ -2200,5 +2200,12 @@
     "confirmTitle": "Confirm",
     "confirmOk": "OK",
     "confirmCancel": "Cancel"
+  },
+  "notes": {
+    "quickNote": "Lightbulb Note",
+    "quickNotes": "Lightbulb Notes",
+    "newNote": "New Note",
+    "enterNote": "Enter your note:",
+    "empty": "No notes yet. Tap + to create one."
   }
 }

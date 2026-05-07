@@ -43,7 +43,15 @@ export async function render() {
   page.innerHTML = `
     <div class="page-header">
       <h1 class="page-title">${t('skills.title')}</h1>
-      <p class="page-desc">${t('skills.desc')}</p>
+      <p class="page-desc" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <span>${t('skills.desc')}</span>
+        <span style="display:flex;align-items:center;gap:10px">
+          <a href="https://skillhub.cn/" target="_blank" rel="noopener" title="SkillHub" style="display:flex;align-items:center">
+            <img src="/images/skillhub.png" alt="SkillHub" style="height:25px;display:block" />
+          </a>
+          <a href="http://cn.clawhub-mirror.com/" target="_blank" rel="noopener" style="font-size:14px;font-weight:600;color:var(--accent);text-decoration:none;line-height:25px;white-space:nowrap">ClawHub镜像站</a>
+        </span>
+      </p>
     </div>
     ${agentOptions}
     <div class="tab-bar" id="skills-main-tabs">

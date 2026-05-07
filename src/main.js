@@ -23,7 +23,6 @@ import { api, checkBackendHealth, isBackendOnline, isTauriRuntime, onBackendStat
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0'
 import { statusIcon } from './lib/icons.js'
 import { isForeignGatewayError, showGatewayConflictGuidance } from './lib/gateway-ownership.js'
-import { tryShowEngagement } from './components/engagement.js'
 import { toast } from './components/toast.js'
 import { initI18n, t } from './lib/i18n.js'
 import { initFeatureGates } from './lib/feature-gates.js'
@@ -42,7 +41,7 @@ import './style/chat.css'
 import './style/agents.css'
 import './style/debug.css'
 import './style/assistant.css'
-import './style/ai-drawer.css'
+import './style/notes.css'
 // 引擎专属样式（scope 到 [data-engine="<id>"] 子树，不影响其他引擎）
 import './engines/hermes/style/hermes.css'
 import './engines/xintian/style/xintian.css'
@@ -124,8 +123,7 @@ function showBackendDownOverlay() {
       </button>
       <div id="backend-retry-status" style="font-size:12px;color:var(--text-tertiary);margin-top:12px"></div>
       <div style="margin-top:16px;font-size:11px;color:#aaa">
-        <a href="https://claw.qt.cool" target="_blank" rel="noopener" style="color:#aaa;text-decoration:none">claw.qt.cool</a>
-        <span style="margin:0 6px">&middot;</span>v${APP_VERSION}
+        v${APP_VERSION}
       </div>
     </div>
   `
@@ -191,38 +189,97 @@ function showLoginOverlay(defaultPw) {
   const accessPasswordField = '<code style="background:rgba(99,102,241,.1);padding:1px 5px;border-radius:3px;font-size:10px">accessPassword</code>'
   const resetPath = '<code style="background:rgba(99,102,241,.1);padding:2px 6px;border-radius:3px;font-size:10px;word-break:break-all">~/.openclaw/agent-planet.json</code>'
   overlay.innerHTML = `
+    <div class="login-cover" id="login-cover">
+      <img src="/images/cover.png" alt="AGENT PLANET" />
+      <div class="login-cover-hint">◂  Move · Click to Enter  ▸</div>
+      <div class="login-cover-vignette"></div>
+    </div>
+    <div class="login-content" id="login-content" style="opacity:0">
+    <div class="login-orb login-orb-left" aria-hidden="true"></div>
+    <div class="login-orb login-orb-right" aria-hidden="true"></div>
+    <div class="login-grid-floor" aria-hidden="true"></div>
+    <div class="login-scan-line" aria-hidden="true"></div>
     <div class="login-card">
-      ${_logoSvg}
-      <div class="login-title">Agent Planet</div>
-      <div class="login-desc">${hasDefault
-        ? `${t('security.firstLoginHint')}<br><span style="font-size:12px;color:#6366f1;font-weight:600">${t('security.firstLoginChangeHint', { security: securityLabel })}</span>`
-        : (isTauri ? t('security.appLocked') : t('security.loginPrompt'))}</div>
+      <div class="login-tag">
+        <span class="login-tag-dot"></span>Neural Memory Interface<span class="login-tag-dot"></span>
+      </div>
+      <h1 class="login-title">AGENT PLANET</h1>
+      <p class="login-desc">ACCESS · YOUR · MEMORY · CORE</p>
       <form id="login-form">
-        <input class="login-input" type="${hasDefault ? 'text' : 'password'}" id="login-pw" placeholder="${t('security.accessPasswordPlaceholder')}" autocomplete="current-password" autofocus value="${hasDefault ? defaultPw : ''}" />
-        <div id="login-captcha" style="display:${_captcha ? 'block' : 'none'};margin-bottom:10px">
-          <div style="font-size:12px;color:#888;margin-bottom:6px">${t('security.captchaPrompt')}<strong id="captcha-q" style="color:var(--text-primary,#333)">${_captcha ? _captcha.q : ''}</strong></div>
+        <div class="login-field-label">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          Cipher Key
+        </div>
+        <div class="login-input-wrap">
+          <input class="login-input" type="${hasDefault ? 'text' : 'password'}" id="login-pw" placeholder="·  ·  ·  ·  ·  ·  ·  ·" autocomplete="current-password" autofocus value="${hasDefault ? defaultPw : ''}" />
+          <button type="button" class="login-toggle-pw" id="login-toggle-pw" aria-label="Show password">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div id="login-captcha" style="display:${_captcha ? 'block' : 'none'};margin-top:10px">
+          <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:6px">${t('security.captchaPrompt')} <strong id="captcha-q" style="color:#e2e8f0">${_captcha ? _captcha.q : ''}</strong></div>
           <input class="login-input" type="number" id="login-captcha-input" placeholder="${t('security.captchaPlaceholder')}" style="text-align:center" />
         </div>
-        <button class="login-btn" type="submit">${t('security.loginAction')}</button>
+        <button class="login-btn" type="submit"><span class="btn-shine"></span>Initialize <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></button>
         <div class="login-error" id="login-error"></div>
       </form>
-      ${!hasDefault ? `<details class="login-forgot" style="margin-top:16px;text-align:center">
-        <summary style="font-size:11px;color:#aaa;cursor:pointer;list-style:none;user-select:none">${t('security.forgotPassword')}</summary>
-        <div style="margin-top:8px;font-size:11px;color:#888;line-height:1.8;text-align:left;background:rgba(0,0,0,.03);border-radius:8px;padding:10px 14px">
+      <div class="login-meta">
+        <span><span class="login-meta-dot"></span>Encrypted · 256bit</span>
+        <span>v${APP_VERSION}</span>
+      </div>
+      ${!hasDefault ? `<details class="login-forgot">
+        <summary>${t('security.forgotPassword')}</summary>
+        <div class="login-forgot-content">
           ${isTauri
             ? `${t('security.resetPasswordLocal', { field: accessPasswordField })}<br>${resetPath}`
             : `${t('security.resetPasswordRemote', { field: accessPasswordField })}<br>${resetPath}`
           }
         </div>
       </details>` : ''}
-      <div style="margin-top:${hasDefault ? '20' : '12'}px;font-size:11px;color:#aaa;text-align:center">
-        <a href="https://claw.qt.cool" target="_blank" rel="noopener" style="color:#aaa;text-decoration:none">claw.qt.cool</a>
-        <span style="margin:0 6px">·</span>v${APP_VERSION}
-      </div>
+    </div>
+    <div class="login-footer">v${APP_VERSION} · Synaptic Build · Agent Planet Systems</div>
     </div>
   `
   document.body.appendChild(overlay)
   _hideSplash()
+
+  // CoverScreen：3 秒或用户交互后消失，展示登录表单
+  const coverEl = overlay.querySelector('#login-cover')
+  const contentEl = overlay.querySelector('#login-content')
+  let coverDismissed = false
+  const dismissCover = () => {
+    if (coverDismissed) return
+    coverDismissed = true
+    if (coverEl) {
+      coverEl.style.opacity = '0'
+      coverEl.style.filter = 'blur(20px) brightness(0.4)'
+      coverEl.style.transform = 'scale(1.08)'
+      coverEl.style.pointerEvents = 'none'
+    }
+    if (contentEl) {
+      contentEl.style.transition = 'opacity 0.8s ease-out'
+      contentEl.style.opacity = '1'
+    }
+    setTimeout(() => { if (coverEl) coverEl.remove() }, 2400)
+  }
+  setTimeout(() => dismissCover(), 3000) // 3 秒自动消失
+  setTimeout(() => {
+    window.addEventListener('click', dismissCover, { once: true })
+    window.addEventListener('keydown', dismissCover, { once: true })
+  }, 600)
+
+  // 密码显示/隐藏切换
+  const togglePwBtn = overlay.querySelector('#login-toggle-pw')
+  const pwInput = overlay.querySelector('#login-pw')
+  if (togglePwBtn && pwInput) {
+    togglePwBtn.addEventListener('click', () => {
+      const isPassword = pwInput.type === 'password'
+      pwInput.type = isPassword ? 'text' : 'password'
+      togglePwBtn.innerHTML = isPassword
+        ? '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+        : '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+    })
+  }
 
   return new Promise((resolve) => {
     overlay.querySelector('#login-form').addEventListener('submit', async (e) => {
@@ -275,9 +332,6 @@ function showLoginOverlay(defaultPw) {
           } catch {}
           overlay.classList.add('hide')
           setTimeout(() => overlay.remove(), 400)
-          if (cfg.accessPassword === '123456') {
-            sessionStorage.setItem('agent_planet_must_change_pw', '1')
-          }
           resolve()
         } else {
           // Web 模式：调后端
@@ -301,9 +355,6 @@ function showLoginOverlay(defaultPw) {
           }
           overlay.classList.add('hide')
           setTimeout(() => overlay.remove(), 400)
-          if (data.mustChangePassword || data.defaultPassword === '123456') {
-            sessionStorage.setItem('agent_planet_must_change_pw', '1')
-          }
           resolve()
         }
       } catch (err) {
@@ -368,19 +419,6 @@ async function boot() {
       console.debug('[ciao-bug] module skipped:', err)
     }
   }, 3000)
-
-  // 默认密码提醒横幅
-  if (sessionStorage.getItem('agent_planet_must_change_pw') === '1') {
-    const banner = document.createElement('div')
-    banner.id = 'pw-change-banner'
-    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:13px;font-weight:500;box-shadow:0 2px 8px rgba(0,0,0,0.15)'
-    banner.innerHTML = `
-      <span>${statusIcon('warn', 14)} ${t('common.defaultPasswordBanner')}</span>
-      <a href="#/security" style="color:#fff;background:rgba(255,255,255,0.2);padding:4px 14px;border-radius:6px;text-decoration:none;font-size:12px;font-weight:600" onclick="document.getElementById('pw-change-banner').remove();sessionStorage.removeItem('agent_planet_must_change_pw')">${t('common.goSecurity')}</a>
-      <button onclick="this.parentElement.remove()" style="background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;font-size:16px;padding:0 4px;margin-left:4px">✕</button>
-    `
-    document.body.prepend(banner)
-  }
 
   // Tauri 模式：确保 web session 存在（页面刷新后 cookie 可能丢失），然后加载实例和检测状态
   const ensureWebSession = isTauri
@@ -465,8 +503,6 @@ async function boot() {
         onGatewayChange((running) => {
           if (running) {
             autoConnectWebSocket()
-            // 正向时机：Gateway 启动成功，延迟弹社区引导
-            setTimeout(tryShowEngagement, 5000)
           } else {
             wsClient.disconnect()
           }
@@ -936,65 +972,9 @@ function startUpdateChecker() {
   }
   startUpdateChecker()
 
-  // 初始化全局 AI 助手浮动按钮（延迟加载，不阻塞启动）
+  // 初始化小笔记浮动按钮（延迟加载，不阻塞启动）
   setTimeout(async () => {
-    const { initAIFab, registerPageContext, openAIDrawerWithError } = await import('./components/ai-drawer.js')
-    initAIFab()
-
-    // 注册各页面上下文提供器
-    registerPageContext('/chat-debug', async () => {
-      const { isOpenclawReady, isGatewayRunning } = await import('./lib/app-state.js')
-      const { wsClient } = await import('./lib/ws-client.js')
-      const { api } = await import('./lib/tauri-api.js')
-      const lines = ['## 系统诊断快照']
-      lines.push(`- OpenClaw: ${isOpenclawReady() ? '就绪' : '未就绪'}`)
-      lines.push(`- Gateway: ${isGatewayRunning() ? '运行中' : '未运行'}`)
-      lines.push(`- WebSocket: ${wsClient.connected ? '已连接' : '未连接'}`)
-      try {
-        const node = await api.checkNode()
-        lines.push(`- Node.js: ${node?.version || '未知'}`)
-      } catch {}
-      try {
-        const ver = await api.getVersionInfo()
-        lines.push(`- 版本: 当前 ${ver?.current || '?'} / 推荐 ${ver?.recommended || '?'} / 最新 ${ver?.latest || '?'}${ver?.ahead_of_recommended ? ' / 当前版本高于推荐版' : ''}`)
-      } catch {}
-      return { detail: lines.join('\n') }
-    })
-
-    registerPageContext('/services', async () => {
-      const { isGatewayRunning } = await import('./lib/app-state.js')
-      const { api } = await import('./lib/tauri-api.js')
-      const lines = ['## 服务状态']
-      lines.push(`- Gateway: ${isGatewayRunning() ? '运行中' : '未运行'}`)
-      try {
-        const svc = await api.getServicesStatus()
-        if (svc?.[0]) {
-          lines.push(`- CLI: ${svc[0].cli_installed ? '已安装' : '未安装'}`)
-          lines.push(`- PID: ${svc[0].pid || '无'}`)
-        }
-      } catch {}
-      return { detail: lines.join('\n') }
-    })
-
-    registerPageContext('/gateway', async () => {
-      const { api } = await import('./lib/tauri-api.js')
-      try {
-        const config = await api.readOpenclawConfig()
-        const gw = config?.gateway || {}
-        const lines = ['## Gateway 配置']
-        lines.push(`- 端口: ${gw.port || 18789}`)
-        lines.push(`- 模式: ${gw.mode || 'local'}`)
-        lines.push(`- Token: ${gw.auth?.token ? '已设置' : '未设置'}`)
-        if (gw.controlUi?.allowedOrigins) lines.push(`- Origins: ${JSON.stringify(gw.controlUi.allowedOrigins)}`)
-        return { detail: lines.join('\n') }
-      } catch { return null }
-    })
-
-    registerPageContext('/setup', () => {
-      return { detail: '用户正在进行 OpenClaw 初始安装，请帮助检查 Node.js 环境和网络状况' }
-    })
-
-    // 挂到全局，供安装/升级失败时调用
-    window.__openAIDrawerWithError = openAIDrawerWithError
+    const { initNotesFab } = await import('./components/notes-fab.js')
+    initNotesFab()
   }, 500)
 })()

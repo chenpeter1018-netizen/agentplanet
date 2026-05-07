@@ -38,7 +38,6 @@ export default {
         section: '',
         items: [
           { route: '/setup', label: t('sidebar.setup'), icon: 'setup' },
-          { route: '/assistant', label: t('sidebar.assistant'), icon: 'assistant' },
         ]
       }, {
         section: '',
@@ -49,48 +48,35 @@ export default {
         ]
       }]
     }
-    return [{
-      section: t('sidebar.sectionMonitor'),
-      items: [
+    return [
+      { section: '', items: [
+        { route: '/chat', label: t('sidebar.aiChat'), icon: 'chat' },
+        { route: '/agents', label: t('sidebar.digitalEmployees'), icon: 'agents' },
+        { route: '/cron', label: t('sidebar.cronJobs'), icon: 'clock' },
         { route: '/dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
-        { route: '/assistant', label: t('sidebar.assistant'), icon: 'assistant' },
-        { route: '/chat', label: t('sidebar.chat'), icon: 'chat' },
-        { route: '/route-map', label: t('sidebar.routeMap'), icon: 'route-map' },
-        { route: '/services', label: t('sidebar.services'), icon: 'services' },
-        { route: '/logs', label: t('sidebar.logs'), icon: 'logs' },
-      ]
-    }, {
-      section: t('sidebar.sectionConfig'),
-      items: [
-        { route: '/models', label: t('sidebar.models'), icon: 'models' },
-        { route: '/agents', label: t('sidebar.agents'), icon: 'agents' },
-        { route: '/gateway', label: t('sidebar.gateway'), icon: 'gateway' },
-        { route: '/channels', label: t('sidebar.channels'), icon: 'channels' },
-        { route: '/communication', label: t('sidebar.communication'), icon: 'settings' },
-        { route: '/security', label: t('sidebar.security'), icon: 'security' },
-      ]
-    }, {
-      section: t('sidebar.sectionData'),
-      items: [
-        { route: '/memory', label: t('sidebar.memory'), icon: 'memory', gate: 'memory' },
-        { route: '/dreaming', label: t('sidebar.dreaming'), icon: 'dreaming', gate: 'dreaming' },
-        { route: '/cron', label: t('sidebar.cron'), icon: 'clock', gate: 'cron' },
-        { route: '/usage', label: t('sidebar.usage'), icon: 'bar-chart' },
-      ]
-    }, {
-      section: t('sidebar.sectionExtension'),
-      items: [
+      ]},
+      { section: t('sidebar.sectionSkills'), collapsed: true, id: 'skills', items: [
         { route: '/skills', label: t('sidebar.skills'), icon: 'skills', gate: 'skills' },
         { route: '/plugin-hub', label: t('sidebar.pluginHub'), icon: 'extensions' },
-      ]
-    }, {
-      section: '',
-      items: [
-        { route: '/settings', label: t('sidebar.settings'), icon: 'settings' },
+      ]},
+      { section: t('sidebar.sectionSettings'), collapsed: true, id: 'settings-group', items: [
+        { route: '/services', label: t('sidebar.engineManagement'), icon: 'services' },
+        { route: '/models', label: t('sidebar.models'), icon: 'models' },
+        { route: '/channels', label: t('sidebar.mobileConnect'), icon: 'channels' },
+        { route: '/gateway', label: t('sidebar.gateway'), icon: 'gateway' },
+        { route: '/communication', label: t('sidebar.communication'), icon: 'settings' },
+        { route: '/security', label: t('sidebar.security'), icon: 'security' },
+        { route: '/settings', label: t('sidebar.systemSettings'), icon: 'settings' },
         { route: '/chat-debug', label: t('sidebar.checkRepair'), icon: 'diagnose' },
+      ]},
+      { section: t('sidebar.sectionData'), collapsed: true, id: 'data', items: [
+        { route: '/usage', label: t('sidebar.usage'), icon: 'bar-chart' },
+        { route: '/memory', label: t('sidebar.memory'), icon: 'memory', gate: 'memory' },
+        { route: '/dreaming', label: t('sidebar.memoryOptimization'), icon: 'dreaming', gate: 'dreaming' },
+        { route: '/logs', label: t('sidebar.logs'), icon: 'logs' },
         { route: '/about', label: t('sidebar.about'), icon: 'about' },
-      ]
-    }]
+      ]},
+    ]
   },
 
   /** 路由注册表 */
@@ -102,7 +88,7 @@ export default {
       { path: '/services', loader: () => import('../../pages/services.js') },
       { path: '/logs', loader: () => import('../../pages/logs.js') },
       { path: '/models', loader: () => import('../../pages/models.js') },
-      { path: '/agents', loader: () => import('../../pages/agents.js') },
+      { path: '/agents', loader: () => import('../../pages/digital-employees.js') },
       { path: '/agent-detail', loader: () => import('../../pages/agent-detail.js') },
       { path: '/gateway', loader: () => import('../../pages/gateway.js') },
       { path: '/memory', loader: () => import('../../pages/memory.js') },
@@ -117,7 +103,6 @@ export default {
       { path: '/usage', loader: () => import('../../pages/usage.js') },
       { path: '/communication', loader: () => import('../../pages/communication.js') },
       { path: '/settings', loader: () => import('../../pages/settings.js') },
-      { path: '/route-map', loader: () => import('../../pages/route-map.js') },
       { path: '/plugin-hub', loader: () => import('../../pages/plugin-hub.js') },
       { path: '/diagnose', loader: () => import('../../pages/chat-debug.js') },
     ]
