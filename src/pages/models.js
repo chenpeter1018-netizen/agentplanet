@@ -1253,7 +1253,7 @@ function addModel(page, state, providerKey) {
         const preset = available.find(p => p.id === btn.dataset.mid)
         if (!preset) return
         pushUndo(state)
-        const model = { ...preset, input: ['text', 'image'] }
+        const model = { ...preset, input: ['text', 'image'], config: { stream: true, think: 'low' } }
         state.config.models.providers[providerKey].models.push(model)
         overlay.remove()
         renderProviders(page, state)
@@ -1324,6 +1324,10 @@ function doAddModel(state, providerKey, vals) {
     name: vals.name?.trim() || vals.id.trim(),
     reasoning: !!vals.reasoning,
     input: ['text', 'image'],
+    config: {
+      stream: true,
+      think: 'low',
+    },
   }
   if (vals.contextWindow) model.contextWindow = parseInt(vals.contextWindow) || 0
   state.config.models.providers[providerKey].models.push(model)
