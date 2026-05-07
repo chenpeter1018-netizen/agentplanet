@@ -194,7 +194,7 @@ fn activate_online(payload: &LicensePayload, fingerprint: &str) -> Result<String
     let client = reqwest::blocking::Client::new()
         .post(format!("{ACTIVATION_SERVER}/api/activate"))
         .json(&body)
-        .timeout(std::time::Duration::from_secs(10))
+        .timeout(std::time::Duration::from_secs(5))
         .send()
         .map_err(|e| format!("连接激活服务器失败: {e}"))?;
 
