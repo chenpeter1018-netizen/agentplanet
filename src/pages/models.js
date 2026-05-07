@@ -1333,21 +1333,43 @@ function doAddModel(state, providerKey, vals) {
 // 编辑模型
 function editModel(page, state, providerKey, idx) {
   const m = state.config.models.providers[providerKey].models[idx]
+  const cfg = m.config || {}
+
   showModal({
     title: t('models.editModelTitle', { name: m.id }),
     fields: [
       { name: 'id', label: t('models.modelId'), value: m.id || '', hint: t('models.modelIdHint') },
       { name: 'name', label: t('models.displayNameLabel'), value: m.name || '', hint: t('models.displayNameHint') },
       { name: 'contextWindow', label: t('models.contextLengthLabel'), value: String(m.contextWindow || ''), hint: t('models.contextLengthHint') },
-      { name: 'reasoning', label: t('models.isReasoningLabel'), type: 'checkbox', value: !!m.reasoning, hint: t('models.reasoningHint') },
+      { name: 'maxTokens', label: t('models.maxTokensLabel'), value: String(cfg.maxTokens || cfg.max_tokens || ''), hint: t('models.maxTokensHint') },
+      { name: 'temperature', label: t('models.temperatureLabel'), value: cfg.temperature != null ? String(cfg.temperature) : '', hint: t('models.temperatureHint') },
+      { name: 'stream', label: t('models.streamLabel'), type: 'checkbox', value: cfg.stream !== false, hint: t('models.streamHint') },
+      { name: 'fastMode', label: t('models.fastModeLabel'), type: 'checkbox', value: cfg.fast !== false, hint: t('models.fastModeHint') },
+      { name: 'thinkLevel', label: t('models.thinkLevelLabel'), type: 'select', value: cfg.think || 'auto', options: [
+        { value: 'auto', label: t('models.thinkAuto') },
+        { value: 'low', label: t('models.thinkLow') },
+        { value: 'medium', label: t('models.thinkMedium') },
+        { value: 'high', label: t('models.thinkHigh') },
+      ], hint: t('models.thinkLevelHint') },
     ],
     onConfirm: (vals) => {
       if (!vals.id) return
       pushUndo(state)
       m.id = vals.id.trim()
       m.name = vals.name?.trim() || vals.id.trim()
-      m.reasoning = !!vals.reasoning
       if (vals.contextWindow) m.contextWindow = parseInt(vals.contextWindow) || 0
+
+      // 模型配置参数
+      if (!m.config) m.config = {}
+      m.config.stream = !!vals.stream
+      m.config.fast = !!vals.fastMode
+      if (vals.thinkLevel && vals.thinkLevel !== 'auto') m.config.think = vals.thinkLevel
+      else delete m.config.think
+      if (vals.maxTokens) m.config.maxTokens = parseInt(vals.maxTokens) || 0
+      else delete m.config.maxTokens
+      if (vals.temperature) m.config.temperature = parseFloat(vals.temperature) || 0
+      else delete m.config.temperature
+
       renderProviders(page, state)
       renderDefaultBar(page, state)
       updateUndoBtn(page, state)
