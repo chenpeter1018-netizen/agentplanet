@@ -176,4 +176,8 @@ export default {
   webModeLogHint: _('Web 模式：安装日志不可用，请等待完成...', 'Web mode: Install logs unavailable, please wait...', 'Web 模式：安裝日誌不可用，請等待完成...'),
   installScene: _('初始安装 OpenClaw', 'Initial OpenClaw installation'),
   allReady: _('所有检测通过，环境已就绪', 'All checks passed, environment ready'),
+  envBundleTitle: _('📦 环境程序已内置', '📦 Bundled Environment Programs'),
+  envBundleDesc: _('已帮您准备好 Node.js 和 Git 安装程序。点击下方按钮复制到桌面，安装后再回来检测即可。', 'Node.js and Git installers are bundled. Click below to copy them to your desktop, install, then come back to re-detect.', '已幫您準備好 Node.js 和 Git 安裝程式。點擊下方按鈕複製到桌面，安裝後再回來檢測即可。'),
+  envBundleCopyBtn: _('复制到桌面', 'Copy to Desktop', '複製到桌面'),
+  envBundleHint: _('网络不佳时可直接使用内置安装程序，无需在线下载。', 'Use built-in installers when network is poor — no online download needed.', '網路不佳時可直接使用內建安裝程式，無需在線下載。'),
 }

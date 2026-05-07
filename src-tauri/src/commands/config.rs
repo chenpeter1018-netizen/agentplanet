@@ -6554,3 +6554,66 @@ pub fn open_in_file_manager(path: String) -> Result<(), String> {
     }
     Ok(())
 }
+
+/// 将打包的环境安装程序复制到桌面
+/// 返回: { copied: string[], desktop: string }
+#[tauri::command]
+pub fn copy_env_installers(app: tauri::AppHandle) -> Result<serde_json::Value, String> {
+    let desktop = dirs::desktop_dir()
+        .unwrap_or_else(|| dirs::home_dir().unwrap_or_default().join("Desktop"));
+    let dest_dir = desktop.join("Agent-Planet-环境程序");
+    let mut copied: Vec<String> = Vec::new();
+
+    let resource_dir = app
+        .path()
+        .resource_dir()
+        .map_err(|e| format!("无法获取资源目录: {}", e))?;
+    let env_dir = resource_dir.join("resources").join("env");
+
+    // 开发模式路径
+    let dev_env = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("resources")
+        .join("env");
+
+    let search_dirs = [env_dir, dev_env];
+
+    for base in &search_dirs {
+        if !base.exists() { continue; }
+        if let Ok(entries) = std::fs::read_dir(base) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.is_dir() {
+                    if let Ok(sub_entries) = std::fs::read_dir(&path) {
+                        for sub in sub_entries.flatten() {
+                            let f = sub.path();
+                            if f.is_file() {
+                                let name = f.file_name().unwrap_or_default().to_string_lossy().to_string();
+                                let dest = dest_dir.join(&name);
+                                let _ = std::fs::create_dir_all(&dest_dir);
+                                if let Err(e) = std::fs::copy(&f, &dest) {
+                                    eprintln!("[env] 复制失败 {}: {}", name, e);
+                                } else {
+                                    copied.push(name);
+                                }
+                            }
+                        }
+                    }
+                } else if path.is_file() {
+                    let name = path.file_name().unwrap_or_default().to_string_lossy().to_string();
+                    let dest = dest_dir.join(&name);
+                    let _ = std::fs::create_dir_all(&dest_dir);
+                    if let Err(e) = std::fs::copy(&path, &dest) {
+                        eprintln!("[env] 复制失败 {}: {}", name, e);
+                    } else {
+                        copied.push(name);
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(serde_json::json!({
+        "copied": copied,
+        "desktop": dest_dir.to_string_lossy(),
+    }))
+}

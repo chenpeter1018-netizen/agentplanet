@@ -101,6 +101,30 @@ export async function render() {
 
   page.querySelector('#btn-recheck').addEventListener('click', () => runDetect(page))
 
+  // 环境程序复制按钮（委托监听，因为按钮在 renderSteps 中动态生成）
+  page.addEventListener('click', async (e) => {
+    if (e.target.closest('#btn-copy-env')) {
+      const btn = e.target.closest('#btn-copy-env')
+      const resultEl = page.querySelector('#env-copy-result')
+      btn.disabled = true
+      btn.textContent = '⏳ 复制中...'
+      try {
+        const r = await api.copyEnvInstallers()
+        if (r.copied.length > 0) {
+          if (resultEl) { resultEl.style.display = 'inline'; resultEl.textContent = `✅ 已复制 ${r.copied.length} 个文件到桌面「Agent-Planet-环境程序」` }
+          // 打开文件夹
+          try { await api.openInFileManager(r.desktop) } catch {}
+        } else {
+          if (resultEl) { resultEl.style.display = 'inline'; resultEl.textContent = '⚠️ 未找到环境安装程序，请手动下载' }
+        }
+      } catch (err) {
+        if (resultEl) { resultEl.style.display = 'inline'; resultEl.textContent = '⚠️ 复制失败: ' + err }
+      }
+      btn.disabled = false
+      btn.textContent = t('setup.envBundleCopyBtn')
+    }
+  })
+
   // #Compat-4: 用户在浏览器里手动装完 Node.js 后切回 panel，或用户装完 Git/OpenClaw
   // 后 app 失焦又重新获得焦点时，自动重新检测，避免「装完不识别」。
   // handler 自带 guard：page 从 DOM 移除后自动卸载监听器，防止跨页面泄漏。
@@ -257,6 +281,23 @@ function renderSteps(page, { node, git, cliOk, config, version, allOk }) {
       <div class="setup-column">
   `
 
+  // 环境程序打包提示
+  if (!nodeOk || !gitOk) {
+    html += `
+      <div class="config-section" style="text-align:left;border:1px dashed var(--accent);border-radius:var(--radius-lg);padding:var(--space-lg);background:var(--accent-muted);margin-bottom:var(--space-xl)">
+        <div style="font-size:var(--font-size-lg);font-weight:700;color:var(--accent);margin-bottom:var(--space-sm)">📦 ${t('setup.envBundleTitle')}</div>
+        <p style="color:var(--text-secondary);font-size:var(--font-size-sm);line-height:1.6;margin-bottom:var(--space-md)">
+          ${t('setup.envBundleDesc')}
+        </p>
+        <button class="btn btn-primary btn-sm" id="btn-copy-env" style="margin-bottom:var(--space-sm)">${t('setup.envBundleCopyBtn')}</button>
+        <span class="form-hint" id="env-copy-result" style="margin-left:8px;display:none"></span>
+        <p style="color:var(--text-tertiary);font-size:var(--font-size-xs);margin-top:var(--space-sm)">
+          ${t('setup.envBundleHint')}
+        </p>
+      </div>
+    `
+  }
+
   // 第一步：Node.js
   if (!nodeOk) {
     html += `
@@ -267,7 +308,7 @@ function renderSteps(page, { node, git, cliOk, config, version, allOk }) {
         <p style="color:var(--text-secondary);font-size:var(--font-size-sm);margin-bottom:var(--space-sm)">
           ${t('setup.stepNodeHint')}
         </p>
-        <a class="btn btn-primary btn-sm" href="https://nodejs.org/" target="_blank" rel="noopener">${t('setup.downloadNode')}</a>
+        <a class="btn btn-primary btn-sm" href="https://nodejs.org/en/download" target="_blank" rel="noopener">${t('setup.downloadNode')}</a>
         <span class="form-hint" style="margin-left:8px">${t('setup.recheckAfterInstall')}</span>
         <div style="margin-top:var(--space-sm);padding:10px 12px;background:var(--bg-tertiary);border-radius:var(--radius-sm);font-size:var(--font-size-xs);color:var(--text-secondary);line-height:1.6">
           <strong>${t('setup.nodeInstalledButNotDetected')}</strong>

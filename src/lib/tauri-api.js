@@ -312,6 +312,8 @@ export const api = {
   scanOpenclawPaths: () => invoke('scan_openclaw_paths'),
   saveCustomNodePath: (nodeDir) => invoke('save_custom_node_path', { nodeDir }).then(r => { invalidate('check_node', 'get_services_status'); invoke('invalidate_path_cache').catch(() => {}); return r }),
   invalidatePathCache: () => invoke('invalidate_path_cache'),
+  copyEnvInstallers: () => invoke('copy_env_installers'),
+  openInFileManager: (path) => invoke('open_in_file_manager', { path }),
   checkGit: () => cachedInvoke('check_git', {}, 60000),
   scanGitPaths: () => invoke('scan_git_paths'),
   autoInstallGit: () => invoke('auto_install_git'),

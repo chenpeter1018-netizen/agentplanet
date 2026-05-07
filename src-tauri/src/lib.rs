@@ -9,6 +9,52 @@ use commands::{
 };
 
 pub fn run() {
+    // 单实例锁：防止双击桌面图标重复启动多个程序窗口
+    let lock_dir = dirs::data_dir()
+        .unwrap_or_else(|| std::path::PathBuf::from("."))
+        .join("agent-planet");
+    let lock_file = lock_dir.join(".instance.lock");
+    if lock_file.exists() {
+        // 检查上次记录的 PID 是否仍在运行（防止崩溃后锁文件残留）
+        if let Ok(content) = std::fs::read_to_string(&lock_file) {
+            if let Ok(pid) = content.trim().parse::<u32>() {
+                #[cfg(windows)]
+                {
+                    use std::os::windows::process::CommandExt;
+                    const CREATE_NO_WINDOW: u32 = 0x08000000;
+                    let out = std::process::Command::new("tasklist")
+                        .args(["/fi", &format!("PID eq {}", pid)])
+                        .creation_flags(CREATE_NO_WINDOW)
+                        .output();
+                    if let Ok(out) = out {
+                        let stdout = String::from_utf8_lossy(&out.stdout);
+                        if stdout.contains(&pid.to_string()) {
+                            println!("[agent-planet] 已有实例运行中 (PID {}), 退出", pid);
+                            std::process::exit(0);
+                        }
+                    }
+                }
+                #[cfg(not(windows))]
+                {
+                    // Unix: kill -0 检查进程是否存在
+                    let alive = std::process::Command::new("kill")
+                        .args(["-0", &pid.to_string()])
+                        .status()
+                        .map(|s| s.success())
+                        .unwrap_or(false);
+                    if alive {
+                        println!("[agent-planet] 已有实例运行中 (PID {}), 退出", pid);
+                        std::process::exit(0);
+                    }
+                }
+            }
+        }
+    }
+    if let Err(e) = std::fs::create_dir_all(&lock_dir) {
+        println!("[agent-planet] 创建锁目录失败: {}", e);
+    }
+    let _ = std::fs::write(&lock_file, std::process::id().to_string());
+
     let hot_update_dir = commands::openclaw_dir()
         .join("agent-planet")
         .join("web-update");
@@ -109,6 +155,7 @@ pub fn run() {
             config::auto_install_git,
             config::configure_git_https,
             config::invalidate_path_cache,
+            config::copy_env_installers,
             config::open_in_file_manager,
             config::get_status_summary,
             config::doctor_fix,
@@ -281,6 +328,9 @@ pub fn run() {
         .expect("启动 Agent Planet 失败")
         .run(|_app, event| {
             if let tauri::RunEvent::Exit = event {
+                // 清理单实例锁文件
+                let _ = std::fs::remove_file(&lock_file);
+
                 #[cfg(target_os = "windows")]
                 {
                     // 退出时关闭 Gateway 终端窗口

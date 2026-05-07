@@ -29,6 +29,9 @@
   },
   "bundle": {
     "active": true,
+    "resources": {
+      "resources/env/**": "./"
+    },
     "targets": "all",
     "icon": [
       "icons/32x32.png",
