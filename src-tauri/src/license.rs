@@ -18,7 +18,7 @@ const PUBLIC_KEY_BYTES: [u8; 32] = [
 ];
 
 /// 激活服务器地址（可部署在 Vercel/Cloudflare Workers）
-const ACTIVATION_SERVER: &str = "https://agent-planet-activate.vercel.app";
+const ACTIVATION_SERVER: &str = "https://activation-server-roan.vercel.app";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LicensePayload {

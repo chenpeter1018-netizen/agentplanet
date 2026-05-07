@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "api/activate.js": {
+      "memory": 128,
+      "maxDuration": 10
+    }
+  }
+}
