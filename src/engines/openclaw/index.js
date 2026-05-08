@@ -11,7 +11,7 @@ export default {
   id: 'openclaw',
   name: 'OpenClaw',
   description: 'OpenClaw AI Agent Framework',
-  icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
+  icon: '<img src="/openclaw-icon.png" alt="OpenClaw" width="18" height="18" style="display:block;object-fit:contain">',
 
   /** 检测 OpenClaw 是否已安装 */
   async detect() {

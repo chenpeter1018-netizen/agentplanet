@@ -79,15 +79,30 @@ export function render() {
   let formBaseUrl = ''
   let formApiKey = ''
   let formModel = ''
+  let formStream = true     // 默认开启流式
+  let formFastMode = true   // 默认低思考模式
+  let formThinkLevel = 'auto'
+  let formTemperature = ''
+  let formMaxTokens = ''
   let formInited = false    // 首次加载后用 hermesConfig 初始化
 
   function syncFormFromDom() {
     const u = el.querySelector('#hm-cfg-baseurl')
     const k = el.querySelector('#hm-cfg-apikey')
     const m = el.querySelector('#hm-cfg-model')
+    const s = el.querySelector('#hm-cfg-stream')
+    const f = el.querySelector('#hm-cfg-fast')
+    const t = el.querySelector('#hm-cfg-think')
+    const tp = el.querySelector('#hm-cfg-temp')
+    const mt = el.querySelector('#hm-cfg-maxtokens')
     if (u) formBaseUrl = u.value
     if (k) formApiKey = k.value
     if (m) formModel = m.value
+    if (s) formStream = s.checked
+    if (f) formFastMode = f.checked
+    if (t) formThinkLevel = t.value
+    if (tp) formTemperature = tp.value
+    if (mt) formMaxTokens = mt.value
   }
 
   function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;') }
@@ -130,12 +145,8 @@ export function render() {
       el.innerHTML = `
         <div class="hm-hero">
           <div class="hm-hero-title">
-            <div class="hm-hero-eyebrow">
-              <span class="hm-dot hm-dot--idle"></span>
-              ${t('engine.dashEyebrowLoading')}
-            </div>
-            <div class="hm-skel" style="width:240px;height:28px;margin-bottom:6px"></div>
-            <div class="hm-skel" style="width:180px;height:14px"></div>
+            <div class="hm-hero-icon-wrap"><img src="/hermes-icon.png" alt="Hermes" class="hm-hero-icon"></div>
+            <h1 class="hm-hero-h1">HERMES</h1>
           </div>
         </div>
         <div class="hm-kpi-grid">
@@ -180,11 +191,8 @@ export function render() {
       <!-- Hero strip: dynamic colored bar + title + CTA + icon actions -->
       <div class="hm-hero" data-state="${gwRunning ? 'running' : 'stopped'}">
         <div class="hm-hero-title">
-          <div class="hm-hero-eyebrow">
-            <span class="hm-dot hm-dot--${gwRunning ? 'run' : 'stop'}"></span>
-            ${gwRunning ? t('engine.dashEyebrowOnline') : t('engine.dashEyebrowOffline')}
-          </div>
-          <h1 class="hm-hero-h1">${t('engine.hermesDashboardTitle')}</h1>
+          <div class="hm-hero-icon-wrap"><img src="/hermes-icon.png" alt="Hermes" class="hm-hero-icon"></div>
+          <h1 class="hm-hero-h1">HERMES</h1>
           <div class="hm-hero-sub">127.0.0.1:${port} · ${esc(displayModel || '—')} · v${version}</div>
         </div>
         <div class="hm-hero-actions">
@@ -243,7 +251,7 @@ export function render() {
           <div class="hm-panel-title">
             <svg class="hm-panel-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/></svg>
             ${t('engine.dashModelConfig')}
-            <span class="hm-panel-title-count">${hermesProviders.filter(p => p.id !== 'custom').length}</span>
+            <span class="hm-panel-title-count">${hermesProviders.length}</span>
           </div>
           <div class="hm-panel-actions">
             <svg class="hm-panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
@@ -253,7 +261,7 @@ export function render() {
         <div class="hm-panel-body">
           <div class="hm-field-label" style="margin-bottom:10px">${t('engine.dashProviderPresets')}</div>
           <div class="hm-pills" style="margin-bottom:18px">
-            ${hermesProviders.filter(p => p.id !== 'custom').map(p => {
+            ${hermesProviders.map(p => {
               const api = p.transport === 'anthropic_messages' ? 'anthropic-messages'
                 : p.transport === 'google_gemini' ? 'google-generative-ai'
                 : 'openai-completions'
@@ -280,6 +288,27 @@ export function render() {
               </div>
             </label>
             <button class="hm-btn hm-btn--sm hm-fetch-models" ${fetchBusy ? 'disabled' : ''}>${fetchBusy ? t('engine.configFetching') : t('engine.configFetchModels')}</button>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;align-items:center">
+            <label class="hm-check-label"><input type="checkbox" id="hm-cfg-stream" ${formStream ? 'checked' : ''}> ${t('models.streamLabel')}</label>
+            <label class="hm-check-label"><input type="checkbox" id="hm-cfg-fast" ${formFastMode ? 'checked' : ''}> ${t('models.fastModeLabel')}</label>
+            <label class="hm-field" style="max-width:130px">
+              <span class="hm-field-label">${t('models.thinkLevelLabel')}</span>
+              <select id="hm-cfg-think" class="hm-input" style="padding:4px 8px;font-size:12px">
+                <option value="auto" ${formThinkLevel === 'auto' ? 'selected' : ''}>${t('models.thinkAuto')}</option>
+                <option value="low" ${formThinkLevel === 'low' ? 'selected' : ''}>${t('models.thinkLow')}</option>
+                <option value="medium" ${formThinkLevel === 'medium' ? 'selected' : ''}>${t('models.thinkMedium')}</option>
+                <option value="high" ${formThinkLevel === 'high' ? 'selected' : ''}>${t('models.thinkHigh')}</option>
+              </select>
+            </label>
+            <label class="hm-field" style="max-width:100px">
+              <span class="hm-field-label">${t('models.temperatureLabel')}</span>
+              <input type="text" id="hm-cfg-temp" class="hm-input" value="${esc(formTemperature)}" placeholder="0.7" style="padding:4px 8px;font-size:12px">
+            </label>
+            <label class="hm-field" style="max-width:100px">
+              <span class="hm-field-label">${t('models.maxTokensLabel')}</span>
+              <input type="text" id="hm-cfg-maxtokens" class="hm-input" value="${esc(formMaxTokens)}" placeholder="4096" style="padding:4px 8px;font-size:12px">
+            </label>
           </div>
           <div id="hm-cfg-msg" class="hm-muted" style="min-height:16px;margin:12px 0 6px">${cfgMsg}</div>
           <div class="hm-stack">
@@ -790,7 +819,10 @@ export function render() {
 
     modelBusy = true; cfgMsg = ''; draw()
     try {
-      await api.configureHermes(provider, formApiKey, formModel, formBaseUrl || null)
+      await api.configureHermes(provider, formApiKey, formModel, formBaseUrl || null, {
+        stream: formStream, fast: formFastMode, think: formThinkLevel,
+        temperature: formTemperature || null, maxTokens: formMaxTokens || null,
+      })
       cfgMsg = `<span style="color:var(--success)">✓ ${t('engine.configSaved')}</span>`
       // 刷新后端状态（不覆盖 form）
       try { hermesConfig = await api.hermesReadConfig() } catch (_) {}
@@ -873,6 +905,11 @@ export function render() {
       formBaseUrl = hermesConfig.base_url || ''
       formApiKey = hermesConfig.api_key || ''
       formModel = hermesConfig.model || ''
+      formStream = hermesConfig.stream !== false
+      formFastMode = hermesConfig.fast !== false
+      formThinkLevel = hermesConfig.think || 'auto'
+      formTemperature = hermesConfig.temperature != null ? String(hermesConfig.temperature) : ''
+      formMaxTokens = hermesConfig.max_tokens != null ? String(hermesConfig.max_tokens) : ''
       formInited = true
     }
     draw()

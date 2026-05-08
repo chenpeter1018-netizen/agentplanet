@@ -1,91 +1,363 @@
 /// Agent Planet ZeroClaw 引擎命令模块
-/// 便携版检测/快照/恢复/健康检查
+/// 便携版独立二进制管理器：检测/安装/启停/状态/快照/恢复/健康检查
 
-use crate::commands::CommandResult;
-use crate::planet_data_root;
 use serde_json::Value;
 use std::path::PathBuf;
+use std::sync::Mutex;
+use tauri::Manager;
 
-type Result<T> = CommandResult<T>;
+fn planet_data_root() -> PathBuf {
+    super::openclaw_dir().join("agent-planet")
+}
+
+type Result<T> = std::result::Result<T, String>;
+
+static ZEROCLAW_PID: Mutex<Option<u32>> = Mutex::new(None);
 
 fn zeroclaw_data_root() -> PathBuf {
     planet_data_root().join("zeroclaw")
 }
 
-/// 检测 ZeroClaw 安装
+fn zeroclaw_bin() -> PathBuf {
+    zeroclaw_data_root().join("bin").join(zeroclaw_bin_name())
+}
+
+fn zeroclaw_bin_name() -> &'static str {
+    #[cfg(target_os = "windows")]
+    { "zeroclaw.exe" }
+    #[cfg(not(target_os = "windows"))]
+    { "zeroclaw" }
+}
+
+fn zeroclaw_config_dir() -> PathBuf {
+    zeroclaw_data_root().join("config")
+}
+
+fn zeroclaw_knowledge_dir() -> PathBuf {
+    zeroclaw_data_root().join("knowledge")
+}
+
+fn zeroclaw_logs_dir() -> PathBuf {
+    zeroclaw_data_root().join("logs")
+}
+
+fn zeroclaw_pid_file() -> PathBuf {
+    zeroclaw_data_root().join(".pid")
+}
+
+fn ensure_dirs() {
+    let _ = std::fs::create_dir_all(zeroclaw_data_root().join("bin"));
+    let _ = std::fs::create_dir_all(zeroclaw_config_dir());
+    let _ = std::fs::create_dir_all(zeroclaw_knowledge_dir());
+    let _ = std::fs::create_dir_all(zeroclaw_logs_dir());
+}
+
+fn read_pid() -> Option<u32> {
+    std::fs::read_to_string(zeroclaw_pid_file())
+        .ok()
+        .and_then(|s| s.trim().parse().ok())
+}
+
+fn write_pid(pid: u32) {
+    let _ = std::fs::write(zeroclaw_pid_file(), pid.to_string());
+}
+
+fn clear_pid() {
+    let _ = std::fs::remove_file(zeroclaw_pid_file());
+}
+
+fn is_process_alive(pid: u32) -> bool {
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        std::process::Command::new("tasklist")
+            .args(["/fi", &format!("PID eq {}", pid)])
+            .creation_flags(CREATE_NO_WINDOW)
+            .output()
+            .map(|o| String::from_utf8_lossy(&o.stdout).contains(&pid.to_string()))
+            .unwrap_or(false)
+    }
+    #[cfg(not(windows))]
+    {
+        std::process::Command::new("kill")
+            .args(["-0", &pid.to_string()])
+            .status()
+            .map(|s| s.success())
+            .unwrap_or(false)
+    }
+}
+
+/// 获取 ZeroClaw 侦听端口（从 zeroclaw.json 读取，缺省 18790）
+fn zeroclaw_port() -> u16 {
+    let config_path = zeroclaw_config_dir().join("zeroclaw.json");
+    if let Ok(content) = std::fs::read_to_string(&config_path) {
+        if let Ok(val) = serde_json::from_str::<Value>(&content) {
+            if let Some(port) = val.get("port").and_then(|p| p.as_u64()) {
+                if port > 0 && port < 65536 {
+                    return port as u16;
+                }
+            }
+        }
+    }
+    18790
+}
+
+/// 检测 ZeroClaw 状态：是否安装、版本、运行状态
 #[tauri::command]
 pub async fn check_zeroclaw() -> Result<Value> {
-    let dir = zeroclaw_data_root();
-    let bin = dir.join("zeroclaw");
+    ensure_dirs();
+    let bin = zeroclaw_bin();
+    let installed = bin.exists();
+    let mut version: Option<String> = None;
+    let mut running = false;
+    let mut pid: Option<u32> = None;
+
+    if installed {
+        if let Ok(output) = std::process::Command::new(&bin)
+            .arg("--version")
+            .output()
+        {
+            version = String::from_utf8(output.stdout).ok().map(|s| s.trim().to_string());
+        }
+    }
+
+    // 检查是否在运行
+    if let Some(saved_pid) = read_pid() {
+        if is_process_alive(saved_pid) {
+            running = true;
+            pid = Some(saved_pid);
+        } else {
+            clear_pid();
+        }
+    }
+
     Ok(serde_json::json!({
-        "installed": bin.exists(),
-        "data_dir": dir.to_string_lossy(),
+        "installed": installed,
+        "version": version,
+        "running": running,
+        "pid": pid,
+        "port": zeroclaw_port(),
+        "bin_path": bin.to_string_lossy(),
+        "config_dir": zeroclaw_config_dir().to_string_lossy(),
+        "knowledge_dir": zeroclaw_knowledge_dir().to_string_lossy(),
+        "logs_dir": zeroclaw_logs_dir().to_string_lossy(),
+        "data_dir": zeroclaw_data_root().to_string_lossy(),
     }))
 }
 
-/// 安装 ZeroClaw 二进制
+/// 从 Tauri 资源目录复制内嵌的 zeroclaw 二进制到数据目录（离线免下载）
+fn install_bundled_zeroclaw(app: &tauri::AppHandle) -> std::result::Result<PathBuf, String> {
+    let bin_dir = zeroclaw_data_root().join("bin");
+    std::fs::create_dir_all(&bin_dir).map_err(|e| e.to_string())?;
+    let bin_path = zeroclaw_bin();
+
+    // 1. Tauri v2 生产模式 — 通过 AppHandle 解析资源目录
+    if let Ok(resource_dir) = app.path().resource_dir() {
+        let bundled = resource_dir.join("binaries").join(zeroclaw_bin_name());
+        if bundled.exists() {
+            std::fs::copy(&bundled, &bin_path).map_err(|e| format!("复制失败: {}", e))?;
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                let mut perms = std::fs::metadata(&bin_path).map_err(|e| e.to_string())?.permissions();
+                perms.set_mode(0o755);
+                std::fs::set_permissions(&bin_path, perms).map_err(|e| e.to_string())?;
+            }
+            return Ok(bin_path);
+        }
+    }
+
+    // 2. 开发模式 — CARGO_MANIFEST_DIR/binaries
+    let dev_bin = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("binaries")
+        .join(zeroclaw_bin_name());
+    if dev_bin.exists() {
+        std::fs::copy(&dev_bin, &bin_path).map_err(|e| format!("复制失败: {}", e))?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mut perms = std::fs::metadata(&bin_path).map_err(|e| e.to_string())?.permissions();
+            perms.set_mode(0o755);
+            std::fs::set_permissions(&bin_path, perms).map_err(|e| e.to_string())?;
+        }
+        return Ok(bin_path);
+    }
+
+    Err("bundled binary not found".into())
+}
+
+/// 安装/更新 ZeroClaw 二进制（优先离线内嵌 → 镜像下载 → GitHub）
 #[tauri::command]
-pub async fn install_zeroclaw(url: Option<String>) -> Result<Value> {
-    let dir = zeroclaw_data_root();
-    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+pub async fn install_zeroclaw(app: tauri::AppHandle, url: Option<String>, mirror_url: Option<String>) -> Result<Value> {
+    ensure_dirs();
 
-    let download_url = url.unwrap_or_else(|| {
-        "https://github.com/zeroclaw/zeroclaw/releases/latest/download/zeroclaw-macos-arm64".into()
-    });
+    // 1. 优先使用内嵌二进制（离线，无需网络）
+    if let Ok(bin_path) = install_bundled_zeroclaw(&app) {
+        write_version(&bin_path);
+        return Ok(serde_json::json!({ "ok": true, "path": bin_path.to_string_lossy(), "source": "bundled" }));
+    }
 
-    // 使用 reqwest 下载
+    // 2. 在线下载
+    let os = std::env::consts::OS;
+    let arch = std::env::consts::ARCH;
+
+    let platform = match (os, arch) {
+        ("macos", "aarch64") => "zeroclaw-aarch64-apple-darwin",
+        ("macos", _) => "zeroclaw-x86_64-apple-darwin",
+        ("windows", _) => "zeroclaw-x86_64-pc-windows-msvc.exe",
+        ("linux", "aarch64") => "zeroclaw-aarch64-unknown-linux-gnu",
+        _ => "zeroclaw-x86_64-unknown-linux-gnu",
+    };
+
+    // 下载 URL 优先级：用户传入 > 中国镜像 > GitHub
+    let download_url = if let Some(u) = url {
+        u
+    } else if let Some(mirror) = mirror_url {
+        format!("{}/{}", mirror.trim_end_matches('/'), platform)
+    } else {
+        format!("https://github.com/zeroclaw-labs/zeroclaw/releases/latest/download/{}", platform)
+    };
+
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(300))
         .build()
         .map_err(|e| e.to_string())?;
 
-    let resp = client
-        .get(&download_url)
-        .send()
-        .await
-        .map_err(|e| e.to_string())?;
-
+    let resp = client.get(&download_url).send().await.map_err(|e| format!("网络请求失败: {}（请检查网络连接或 VPN）", e))?;
     if !resp.status().is_success() {
-        return Err(format!("下载失败: HTTP {}", resp.status()));
+        return Err(format!("下载失败: HTTP {}（该地址可能在中国大陆无法访问，请尝试使用镜像地址）", resp.status()));
     }
 
     let bytes = resp.bytes().await.map_err(|e| e.to_string())?;
-    let bin_path = dir.join("zeroclaw");
+    let bin_path = zeroclaw_bin();
     std::fs::write(&bin_path, &bytes).map_err(|e| e.to_string())?;
 
-    // 设置可执行权限
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
-        let mut perms = std::fs::metadata(&bin_path)
-            .map_err(|e| e.to_string())?
-            .permissions();
+        let mut perms = std::fs::metadata(&bin_path).map_err(|e| e.to_string())?.permissions();
         perms.set_mode(0o755);
         std::fs::set_permissions(&bin_path, perms).map_err(|e| e.to_string())?;
     }
 
-    Ok(serde_json::json!({ "ok": true, "path": bin_path.to_string_lossy() }))
+    write_version(&bin_path);
+    Ok(serde_json::json!({ "ok": true, "path": bin_path.to_string_lossy(), "source": "download" }))
 }
 
-/// ZeroClaw 健康检测
+fn write_version(bin_path: &PathBuf) {
+    if let Ok(output) = std::process::Command::new(bin_path).arg("--version").output() {
+        if let Ok(ver) = String::from_utf8(output.stdout) {
+            let _ = std::fs::write(zeroclaw_data_root().join("VERSION"), ver.trim());
+        }
+    }
+}
+
+/// ZeroClaw 健康检查
 #[tauri::command]
 pub async fn zeroclaw_health_check() -> Result<Value> {
-    let bin = zeroclaw_data_root().join("zeroclaw");
+    let bin = zeroclaw_bin();
     if !bin.exists() {
         return Ok(serde_json::json!({ "healthy": false, "reason": "binary not found" }));
     }
-    let output = std::process::Command::new(&bin)
-        .arg("--version")
-        .output()
-        .ok();
+    let output = std::process::Command::new(&bin).arg("--version").output().ok();
     let version = output.and_then(|o| String::from_utf8(o.stdout).ok().map(|s| s.trim().to_string()));
-    Ok(serde_json::json!({
-        "healthy": version.is_some(),
-        "version": version,
-    }))
+    Ok(serde_json::json!({ "healthy": version.is_some(), "version": version }))
 }
 
-/// 创建快照
+/// 启动 ZeroClaw 守护进程
+#[tauri::command]
+pub async fn zeroclaw_start() -> Result<Value> {
+    let bin = zeroclaw_bin();
+    if !bin.exists() {
+        return Err("ZeroClaw 二进制不存在，请先安装".into());
+    }
+
+    // 检查是否已在运行
+    if let Some(pid) = read_pid() {
+        if is_process_alive(pid) {
+            return Ok(serde_json::json!({ "ok": true, "already_running": true, "pid": pid }));
+        }
+        clear_pid();
+    }
+
+    ensure_dirs();
+
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        let child = std::process::Command::new(&bin)
+            .args(["serve", "--config", &zeroclaw_config_dir().to_string_lossy()])
+            .current_dir(zeroclaw_data_root())
+            .creation_flags(CREATE_NO_WINDOW)
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .spawn()
+            .map_err(|e| format!("启动失败: {}", e))?;
+        write_pid(child.id());
+        Ok(serde_json::json!({ "ok": true, "pid": child.id() }))
+    }
+    #[cfg(not(windows))]
+    {
+        let child = std::process::Command::new(&bin)
+            .args(["serve", "--config", &zeroclaw_config_dir().to_string_lossy()])
+            .current_dir(zeroclaw_data_root())
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .spawn()
+            .map_err(|e| format!("启动失败: {}", e))?;
+        write_pid(child.id());
+        Ok(serde_json::json!({ "ok": true, "pid": child.id() }))
+    }
+}
+
+/// 停止 ZeroClaw 守护进程
+#[tauri::command]
+pub async fn zeroclaw_stop() -> Result<Value> {
+    if let Some(pid) = read_pid() {
+        if is_process_alive(pid) {
+            #[cfg(windows)]
+            {
+                std::process::Command::new("taskkill")
+                    .args(["/PID", &pid.to_string(), "/F"])
+                    .stdout(std::process::Stdio::null())
+                    .stderr(std::process::Stdio::null())
+                    .status()
+                    .ok();
+            }
+            #[cfg(not(windows))]
+            {
+                std::process::Command::new("kill")
+                    .args(["-9", &pid.to_string()])
+                    .status()
+                    .ok();
+            }
+        }
+        clear_pid();
+    }
+    Ok(serde_json::json!({ "ok": true }))
+}
+
+/// 重启 ZeroClaw 守护进程
+#[tauri::command]
+pub async fn zeroclaw_restart() -> Result<Value> {
+    zeroclaw_stop().await?;
+    // 短暂等待端口释放
+    tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+    zeroclaw_start().await
+}
+
+/// 运行时探测（TCP 端口是否在监听）
+#[tauri::command]
+pub async fn zeroclaw_runtime_probe() -> Result<Value> {
+    let port = zeroclaw_port();
+    let addr = format!("127.0.0.1:{}", port);
+    let ok = tokio::net::TcpStream::connect(&addr).await.is_ok();
+    Ok(serde_json::json!({ "listening": ok, "port": port }))
+}
+
+/// 创建快照（备份 agentplanet.json 和 zeroclaw 配置）
 #[tauri::command]
 pub async fn zeroclaw_create_snapshot(name: String) -> Result<Value> {
     let snap_dir = zeroclaw_data_root().join("snapshots");
@@ -96,17 +368,18 @@ pub async fn zeroclaw_create_snapshot(name: String) -> Result<Value> {
     let snap_path = snap_dir.join(&snap_name);
     std::fs::create_dir_all(&snap_path).map_err(|e| e.to_string())?;
 
-    // 快照配置目录
-    let config_src = planet_data_root().join("agentplanet.json");
-    if config_src.exists() {
-        std::fs::copy(&config_src, snap_path.join("agentplanet.json")).ok();
+    let sources = [
+        planet_data_root().join("agentplanet.json"),
+        zeroclaw_config_dir().join("zeroclaw.json"),
+    ];
+    for src in &sources {
+        if src.exists() {
+            if let Some(fname) = src.file_name() {
+                let _ = std::fs::copy(src, snap_path.join(fname));
+            }
+        }
     }
-
-    Ok(serde_json::json!({
-        "ok": true,
-        "name": snap_name,
-        "path": snap_path.to_string_lossy(),
-    }))
+    Ok(serde_json::json!({ "ok": true, "name": snap_name, "path": snap_path.to_string_lossy() }))
 }
 
 /// 列出快照
@@ -136,10 +409,71 @@ pub async fn zeroclaw_restore_snapshot(name: String) -> Result<Value> {
     if !snap_path.exists() {
         return Err(format!("快照不存在: {}", name));
     }
-    let config_src = snap_path.join("agentplanet.json");
-    if config_src.exists() {
+    // 恢复 agentplanet.json
+    let agentplanet_src = snap_path.join("agentplanet.json");
+    if agentplanet_src.exists() {
         let dest = planet_data_root().join("agentplanet.json");
-        std::fs::copy(&config_src, &dest).map_err(|e| e.to_string())?;
+        std::fs::copy(&agentplanet_src, &dest).map_err(|e| e.to_string())?;
+    }
+    // 恢复 zeroclaw.json
+    let zc_config_src = snap_path.join("zeroclaw.json");
+    if zc_config_src.exists() {
+        let dest = zeroclaw_config_dir().join("zeroclaw.json");
+        std::fs::copy(&zc_config_src, &dest).map_err(|e| e.to_string())?;
     }
     Ok(serde_json::json!({ "ok": true }))
+}
+
+/// 打开 ZeroClaw 目录（知识库/日志/配置）
+#[tauri::command]
+pub async fn zeroclaw_open_dir(kind: String) -> Result<Value> {
+    let dir = match kind.as_str() {
+        "knowledge" => zeroclaw_knowledge_dir(),
+        "logs" => zeroclaw_logs_dir(),
+        "config" => zeroclaw_config_dir(),
+        "data" => zeroclaw_data_root(),
+        _ => zeroclaw_data_root(),
+    };
+    ensure_dirs();
+    #[cfg(target_os = "macos")]
+    { std::process::Command::new("open").arg(&dir).spawn().map_err(|e| e.to_string())?; }
+    #[cfg(target_os = "windows")]
+    { std::process::Command::new("explorer").arg(&dir).spawn().map_err(|e| e.to_string())?; }
+    #[cfg(target_os = "linux")]
+    { std::process::Command::new("xdg-open").arg(&dir).spawn().map_err(|e| e.to_string())?; }
+    Ok(serde_json::json!({ "ok": true }))
+}
+
+/// HTTP 代理：转发请求到 ZeroClaw Gateway（用于前端聊天等）
+#[tauri::command]
+pub async fn zeroclaw_api_proxy(method: String, path: String, body: Option<Value>, headers: Option<Value>) -> Result<Value> {
+    let port = zeroclaw_port();
+    let url = format!("http://127.0.0.1:{}{}", port, path);
+    let client = reqwest::Client::new();
+    let req = match method.to_uppercase().as_str() {
+        "GET" => client.get(&url),
+        "POST" => client.post(&url),
+        "PUT" => client.put(&url),
+        "DELETE" => client.delete(&url),
+        _ => return Err(format!("不支持的 HTTP 方法: {}", method)),
+    };
+    let req = if let Some(h) = &headers {
+        if let Some(obj) = h.as_object() {
+            let mut r = req;
+            for (k, v) in obj {
+                if let Some(vs) = v.as_str() {
+                    r = r.header(k.as_str(), vs);
+                }
+            }
+            r
+        } else { req }
+    } else { req };
+    let req = if let Some(b) = &body {
+        req.json(b)
+    } else { req };
+    let resp = req.send().await.map_err(|e| format!("Gateway 请求失败: {}", e))?;
+    let status = resp.status().as_u16();
+    let resp_body = resp.text().await.unwrap_or_default();
+    let json_body: Value = serde_json::from_str(&resp_body).unwrap_or(Value::String(resp_body));
+    Ok(serde_json::json!({ "status": status, "body": json_body }))
 }

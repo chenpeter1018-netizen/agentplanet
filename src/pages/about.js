@@ -2,8 +2,7 @@
  * 关于页面 — 含软件注册激活
  */
 import { t } from '../lib/i18n.js'
-import { isTauriRuntime } from '../lib/tauri-api.js'
-import api from '../lib/tauri-api.js'
+import { isTauriRuntime, api } from '../lib/tauri-api.js'
 
 export async function render() {
   const page = document.createElement('div')

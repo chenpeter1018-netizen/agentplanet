@@ -29,7 +29,7 @@ import { initFeatureGates } from './lib/feature-gates.js'
 import { registerEngine, initEngineManager, getActiveEngine, getActiveEngineId, onEngineChange } from './lib/engine-manager.js'
 import openclawEngine from './engines/openclaw/index.js'
 import hermesEngine from './engines/hermes/index.js'
-import xintianEngine from './engines/xintian/index.js'
+import zeroclawEngine from './engines/zeroclaw/index.js'
 
 // 样式
 import './style/variables.css'
@@ -44,7 +44,8 @@ import './style/assistant.css'
 import './style/notes.css'
 // 引擎专属样式（scope 到 [data-engine="<id>"] 子树，不影响其他引擎）
 import './engines/hermes/style/hermes.css'
-import './engines/xintian/style/xintian.css'
+// ZeroClaw engine uses shared styles only
+
 
 // 初始化主题 + 国际化
 initTheme()
@@ -380,7 +381,7 @@ async function boot() {
   // 注册引擎
   registerEngine(openclawEngine)
   registerEngine(hermesEngine)
-  registerEngine(xintianEngine)
+  registerEngine(zeroclawEngine)
 
   // 初始化引擎管理器：读取 agent-planet.json 的 engineMode，注册对应路由
   await initEngineManager()
@@ -1004,7 +1005,7 @@ function showActivationOverlay(status) {
   async function doActivate() {
     const key = input.value.trim()
     if (!key || key.length < 10) {
-      msgEl.style.color = '#ef4444'
+      msgEl.style.color = 'var(--error)'
       msgEl.textContent = '请输入有效的注册码'
       return
     }
@@ -1014,15 +1015,15 @@ function showActivationOverlay(status) {
     try {
       const result = await api.activateLicense(key)
       if (result.can_access) {
-        msgEl.style.color = '#16a34a'
+        msgEl.style.color = 'var(--success)'
         msgEl.textContent = '✅ 激活成功！正在进入...'
         setTimeout(() => overlay.remove(), 800)
       } else {
-        msgEl.style.color = '#ef4444'
+        msgEl.style.color = 'var(--error)'
         msgEl.textContent = result.reason || '激活失败'
       }
     } catch (e) {
-      msgEl.style.color = '#ef4444'
+      msgEl.style.color = 'var(--error)'
       msgEl.textContent = String(e).replace(/^Error:\s*/, '')
     }
     btn.disabled = false

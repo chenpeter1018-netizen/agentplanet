@@ -95,7 +95,7 @@ export default {
   hideLogs: _('隐藏日志', 'Hide logs', '隱藏日誌'),
   // 仪表盘
   hermesSetupDocLink: _('查看完整文档', 'View full documentation', '查看完整文檔'),
-  hermesDashboardTitle: _('Hermes 仪表盘', 'Hermes Dashboard', 'Hermes 儀表盤'),
+  hermesDashboardTitle: _('hermes 运行状态', 'Hermes Status', 'hermes 運行狀態'),
   dashGatewayStatus: _('Gateway 状态', 'Gateway Status', 'Gateway 狀態'),
   dashRunning: _('运行中', 'Running', '運行中'),
   dashStopped: _('已停止', 'Stopped', '已停止'),
@@ -643,100 +643,28 @@ export default {
   comingSoonPhase2: _('即将在 Phase 2 中推出', 'Coming in Phase 2', '即將在 Phase 2 中推出'),
 
   // ============================================================
-  // ZeroClaw（ZeroClaw）· 产品宣传页
+  // ZeroClaw 引擎 — 便携运维工具箱
   // ============================================================
-  xintianNavHome: _('产品首页', 'Home', '產品首頁', 'ホーム', '홈', 'Trang chủ', 'Inicio', 'Início', 'Главная', 'Accueil', 'Startseite'),
-
-  // Hero
-  xtHeroEyebrow: _('ZeroClaw · 跨平台 AI 省心助手', 'ZeroClaw · Worry-free AI Companion', 'ZeroClaw · 跨平台 AI 省心助手', 'ZeroClaw · 手間いらずの AI コンパニオン', 'ZeroClaw · 근심 없는 AI 동반자'),
-  xtHeroTitleLead: _('WINDOWS 安装即用', 'READY FOR WINDOWS', 'WINDOWS 安裝即用', 'WINDOWS 用すぐに使える', 'WINDOWS에서 바로 사용'),
-  xtHeroTitleA: _('不只是对话，是会', 'Not just chat —', '不只是對話，是會'),
-  xtHeroTitleB: _('记得你', 'an AI that remembers you', '記得你'),
-  xtHeroTitleC: _('的 AI 管家', '.', '的 AI 管家'),
-  xtHeroSub: _(
-    '桌面客户端 + SaaS 后端 + 长期记忆 + 多渠道，一次安装，让 AI 真正长期为你干活。',
-    'Desktop client, SaaS backend, persistent memory, and multi-channel delivery — install once and let AI keep working for you.',
-    '桌面客戶端 + SaaS 後端 + 長期記憶 + 多頻道，一次安裝，讓 AI 真正長期為你幹活。',
-  ),
-  xtCtaDownloadWin: _('下载 Windows 版', 'Download for Windows', '下載 Windows 版', 'Windows 版をダウンロード', 'Windows 버전 다운로드'),
-  xtCtaVisitSite: _('访问官网', 'Visit website', '訪問官網', '公式サイトへ', '공식 웹사이트'),
-  xtHeroPlatformWin: _('Windows 10 / 11 · x64', 'Windows 10 / 11 · x64', 'Windows 10 / 11 · x64'),
-  xtHeroPlatformRest: _('macOS / Linux 即将上线', 'macOS / Linux coming soon', 'macOS / Linux 即將上線', 'macOS / Linux 近日公開', 'macOS / Linux 곧 출시'),
-  xtHeroFreeTrial: _('预置 2 个免费 Agent', '2 free agents included', '預置 2 個免費 Agent', '2 つの無料エージェント付き', '무료 에이전트 2개 포함'),
-
-  // Features 区域
-  xtFeaturesEyebrow: _('核心能力', 'CORE CAPABILITIES', '核心能力'),
-  xtFeaturesTitle: _('八种能力，一个助手', 'Eight capabilities, one companion', '八種能力，一個助手'),
-  xtFeaturesSub: _(
-    '从聊天、记忆到定时自动化、多渠道通知——把 AI 做到生产可用。',
-    'From chat and memory to scheduled automation and multi-channel delivery — AI ready for real work.',
-    '從聊天、記憶到定時自動化、多頻道通知——把 AI 做到生產可用。',
-  ),
-
-  // 8 个特性卡片
-  xtFeatChatTitle: _('流式对话 × 思维链', 'Streaming chat × CoT', '串流對話 × 思維鏈'),
-  xtFeatChatDesc: _('工具调用与思考过程全程可见，Markdown / 代码 / 表格原生渲染。', 'Full visibility into tool calls and reasoning, with native Markdown / code / table rendering.', '工具調用與思考過程全程可見，Markdown / 程式碼 / 表格原生渲染。'),
-  xtFeatAgentTitle: _('多智能体 Agent 体系', 'Multi-agent roster', '多智能體 Agent 體系'),
-  xtFeatAgentDesc: _('预置Zero + 晴辰两个助手，独立人设与记忆，可随时自定义。', 'Bundled Xintian & Qingchen assistants, each with its own persona and memory — fully customizable.', '預置Zero + 晴辰兩個助手，獨立人設與記憶，可隨時自定義。'),
-  xtFeatMemoryTitle: _('Zero智脑 · 长期记忆', 'Zero Brain · Long-term memory', 'Zero智腦 · 長期記憶'),
-  xtFeatMemoryDesc: _('事实 + 对话双层记忆，跨渠道共享，桌面说过的话微信也能想起来。', 'Dual-layer memory (facts + conversations) shared across channels — it remembers what you said, everywhere.', '事實 + 對話雙層記憶，跨頻道共享，桌面說過的話微信也能想起來。'),
-  xtFeatRagTitle: _('知识库 × RAG', 'Knowledge base × RAG', '知識庫 × RAG'),
-  xtFeatRagDesc: _('拖拽上传 PDF / Word / Markdown，回答自动附带引用与跳转链接。', 'Drag-and-drop PDF / Word / Markdown — answers come with citations and jump links.', '拖放上傳 PDF / Word / Markdown，回答自動附帶引用與跳轉連結。'),
-  xtFeatCronTitle: _('定时任务 × 后台任务', 'Scheduled & background tasks', '定時任務 × 背景任務'),
-  xtFeatCronDesc: _('到点自动跑，长调研一轮一轮来，进度条可暂停可恢复。', 'Cron-triggered runs and multi-round background research with pause/resume progress.', '到點自動跑，長調研一輪一輪來，進度條可暫停可恢復。'),
-  xtFeatSkillsTitle: _('技能中心 · SkillForge', 'Skill Hub · SkillForge', '技能中心 · SkillForge'),
-  xtFeatSkillsDesc: _('把常用流程打包成技能 @ 调用，内置抓取 / 日报 / 总结。', 'Package prompts into reusable skills — invoke with @, with built-in scraping, reporting, summarization.', '把常用流程打包成技能 @ 調用，內建抓取 / 日報 / 總結。'),
-  xtFeatChannelTitle: _('多消息渠道', 'Multi-channel delivery', '多訊息頻道'),
-  xtFeatChannelDesc: _('飞书 / 微信 / Telegram 等消息渠道互通，一套记忆跟你到每个对话窗。', 'Feishu / WeChat / Telegram all connected — one memory follows you to every conversation.', '飛書 / 微信 / Telegram 等訊息頻道互通，一套記憶跟你到每個對話窗。'),
-  xtFeatOfflineTitle: _('离线 × 本地优先', 'Offline × local-first', '離線 × 本地優先'),
-  xtFeatOfflineDesc: _('核心数据存本地 ~/.xintian-claw，断网队列补发，多后端容灾。', 'Core data stored locally at ~/.xintian-claw, offline queue + multi-backend failover.', '核心資料存本地 ~/.xintian-claw，斷網佇列補發，多後端容災。'),
-
-  // Compare 区域
-  xtCompareEyebrow: _('产品定位', 'POSITIONING', '產品定位'),
-  xtCompareTitle: _('同一份Zero · 不同的打开方式', 'One Xintian, three ways to open it', '同一份Zero · 不同的打開方式'),
-  xtCompareSub: _(
-    '根据你的身份选择最合适的入口：开发者用框架、工程师用 Python、普通用户用桌面版。',
-    'Pick the entrance that fits you: framework for developers, Python for engineers, desktop client for everyone else.',
-    '根據你的身份選擇最合適的入口：開發者用框架、工程師用 Python、普通使用者用桌面版。',
-  ),
-  xtComparePosA: _('开发者 / 架构师', 'DEVELOPER / ARCHITECT', '開發者 / 架構師'),
-  xtCompareADesc: _('完整 Agent 框架源码，支持自托管、插件扩展，适合深度定制。', 'Full Agent framework source with self-hosting and plugin extensions — for deep customization.', '完整 Agent 框架原始碼，支援自託管、外掛擴充，適合深度自訂。'),
-  xtCompareAForWho: _('面向团队与工程师', 'For teams and engineers', '面向團隊與工程師'),
-  xtComparePosB: _('Python 开发者', 'PYTHON DEVELOPER', 'Python 開發者'),
-  xtCompareBDesc: _('轻量级 Agent 框架，工具调用能力强，一键 uv 安装，快速集成。', 'Lightweight Agent framework with strong tool-calling, one-click uv install, fast integration.', '輕量級 Agent 框架，工具呼叫能力強，一鍵 uv 安裝，快速整合。'),
-  xtCompareBForWho: _('面向 Python 工程师', 'For Python engineers', '面向 Python 工程師'),
-  xtComparePosC: _('所有普通用户', 'EVERYONE', '所有普通使用者'),
-  xtCompareCTitle: _('ZeroClaw', 'ZeroClaw', 'ZeroClaw'),
-  xtCompareCDesc: _('Windows 双击安装即可用，内置 Agent 与记忆，不写一行代码也能上手。', 'Double-click install on Windows — agents and memory out of the box, zero code required.', 'Windows 雙擊安裝即可用，內建 Agent 與記憶，不寫一行程式碼也能上手。'),
-  xtCompareCForWho: _('面向日常使用者', 'For everyday users', '面向日常使用者'),
-  xtCompareRecommend: _('推荐', 'RECOMMENDED', '推薦'),
-
-  // CTA 区域
-  xtCtaEyebrow: _('立即开始', 'GET STARTED', '立即開始'),
-  xtCtaTitle: _('今天装上 · 明天就离不开', 'Install today, depend on it tomorrow', '今天裝上 · 明天就離不開'),
-  xtCtaSub: _(
-    '下载 Windows 安装包、双击运行，登录账号即可开始使用。无需配置 Python、无需命令行。',
-    'Download the Windows installer, double-click, sign in — ready to chat. No Python, no terminal.',
-    '下載 Windows 安裝包、雙擊執行，登入帳號即可開始使用。無需配置 Python、無需命令列。',
-  ),
-  xtBulletInstall: _('一次安装 · 自动更新', 'One-click install · auto update', '一次安裝 · 自動更新'),
-  xtBulletLogin: _('微信 / 邮箱登录', 'WeChat / Email sign-in', '微信 / 信箱登入'),
-  xtBulletSync: _('多设备记忆同步', 'Multi-device memory sync', '多裝置記憶同步'),
-  xtBulletSafe: _('核心数据本地加密', 'Core data encrypted locally', '核心資料本地加密'),
-  xtCtaPrimary: _('立即下载 Windows 版', 'Download for Windows', '立即下載 Windows 版'),
-  xtCtaSecondary: _('了解更多', 'Learn more', '了解更多'),
-  xtCtaLinkLabel: _('官网', 'WEBSITE', '官網'),
-
-  // Preview 气泡
-  xtPreviewGreet: _('你好呀，今天想让我帮你处理什么？', 'Hi! How can I help you today?', '你好呀，今天想讓我幫你處理什麼？'),
-  xtPreviewUserAsk: _('帮我盯着这条产品线的日报', 'Track the daily report of this product line', '幫我盯著這條產品線的日報'),
-  xtPreviewAnswer1: _('好的，已为你创建「日报追踪」定时任务。', 'Got it — created a scheduled "Daily Report" task for you.', '好的，已為你建立「日報追蹤」定時任務。'),
-  xtPreviewAnswer2: _('每天 18:00 推送到飞书群，记忆也会同步。', 'Posts to the Feishu group at 18:00 daily, memory stays in sync.', '每天 18:00 推送到飛書群，記憶也會同步。'),
-  xtPreviewFoot: _('由 Zero智脑 长期记忆支持', 'Powered by Zero Brain long-term memory', '由 Zero智腦 長期記憶支援'),
-
-  // Footer
-  xtFootBrand: _('ZeroClaw · 跨平台 AI 省心助手', 'ZeroClaw · Worry-free AI Companion', 'ZeroClaw · 跨平台 AI 省心助手'),
-  xtFootHome: _('官网', 'Website', '官網'),
-  xtFootDownload: _('下载', 'Download', '下載'),
-  xtFootSupport: _('帮助中心', 'Help Center', '幫助中心'),
+  zcSetupDesc: _('安装 ZeroClaw 便携运维引擎', 'Install ZeroClaw portable ops engine', '安裝 ZeroClaw 便攜運維引擎'),
+  zcSetupHint: _('ZeroClaw 是一个独立的便携运维工具箱，可维护/修复/备份其他引擎', 'ZeroClaw is a standalone portable ops toolbox that can maintain/repair/backup other engines', 'ZeroClaw 是一個獨立的便攜運維工具箱，可維護/修復/備份其他引擎'),
+  zcInstallHint: _('点击安装 ZeroClaw 便携运维引擎，用于维护和修复其他引擎', 'Install ZeroClaw portable ops engine to maintain and repair other engines', '點擊安裝 ZeroClaw 便攜運維引擎，用於維護和修復其他引擎'),
+  zcInstallNote: _('ZeroClaw 将安装到 Agent Planet 数据目录，无需手动配置', 'ZeroClaw will be installed to the Agent Planet data directory, no manual setup needed', 'ZeroClaw 將安裝到 Agent Planet 資料目錄，無需手動配置'),
+  zcChatDesc: _('连接 ZeroClaw Gateway 后即可在此对话，支持所有已安装的 Skills', 'Chat here after connecting to ZeroClaw Gateway, supports all installed Skills', '連接 ZeroClaw Gateway 後即可在此對話，支援所有已安裝的 Skills'),
+  zcBackupDesc: _('创建和管理 Agent Planet 配置快照', 'Create and manage Agent Planet configuration snapshots', '建立和管理 Agent Planet 配置快照'),
+  zcLogsDesc: _('查看 ZeroClaw Gateway 运行日志', 'View ZeroClaw Gateway runtime logs', '查看 ZeroClaw Gateway 執行日誌'),
+  zcKnowledgeDesc: _('管理 ZeroClaw 本地知识库', 'Manage ZeroClaw local knowledge base', '管理 ZeroClaw 本地知識庫'),
+  createBackup: _('创建备份', 'Create Backup', '建立備份'),
+  backupCreated: _('备份已创建', 'Backup created', '備份已建立'),
+  backupRestored: _('备份已恢复', 'Backup restored', '備份已恢復'),
+  noBackups: _('暂无备份', 'No backups', '暫無備份'),
+  restore: _('恢复', 'Restore', '恢復'),
+  openLogsDir: _('打开日志目录', 'Open Logs Directory', '開啟日誌目錄'),
+  openKnowledgeDir: _('打开知识库目录', 'Open Knowledge Directory', '開啟知識庫目錄'),
+  config: _('配置', 'Config', '配置'),
+  knowledge: _('知识库', 'Knowledge', '知識庫'),
+  dataDir: _('数据目录', 'Data Directory', '資料目錄'),
+  configDir: _('配置目录', 'Config Directory', '配置目錄'),
+  chatPlaceholder: _('输入消息，Enter 发送...', 'Type a message, Enter to send...', '輸入訊息，Enter 發送...'),
+  chatSend: _('发送', 'Send', '發送'),
+  goToService: _('前往服务页启动', 'Go to Services to start', '前往服務頁啟動'),
 }

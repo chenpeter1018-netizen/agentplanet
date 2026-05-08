@@ -94,7 +94,7 @@
     "switchedTo": "已切换到 {name} 模式",
     "hermesSetupDesc": "安装并配置 Hermes Agent",
     "hermesSetupIntro": "Hermes Agent 是一个具有工具调用能力的 AI 助手框架。<br>此引擎即将上线，敬请期待！",
-    "hermesDashboardTitle": "Hermes 仪表盘",
+    "hermesDashboardTitle": "hermes 运行状态",
     "hermesChatTitle": "Hermes 对话",
     "dashGatewayStatus": "Gateway 状态",
     "dashRunning": "运行中",

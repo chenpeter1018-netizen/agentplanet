@@ -83,6 +83,7 @@ let _primaryModel = ''
 let _selectedModel = ''
 let _isApplyingModel = false
 
+let _skillBtn = null, _skillDropdownEl = null, _selectedSkill = null, _skillsCache = []
 // ── 托管 Agent ──
 const HOSTED_STATUS = { IDLE: 'idle', RUNNING: 'running', WAITING: 'waiting_reply', PAUSED: 'paused', ERROR: 'error' }
 const HOSTED_SESSIONS_KEY = 'agent-planet-hosted-agent-sessions'
@@ -220,19 +221,21 @@ export async function render() {
       </div>
       <button class="chat-scroll-btn" id="chat-scroll-btn" style="display:none">↓</button>
       <div class="chat-cmd-panel" id="chat-cmd-panel" style="display:none"></div>
+	      <div class="chat-skill-panel" id="chat-skill-panel" style="display:none"><div class="chat-skill-panel-header">${t('chat.selectSkill')}</div><div class="chat-skill-list" id="chat-skill-list"><div class="chat-skill-empty">${t('chat.loadingSkills')}</div></div></div>
       <div class="chat-attachments-preview" id="chat-attachments-preview" style="display:none"></div>
       <div class="chat-input-area">
         <input type="file" id="chat-file-input" accept="image/*" multiple style="display:none">
         <button class="chat-attach-btn" id="chat-attach-btn" title="${t('chat.uploadImage')}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
         </button>
+	        <button class="chat-skill-btn" id="chat-skill-btn" title="${t('chat.skill')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>${t('chat.skill')}</span></button>
         <div class="chat-input-wrapper">
           <textarea id="chat-input" rows="1" placeholder="${t('chat.inputPlaceholder')}"></textarea>
         </div>
         <button class="chat-send-btn" id="chat-send-btn" disabled>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         </button>
-        <!-- Agent 托管按钮已禁用 -->
+        
       </div>
       <div class="hosted-agent-panel" id="hosted-agent-panel" style="display:none">
         <div class="hosted-agent-header">
@@ -301,6 +304,8 @@ export async function render() {
   _attachPreviewEl = page.querySelector('#chat-attachments-preview')
   _fileInputEl = page.querySelector('#chat-file-input')
   _modelSelectEl = page.querySelector('#chat-model-select')
+	_skillBtn = page.querySelector('#chat-skill-btn')
+	_skillDropdownEl = page.querySelector('#chat-skill-panel')
   _hostedBtn = page.querySelector('#chat-hosted-btn')
   _hostedBadgeEl = page.querySelector('#chat-hosted-badge')
   _hostedPanelEl = page.querySelector('#hosted-agent-panel')
@@ -521,6 +526,21 @@ function bindEvents(page) {
   _fileInputEl.addEventListener('change', handleFileSelect)
   // 粘贴图片（Ctrl+V）
   _textarea.addEventListener('paste', handlePaste)
+
+	// 技能选择
+	if (_skillBtn) {
+	  _skillBtn.addEventListener('click', (e) => {
+	    e.stopPropagation()
+	    toggleSkillPanel()
+	  })
+	  loadSkillsForChat()
+	}
+	// 点击外部关闭技能面板
+	page.addEventListener('click', (e) => {
+	  if (_skillDropdownEl && !_skillDropdownEl.contains(e.target) && e.target !== _skillBtn && !_skillBtn?.contains(e.target)) {
+	    hideSkillPanel()
+	  }
+	})
 
   _messagesEl.addEventListener('scroll', () => {
     const { scrollTop, scrollHeight, clientHeight } = _messagesEl
@@ -1631,22 +1651,95 @@ function toggleCmdPanel() {
   else { _textarea.value = '/'; showCmdPanel(); _textarea.focus() }
 }
 
+
+// ── 技能面板 ──
+
+function toggleSkillPanel() {
+  if (!_skillDropdownEl) return
+  const isOpen = _skillDropdownEl.style.display !== 'none'
+  if (isOpen) { hideSkillPanel() }
+  else { showSkillPanel() }
+}
+
+function showSkillPanel() {
+  if (!_skillDropdownEl) return
+  hideCmdPanel()
+  _skillDropdownEl.style.display = ''
+  if (_skillsCache.length === 0) loadSkillsForChat()
+}
+
+function hideSkillPanel() {
+  if (_skillDropdownEl) _skillDropdownEl.style.display = 'none'
+}
+
+async function loadSkillsForChat() {
+  if (!_skillDropdownEl) return
+  const listEl = _skillDropdownEl.querySelector('#chat-skill-list')
+  if (!listEl) return
+  listEl.innerHTML = `<div class="chat-skill-empty">${t('chat.loadingSkills')}</div>`
+  try {
+    const data = await api.skillsList(null)
+    const skills = (data?.skills || []).filter(s => s.eligible && !s.disabled)
+    _skillsCache = skills
+    if (skills.length === 0) {
+      listEl.innerHTML = `<div class="chat-skill-empty">${t('chat.noSkillsAvailable')}</div>`
+      return
+    }
+    listEl.innerHTML = skills.map(s => {
+      const name = escHtml(s.name || '')
+      const desc = escHtml(s.description || '')
+      return `<div class="chat-skill-item" data-skill="${name}" title="${desc}"><span class="chat-skill-item-name">/${name}</span><span class="chat-skill-item-desc">${desc}</span></div>`
+    }).join('') + `<div class="chat-skill-hint">${t('chat.skillHint')}</div>`
+    listEl.querySelectorAll('.chat-skill-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const skillName = item.dataset.skill
+        if (skillName) selectSkill(skillName)
+      })
+    })
+  } catch (e) {
+    listEl.innerHTML = `<div class="chat-skill-empty">${t('chat.noSkillsAvailable')}</div>`
+  }
+}
+
+function selectSkill(skillName) {
+  _selectedSkill = skillName
+  if (_skillBtn) {
+    const span = _skillBtn.querySelector('span')
+    if (span) span.textContent = skillName
+    _skillBtn.classList.add('active')
+  }
+  hideSkillPanel()
+}
+
+function escHtml(str) {
+  if (!str) return ''
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 // ── 消息发送 ──
 
 function sendMessage() {
-  const text = _textarea.value.trim()
-  if (!text && !_attachments.length) return
+  const rawText = _textarea.value.trim()
+  if (!rawText && !_attachments.length) return
   if (!wsClient.gatewayReady || !_sessionKey) {
     toast(t('chat.gatewayNotReadySend'), 'warning')
     return
   }
   hideCmdPanel()
+  hideSkillPanel()
   _textarea.value = ''
   _textarea.style.height = 'auto'
   updateSendState()
   const attachments = [..._attachments]
   _attachments = []
   renderAttachments()
+  const text = _selectedSkill ? `/${_selectedSkill} ${rawText}` : rawText
+  _selectedSkill = null
+  if (_skillBtn) {
+    _skillBtn.classList.remove('active')
+    const span = _skillBtn.querySelector('span')
+    if (span) span.textContent = t('chat.skill')
+  }
   if (_isSending || _isStreaming) { _messageQueue.push({ text, attachments }); return }
   doSend(text, attachments)
 }
@@ -3405,6 +3498,10 @@ export function cleanup() {
   _scrollBtn = null
   _sessionListEl = null
   _cmdPanelEl = null
+	_skillBtn = null
+	_skillDropdownEl = null
+	_selectedSkill = null
+	_skillsCache = []
   _currentAiBubble = null
   _currentAiText = ''
   _currentAiImages = []

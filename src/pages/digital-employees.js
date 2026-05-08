@@ -199,7 +199,7 @@ function renderMarket(container) {
         }
         btn.textContent = t('agents.added', '已加入')
         btn.style.background = 'var(--success, #22c55e)'
-        btn.style.color = '#fff'
+        btn.style.color = 'var(--text-inverse)'
         toast(t('agents.addSuccess', `${name} 已加入你的团队`), 'success')
       } catch (err) {
         btn.disabled = false

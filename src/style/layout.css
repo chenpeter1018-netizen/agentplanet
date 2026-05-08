@@ -1,14 +1,17 @@
-/* 侧边栏 */
+/* ═══════ 侧边栏 — macOS Tahoe 毛玻璃 ═══════ */
 #sidebar {
   width: var(--sidebar-width);
   height: 100vh;
-  background: var(--bg-secondary);
+  background: var(--bg-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border-right: 1px solid var(--border-primary);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  transition: width var(--transition-normal);
+  transition: width var(--transition-normal), background var(--transition-normal);
   overflow: hidden;
+  box-shadow: inset -1px 0 0 var(--glass-border);
 }
 
 /* 桌面端折叠态 */
@@ -45,6 +48,7 @@
 
 .sidebar-header {
   position: relative;
+  padding: 4px 0;
   border-bottom: 1px solid var(--border-secondary);
 }
 
@@ -106,9 +110,10 @@
   align-items: center;
   color: var(--accent);
 }
+.engine-icon img,
 .engine-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }
 .engine-label {
   flex: 1;
@@ -132,10 +137,12 @@
   right: var(--space-sm);
   top: 100%;
   z-index: 110;
-  background: var(--bg-secondary);
+  background: var(--bg-glass-heavy);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-md);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  box-shadow: var(--shadow-lg);
   padding: var(--space-xs) 0;
   max-height: 200px;
   overflow-y: auto;
@@ -161,9 +168,10 @@
   display: flex;
   align-items: center;
 }
+.engine-opt-icon img,
 .engine-opt-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }
 .engine-opt-name {
   flex: 1;
@@ -185,8 +193,10 @@
 }
 
 .sidebar-footer {
-  padding: var(--space-sm);
+  padding: var(--space-sm) 12px;
   border-top: 1px solid var(--border-secondary);
+  backdrop-filter: var(--glass-blur-light);
+  -webkit-backdrop-filter: var(--glass-blur-light);
 }
 
 .sidebar-meta {
@@ -202,7 +212,7 @@
   transition: color 0.2s;
 }
 .sidebar-link:hover {
-  color: var(--primary);
+  color: var(--accent);
 }
 .sidebar-version {
   color: var(--text-tertiary);
@@ -245,10 +255,12 @@
   bottom: 100%;
   left: 0;
   right: 0;
-  background: var(--bg-primary);
+  background: var(--bg-glass-heavy);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-md);
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
   max-height: 0;
   overflow: hidden;
   opacity: 0;
@@ -266,7 +278,9 @@
   border-bottom: 1px solid var(--border-secondary);
   position: sticky;
   top: 0;
-  background: var(--bg-primary);
+  background: var(--bg-glass-heavy);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   z-index: 1;
 }
 .lang-search {
@@ -348,46 +362,86 @@
 }
 
 .nav-section-title {
-  font-size: var(--font-size-xs);
+  font-size: 10px;
+  font-weight: 600;
   color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: var(--space-sm) var(--space-sm);
-  margin-bottom: var(--space-xs);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  padding: var(--space-sm) 16px 2px;
+  margin-bottom: 2px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-md);
+  gap: 10px;
+  padding: 7px 12px;
+  margin: 1px 8px;
+  border-radius: 10px;
   color: var(--text-secondary);
-  font-size: var(--font-size-sm);
+  font-size: 13px;
+  font-weight: 450;
   cursor: pointer;
   transition: all var(--transition-fast);
   user-select: none;
+  letter-spacing: -0.01em;
 }
 
 .nav-item:hover {
-  background: var(--bg-glass-hover);
+  background: var(--bg-card);
   color: var(--text-primary);
 }
 
 .nav-item.active {
   background: var(--accent-muted);
-  color: var(--accent-hover);
+  color: var(--accent);
+  font-weight: 540;
 }
 
-.nav-item svg {
-  width: 18px;
-  height: 18px;
+/* 图标颜色映射 — 继承 --icon-color 到子元素 */
+.nav-item.ic-blue   { --icon-color: var(--icon-blue); }
+.nav-item.ic-purple { --icon-color: var(--icon-purple); }
+.nav-item.ic-orange { --icon-color: var(--icon-orange); }
+.nav-item.ic-teal   { --icon-color: var(--icon-teal); }
+.nav-item.ic-pink   { --icon-color: var(--icon-pink); }
+.nav-item.ic-yellow { --icon-color: var(--icon-yellow); }
+.nav-item.ic-green  { --icon-color: var(--icon-green); }
+.nav-item.ic-red    { --icon-color: var(--icon-red); }
+.nav-item.ic-gray   { --icon-color: var(--icon-gray); }
+
+/* 多彩图标容器 — macOS Tahoe 毛玻璃风格 */
+.nav-item-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  opacity: 0.7;
+  background: color-mix(in srgb, var(--icon-color, var(--icon-blue)) 16%, transparent);
+  backdrop-filter: var(--glass-blur-light);
+  -webkit-backdrop-filter: var(--glass-blur-light);
+  transition: transform var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
 }
-
-.nav-item.active svg {
+.nav-item-icon svg {
+  width: 17px;
+  height: 17px;
+  color: var(--icon-color, var(--accent));
   opacity: 1;
+  flex-shrink: 0;
+}
+.nav-item:hover .nav-item-icon {
+  transform: scale(1.06);
+  background: color-mix(in srgb, var(--icon-color, var(--icon-blue)) 22%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--icon-color, var(--icon-blue)) 30%, transparent);
+}
+.nav-item.active .nav-item-icon {
+  transform: scale(1.08);
+  background: var(--icon-color, var(--accent));
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--icon-color, var(--icon-blue)) 35%, transparent);
+}
+.nav-item.active .nav-item-icon svg {
+  color: #fff;
 }
 
 /* 可折叠分组 */
@@ -434,6 +488,7 @@
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  background: var(--bg-primary);
 }
 
 /* 主内容区 */
@@ -517,7 +572,7 @@
 
 /* 版本更新通知横幅 */
 .update-banner {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #007aff, #5ac8fa);
   color: #fff;
   padding: 10px 20px;
   font-size: var(--font-size-sm);
@@ -661,7 +716,9 @@
   align-items: center;
   gap: var(--space-sm);
   padding: 8px var(--space-md);
-  background: var(--bg-secondary);
+  background: var(--bg-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border-bottom: 1px solid var(--border-primary);
   flex-shrink: 0;
 }

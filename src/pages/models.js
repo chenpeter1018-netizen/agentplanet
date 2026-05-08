@@ -1206,6 +1206,16 @@ function addModel(page, state, providerKey) {
     { name: 'name', label: t('models.displayName'), placeholder: t('models.displayNamePlaceholder'), hint: t('models.displayNameHint') },
     { name: 'contextWindow', label: t('models.contextLength'), placeholder: t('models.contextLengthPlaceholder'), hint: t('models.contextLengthHint') },
     { name: 'reasoning', label: t('models.isReasoning'), type: 'checkbox', value: false, hint: t('models.reasoningHint') },
+    { name: 'stream', label: t('models.streamLabel'), type: 'checkbox', value: true, hint: t('models.streamHint') },
+    { name: 'fastMode', label: t('models.fastModeLabel'), type: 'checkbox', value: true, hint: t('models.fastModeHint') },
+    { name: 'thinkLevel', label: t('models.thinkLevelLabel'), type: 'select', value: 'low', options: [
+      { value: 'auto', label: t('models.thinkAuto') },
+      { value: 'low', label: t('models.thinkLow') },
+      { value: 'medium', label: t('models.thinkMedium') },
+      { value: 'high', label: t('models.thinkHigh') },
+    ], hint: t('models.thinkLevelHint') },
+    { name: 'maxTokens', label: t('models.maxTokensLabel'), value: '', hint: t('models.maxTokensHint') },
+    { name: 'temperature', label: t('models.temperatureLabel'), value: '', hint: t('models.temperatureHint') },
   ]
 
   if (available.length) {
@@ -1293,6 +1303,16 @@ function buildFieldsHtml(fields) {
           ${f.hint ? `<div class="form-hint">${f.hint}</div>` : ''}
         </div>`
     }
+    if (f.type === 'select') {
+      return `
+        <div class="form-group">
+          <label class="form-label">${f.label}</label>
+          <select class="form-input" data-name="${f.name}" style="width:100%">
+            ${(f.options || []).map(o => `<option value="${o.value}" ${o.value === f.value ? 'selected' : ''}>${o.label}</option>`).join('')}
+          </select>
+          ${f.hint ? `<div class="form-hint">${f.hint}</div>` : ''}
+        </div>`
+    }
     return `
       <div class="form-group">
         <label class="form-label">${f.label}</label>
@@ -1324,11 +1344,14 @@ function doAddModel(state, providerKey, vals) {
     name: vals.name?.trim() || vals.id.trim(),
     reasoning: !!vals.reasoning,
     input: ['text', 'image'],
-    config: {
-      stream: true,
-      think: 'low',
-    },
+    config: {},
   }
+  // 性能配置：stream 和 think 有默认值，其余按用户输入
+  if (vals.stream !== false) model.config.stream = true
+  if (vals.fastMode !== false) model.config.fast = true
+  if (vals.thinkLevel && vals.thinkLevel !== 'auto') model.config.think = vals.thinkLevel
+  if (vals.maxTokens) model.config.maxTokens = parseInt(vals.maxTokens) || 0
+  if (vals.temperature) model.config.temperature = parseFloat(vals.temperature) || 0
   if (vals.contextWindow) model.contextWindow = parseInt(vals.contextWindow) || 0
   state.config.models.providers[providerKey].models.push(model)
   toast(t('models.modelAdded', { name: model.name }), 'success')
@@ -1579,7 +1602,7 @@ async function fetchRemoteModels(btn, page, state, providerKey) {
       if (!selected.length) { toast(t('models.selectAtLeast'), 'warning'); return }
       pushUndo(state)
       for (const id of selected) {
-        provider.models.push({ id, input: ['text', 'image'] })
+        provider.models.push({ id, input: ['text', 'image'], config: { stream: true, think: 'low' } })
       }
       overlay.remove()
       renderProviders(page, state)

@@ -41,6 +41,8 @@
 /* 卡片 */
 .card {
   background: var(--bg-card);
+  backdrop-filter: var(--glass-blur-light);
+  -webkit-backdrop-filter: var(--glass-blur-light);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
@@ -62,6 +64,8 @@
 
 .stat-card {
   background: var(--bg-card);
+  backdrop-filter: var(--glass-blur-light);
+  -webkit-backdrop-filter: var(--glass-blur-light);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
@@ -296,7 +300,9 @@ mark {
 }
 
 .modal {
-  background: var(--bg-secondary);
+  background: var(--bg-glass-heavy);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-xl);
   padding: var(--space-xl);
@@ -591,12 +597,12 @@ mark {
   content: '';
   position: absolute; left: 2px; top: 2px;
   width: 20px; height: 20px; border-radius: 50%;
-  background: #fff;
+  background: var(--bg-secondary);
   box-shadow: 0 1px 3px rgba(0,0,0,0.15);
   transition: transform 0.25s;
 }
 .toggle-switch input:checked + .toggle-slider {
-  background: var(--error, #ef4444);
+  background: var(--accent);
 }
 .toggle-switch input:checked + .toggle-slider::before {
   transform: translateX(20px);
@@ -628,7 +634,9 @@ mark {
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  background: var(--bg-secondary);
+  background: var(--bg-glass);
+  backdrop-filter: var(--glass-blur-light);
+  -webkit-backdrop-filter: var(--glass-blur-light);
   cursor: pointer;
   user-select: none;
   transition: background 0.15s;

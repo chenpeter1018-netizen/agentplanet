@@ -30,18 +30,10 @@ export const TRANSPORT_CODEX = 'codex_responses'
 
 // China-region provider ids (for UI sub-grouping). Everything else is
 // considered "International" by default.
-const CN_PROVIDER_IDS = new Set(['zai', 'kimi-coding', 'alibaba', 'minimax-cn', 'xiaomi'])
+const CN_PROVIDER_IDS = new Set(['deepseek', 'siliconflow', 'volcengine', 'aliyun', 'zhipu', 'minimax', 'moonshot'])
 
-// Aggregator ids (also tagged via `isAggregator` on the data).
-const AGGREGATOR_IDS = new Set([
-  'openrouter',
-  'ai-gateway',
-  'opencode-zen',
-  'opencode-go',
-  'kilocode',
-  'huggingface',
-  'nous',
-])
+// Aggregator / local ids — models must be specified by user.
+const AGGREGATOR_IDS = new Set(['openrouter', 'ollama'])
 
 let _cached = null
 let _loadPromise = null

@@ -6,7 +6,7 @@ mod utils;
 
 use commands::{
     agent, assistant, config, device, diagnose, extensions, hermes, hermes_providers, logs, memory,
-    messaging, pairing, service, skills, update,
+    messaging, pairing, service, skills, update, zeroclaw,
 };
 
 pub fn run() {
@@ -319,6 +319,19 @@ pub fn run() {
             hermes::hermes_dashboard_stop,
             hermes::hermes_toolsets_list,
             hermes::hermes_cron_jobs_list,
+            // ZeroClaw 引擎管理
+            zeroclaw::check_zeroclaw,
+            zeroclaw::install_zeroclaw,
+            zeroclaw::zeroclaw_health_check,
+            zeroclaw::zeroclaw_start,
+            zeroclaw::zeroclaw_stop,
+            zeroclaw::zeroclaw_restart,
+            zeroclaw::zeroclaw_runtime_probe,
+            zeroclaw::zeroclaw_create_snapshot,
+            zeroclaw::zeroclaw_list_snapshots,
+            zeroclaw::zeroclaw_restore_snapshot,
+            zeroclaw::zeroclaw_open_dir,
+            zeroclaw::zeroclaw_api_proxy,
         ])
         .on_window_event(|window, event| {
             // 关闭窗口时最小化到托盘，不退出应用

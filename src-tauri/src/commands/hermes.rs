@@ -1443,6 +1443,11 @@ pub async fn configure_hermes(
     api_key: String,
     model: Option<String>,
     base_url: Option<String>,
+    stream: Option<bool>,
+    fast_mode: Option<bool>,
+    think_level: Option<String>,
+    temperature: Option<f64>,
+    max_tokens: Option<u32>,
 ) -> Result<String, String> {
     let home = hermes_home();
     std::fs::create_dir_all(&home).map_err(|e| format!("创建配置目录失败: {e}"))?;
@@ -1495,17 +1500,25 @@ pub async fn configure_hermes(
         format!("  provider: {provider}\n")
     };
 
+    // Build optional model config lines
+    let mut model_opts = String::new();
+    if stream == Some(true) { model_opts.push_str("  stream: true\n"); }
+    if fast_mode == Some(true) { model_opts.push_str("  fast: true\n"); }
+    if let Some(ref level) = think_level {
+        if level != "auto" { model_opts.push_str(&format!("  think: {level}\n")); }
+    }
+    if let Some(t) = temperature { model_opts.push_str(&format!("  temperature: {t}\n")); }
+    if let Some(mt) = max_tokens { model_opts.push_str(&format!("  max_tokens: {mt}\n")); }
+
     let config_content = if config_path.exists() {
-        // 读取现有配置，只更新 model 区块，保留其余内容
         let existing = std::fs::read_to_string(&config_path).unwrap_or_default();
-        merge_hermes_config_yaml(&existing, &model_str, &base_url_line, &provider_line)
+        merge_hermes_config_yaml(&existing, &model_str, &base_url_line, &provider_line, &model_opts)
     } else {
-        // 首次创建：生成完整的基线配置
         format!(
             r#"# Hermes Agent configuration (managed by Agent Planet)
 model:
   default: {model_str}
-{provider_line}{base_url_line}platform_toolsets:
+{provider_line}{base_url_line}{model_opts}platform_toolsets:
   api_server:
     - hermes-api-server
 terminal:
@@ -1586,6 +1599,7 @@ fn merge_hermes_config_yaml(
     model_str: &str,
     base_url_line: &str,
     provider_line: &str,
+    model_opts: &str,
 ) -> String {
     let mut result = Vec::new();
     let mut in_model_block = false;
@@ -1604,12 +1618,15 @@ fn merge_hermes_config_yaml(
             result.push("model:".to_string());
             result.push(format!("  default: {model_str}"));
             if !base_url_line.is_empty() {
-                // base_url_line 已包含 "  base_url: xxx\n" 格式
                 result.push(base_url_line.trim_end().to_string());
             }
-            // provider_line 仅在非空时写入（Hermes 不需要 provider 字段）
             if !provider_line.is_empty() {
                 result.push(provider_line.trim_end().to_string());
+            }
+            if !model_opts.is_empty() {
+                for line in model_opts.trim().lines() {
+                    result.push(line.to_string());
+                }
             }
             i += 1;
             // 跳过旧 model 区块的缩进行

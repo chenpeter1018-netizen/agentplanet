@@ -178,4 +178,9 @@ export default {
   compactionRestoreDone: _('已恢复到检查点', 'Restored to checkpoint', '已恢復到檢查點'),
   compactionConfirmRestore: _('确定要恢复到此检查点吗？当前会话内容将被替换。', 'Restore to this checkpoint? Current session content will be replaced.', '確定要恢復到此檢查點嗎？目前對話內容將被替換。'),
   compactionUnsupported: _('当前 Gateway 版本不支持压缩历史功能，请升级到 OpenClaw 2026.4.9+', 'Compaction history requires OpenClaw 2026.4.9+', '目前 Gateway 版本不支援壓縮歷史功能，請升級到 OpenClaw 2026.4.9+'),
+  skill: _('技能', 'Skill', '技能'),
+  selectSkill: _('选择技能', 'Select Skill', '選擇技能'),
+  noSkillsAvailable: _('暂无可用技能', 'No skills available', '暫無可用技能'),
+  loadingSkills: _('加载中...', 'Loading...', '載入中...'),
+  skillHint: _('选择技能后 Agent 将使用指定技能执行', 'Agent will use the selected skill', '選擇技能後 Agent 將使用指定技能執行'),
 }

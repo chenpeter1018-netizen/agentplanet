@@ -11,8 +11,17 @@ https://github.com/qingchencloud/clawpanel 这个是项目 参考对标的 githu
 现在需要把这个参考对标的clawpanel 做全方位的分析，和梳理，我需要完整地复刻一个这样的程序，显示 windows 版本的，是免安装的，用户收到后打开直接用，但是得要自己开发，写代码，不是直接复制，但是结果拿到的界面架构却是相似的，它里面有一部分功能我不需要或者修改。以及界面的风格也需要修改。还有它里面有一个晴辰助手不需要，模型配置里 有个晴辰云的卡片 也不需要，我还需要增加一个数字员工的界面，预配置一些智能体，……现在先 做全面分析吧，包括但不仅限于基于Tauri v2 构建，前端 Vanilla JS + Vite，后端 Rust。文件结构，架构、运行逻辑、文件内的代码等。并且形成文档保存在 obsidian。
 开发的文件夹目录：'/Users/petermac/claude claw/new'
 
+【【【【【模型奔溃  claude  命令设置】】】】】
 
-
+echo 'export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"' >> ~/.zshrc
+echo 'export ANTHROPIC_AUTH_TOKEN="sk-e8de9ca76cf14dcca4883b07b865750d"' >> ~/.zshrc
+echo 'export ANTHROPIC_MODEL="deepseek-v4-pro[1m"' >> ~/.zshrc
+echo 'export ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-v4-pro[1m"' >> ~/.zshrc
+echo 'export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-v4-pro[1m"' >> ~/.zshrc
+echo 'export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash[1m"' >> ~/.zshrc
+echo 'export CLAUDE_CODE_SUBAGENT_MODEL="deepseek-v4-pro[1m"' >> ~/.zshrc
+echo 'export CLAUDE_CODE_EFFORT_LEVEL="max"' >> ~/.zshrc
+source ~/.zshrc
 
 
 
@@ -498,3 +507,174 @@ https://git-scm.com/install/
 和 mac 的都下载下来 放到 安装包里 做一个 环境程序文件夹，
 用户安装程序的时候 直接把这个文件夹放到用户系统桌面，
 初始设置页面 加一个卡片提示 用户 已经帮用户 把环境程序下载到桌面 安装后再回来 这边执行引擎设置 
+
+还有引擎选项 下拉菜单 
+ openclaw 的图标 换成：/Users/petermac/Downloads/openclawsvg.png       
+ hermes 的图标换成 ：/Users/petermac/Downloads/hmlogo.png
+ zeroclaw 的图标换成 ：'/Users/petermac/claude claw/agent-planet/zeroclawlogo.png'
+
+ 用户打开程序后的 状态栏和桌面程序图标应该是：'/Users/petermac/claude claw/agent-planet/agentplanettb.png'
+                                                                         
+                                                                                                            
+────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 还有 hermes 模式下界面的ui 配色 字体  等  也要和 openclaw 模式界面 ui 一致      
+
+
+ hermes引擎模式下 模型配置 服务商预设都是英文的，而且很多都是国外的 不用，还缺少 自定义 ；并且没有 openclaw 模式的编辑模型的复选框功能，如：流式输出，低思考模式等；
+改成
+快捷选择：
+DeepSeek
+硅基流动
+火山引擎
+阿里云百炼
+智谱 AI
+MiniMax
+Moonshot / Kimi
+OpenAI 官方
+Anthropic 官方
+Google Gemini
+xAI (Grok)
+Groq
+OpenRouter
+NVIDIA NIM
+Ollama (本地)
+自定义模型
+
+
+
+好了现在回到 openclaw 模式下AI 对话页面 优化  ，我在预览的时候  右键打开 inspect element 看到这个代码     
+  注释 ：<!-- Agent 托管按钮已禁用 --> agent 托管没有了 也不用注释了，
+  placeholder="输入消息，Enter 发送，/ 打开指令"   输入消息 和 左边的附件中间 我希望加入  选项 文字：技能   
+  ， 选择功能就是就是用户在对话的时候看到 有 skill 技能选项  可以主动去选技能 对话 只有可以节省 token 让    
+  agent 明确用什么技能 执行  ，能实现吗？     
+
+
+
+  https://gpt-best.apifox.cn/ 这个是第三方api开发文档 看下怎么配置，key 是这个，怎么配置 模型，我教你生图的时候 可以调用 这个模型：gpt-5.5、gpt-5.5-pro、gpt-image-2 ，这个平台有很多模型我需要image2生图
+，如果你学会了，配置好 测试下 生图一个知识卡
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────
+📋 开发记录 2026-05-08
+
+一、ZeroClaw 引擎集成 — Phase 2: 前端页面 + API 封装
+──────────────────────────
+1. 删除旧引擎
+   - 删除 src/engines/xintian/ 整个目录（index.js, pages/landing.js, style/xintian.css）
+   - 删除 src/engines/zeroclaw/adapter.js
+   - main.js: xintianEngine → zeroclawEngine
+
+2. Zeroclaw 引擎主文件 src/engines/zeroclaw/index.js
+   - 完整引擎接口: detect/boot/cleanup/getNavItems/getRoutes/isReady/isGatewayRunning
+   - 状态轮询 15 秒间隔
+   - boot() 自动启动 Gateway（已安装但未运行时）
+
+3. Zeroclaw 前端页面（7个）
+   - pages/setup.js — 初始安装设置页面
+   - pages/dashboard.js — 仪表盘，显示引擎状态
+   - pages/chat.js — AI 对话页面，通过 API 代理与 Gateway 通信
+   - pages/service.js — 服务管理（启停/重启/状态）
+   - pages/backup.js — 快照管理（创建/恢复/列表）
+   - pages/logs.js — 日志目录快捷打开
+   - pages/knowledge.js — 知识库目录快捷打开
+
+4. API 封装 src/lib/tauri-api.js
+   - 新增 12 个 ZeroClaw API: checkZeroclaw, installZeroclaw, zeroclawHealthCheck,
+     zeroclawStart, zeroclawStop, zeroclawRestart, zeroclawRuntimeProbe,
+     zeroclawCreateSnapshot, zeroclawListSnapshots, zeroclawRestoreSnapshot,
+     zeroclawOpenDir, zeroclawApiProxy
+
+5. 国际化 src/locales/modules/engine.js
+   - 移除 ~100 行 xintian 产品落地页 i18n（xtHero*, xtFeat*, xtCompare* 等）
+   - 新增 ~20 个 Zeroclaw 引擎 i18n: zcSetupDesc, zcSetupHint, zcInstallHint,
+     zcInstallNote, zcChatDesc, zcBackupDesc, zcLogsDesc, zcKnowledgeDesc 等
+
+二、ZeroClaw 引擎集成 — Phase 3: 后端 + 打包
+──────────────────────────
+6. Rust 后端 src-tauri/src/commands/zeroclaw.rs
+   - 新增/增强 12 个命令: check_zeroclaw, install_zeroclaw, zeroclaw_health_check,
+     zeroclaw_start, zeroclaw_stop, zeroclaw_restart, zeroclaw_runtime_probe,
+     zeroclaw_create_snapshot, zeroclaw_list_snapshots, zeroclaw_restore_snapshot,
+     zeroclaw_open_dir, zeroclaw_api_proxy
+   - install_bundled_zeroclaw(): 离线优先，从 Tauri 资源目录解压二进制
+   - install_zeroclaw(): 优先内嵌 → 在线下载回退
+   - zeroclaw_api_proxy(): HTTP 代理转发到 ZeroClaw Gateway
+   - 编译错误修复: CommandResult → std::result::Result<T, String>
+   - 编译错误修复: crate::planet_data_root → 本地函数定义
+
+7. lib.rs 修改 src-tauri/src/lib.rs
+   - 注册 zeroclaw_api_proxy 命令到 invoke_handler
+
+8. 打包配置 src-tauri/tauri.conf.json
+   - bundle.resources: {"binaries/*": "binaries/"} — 将 ZeroClaw 二进制打包进应用
+
+9. 开发占位二进制
+   - src-tauri/binaries/zeroclaw（macOS/Linux shell 脚本）
+   - src-tauri/binaries/zeroclaw.exe（Windows 批处理）
+   - 响应 --version / serve 命令，用于开发调试
+
+三、OpenClaw 对话页面优化
+──────────────────────────
+10. 移除 Agent 托管残留
+    - src/pages/chat.js: 移除 <!-- Agent 托管按钮已禁用 --> 注释
+    - src/locales/modules/chat.js: 添加技能选择器相关 i18n
+
+11. 技能选择器（src/pages/chat.js, src/style/chat.css）
+    - 输入框左侧新增「技能」下拉按钮
+    - 用户可主动选择 skill 进行对话
+
+四、Hermes 模型配置优化
+──────────────────────────
+12. 服务商预设中国化 src/engines/hermes/lib/providers.js
+    - 预设改为: DeepSeek, 硅基流动, 火山引擎, 阿里云百炼, 智谱 AI,
+      MiniMax, Kimi, OpenAI, Anthropic, Gemini, xAI, Groq, OpenRouter,
+      NVIDIA NIM, Ollama, 自定义
+    - 移除不常用的国外服务商
+
+13. 模型编辑新增性能选项 src/pages/models.js
+    - 5 个新配置字段: 流式输出, 快速模式, 思考深度, 温度, MaxTokens
+    - 新建模型默认启用流式输出 + 低思考深度
+    - i18n 翻译 src/locales/modules/models.js
+
+五、中国用户网络适配（2026-05-08 深夜）
+──────────────────────────
+14. 离线安装加固 src-tauri/src/commands/zeroclaw.rs
+    - install_bundled_zeroclaw() 改用 tauri::AppHandle + Manager trait
+    - 生产模式: app.path().resource_dir() 解析资源目录
+    - 开发模式: CARGO_MANIFEST_DIR/binaries 回退
+    - 移除不可靠的 current_dir() 和 exe_path 猜测
+
+15. 下载镜像支持
+    - install_zeroclaw() 新增 mirror_url 参数
+    - URL 优先级: 用户传入 > 中国镜像 > GitHub
+    - 错误提示明确告知中国大陆可能无法访问 GitHub
+
+16. 前端 API 更新 src/lib/tauri-api.js
+    - installZeroclaw(url, mirrorUrl) 支持双参数
+
+六、新增文件清单
+────────────────
+src/engines/zeroclaw/index.js          — 引擎主入口
+src/engines/zeroclaw/pages/dashboard.js — 仪表盘
+src/engines/zeroclaw/pages/setup.js    — 初始设置
+src/engines/zeroclaw/pages/chat.js     — AI 对话
+src/engines/zeroclaw/pages/service.js  — 服务管理
+src/engines/zeroclaw/pages/backup.js   — 快照管理
+src/engines/zeroclaw/pages/logs.js     — 日志查看
+src/engines/zeroclaw/pages/knowledge.js — 知识库
+src-tauri/binaries/zeroclaw            — macOS/Linux 占位二进制
+src-tauri/binaries/zeroclaw.exe        — Windows 占位二进制
+
+七、删除文件
+────────────────
+src/engines/xintian/index.js
+src/engines/xintian/pages/landing.js
+src/engines/xintian/style/xintian.css
+src/engines/zeroclaw/adapter.js
+src-tauri/binaries/.gitkeep
+
+八、构建状态
+────────────────
+✅ npm run build 通过
+✅ cargo check 通过（仅 2 个无害 warning）
+⏳ macOS 安装包构建中
+⏳ Windows GitHub Actions 待配置

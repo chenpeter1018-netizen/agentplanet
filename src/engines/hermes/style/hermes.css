@@ -1,133 +1,102 @@
 /**
- * Hermes Agent — Editorial Luxury UI
+ * Hermes Agent — macOS Tahoe Glass UI
  * ----------------------------------------------------------
- * Style archetype: Minimal Single Column + Liquid Glass hints
- * Mood:            editorial, premium, sophisticated (Hermes = messenger of the gods)
- * Palette:         warm black + muted gold (#CA8A04) + warm off-white
- * Typography:      Serif display (Playfair → Georgia fallback)
- *                  + Inter body + JetBrains Mono code
+ * All design tokens map to the global Tahoe design system (variables.css).
+ * Hermes inherits the same glass-morphism aesthetic as OpenClaw.
  *
- * Scoped under `[data-engine="hermes"]`. OpenClaw is never touched.
- *
- * Design principles:
- *   1. Restraint over density. Lots of whitespace.
- *   2. Hairline borders, never heavy fills.
- *   3. ONE accent color (gold). Use sparingly.
- *   4. Serif italic for editorial eyebrow labels.
- *   5. Subtle radial glow for depth, NEVER hard shadows.
- *   6. Hover = color shift + 1px border, never scale/translate.
+ * Scoped under `[data-engine="hermes"]`.
  */
 
 /* ==========================================================================
- * 0 · Design tokens — light theme (warm off-white, gold)
+ * 0 · Design tokens — mapped to global Tahoe variables
  * ==========================================================================
  */
 [data-engine="hermes"] {
-  /* Surfaces — warm, paper-like */
-  --hm-surface-0: #FAFAF9;       /* page background (warm off-white) */
-  --hm-surface-1: #ffffff;       /* raised panel */
-  --hm-surface-2: #F5F5F4;       /* subtle inset / hover */
-  --hm-surface-3: #E7E5E4;       /* input background */
+  --hm-surface-0: var(--bg-primary);
+  --hm-surface-1: var(--bg-secondary);
+  --hm-surface-2: var(--bg-tertiary);
+  --hm-surface-3: var(--bg-tertiary);
 
-  /* Hairline borders */
-  --hm-border:         rgba(28, 25, 23, 0.08);
-  --hm-border-subtle:  rgba(28, 25, 23, 0.04);
-  --hm-border-strong:  rgba(28, 25, 23, 0.20);
+  --hm-border:        var(--border-primary);
+  --hm-border-subtle: var(--border-secondary);
+  --hm-border-strong: var(--border-primary);
 
-  /* Text — warm not cool */
-  --hm-text-primary:   #1C1917;     /* stone-900 */
-  --hm-text-secondary: #44403C;     /* stone-700 */
-  --hm-text-tertiary:  #78716C;     /* stone-500 */
-  --hm-text-muted:     #A8A29E;     /* stone-400 */
-  --hm-text-inverse:   #FAFAF9;
+  --hm-text-primary:   var(--text-primary);
+  --hm-text-secondary: var(--text-secondary);
+  --hm-text-tertiary:  var(--text-tertiary);
+  --hm-text-muted:     var(--text-tertiary);
+  --hm-text-inverse:   var(--text-inverse);
 
-  /* Gold accent — the only feature color */
-  --hm-accent:        #CA8A04;      /* amber-600 */
-  --hm-accent-hover:  #A16207;      /* amber-700 */
-  --hm-accent-soft:   rgba(202, 138, 4, 0.08);
-  --hm-accent-ring:   rgba(202, 138, 4, 0.22);
+  --hm-accent:       var(--accent);
+  --hm-accent-hover: var(--accent-hover);
+  --hm-accent-soft:  var(--accent-muted);
+  --hm-accent-ring:  var(--border-focus);
 
-  /* State colors — desaturated, editorial */
-  --hm-success:       #65A30D;      /* lime-600 */
-  --hm-success-soft:  rgba(101, 163, 13, 0.10);
-  --hm-error:         #B91C1C;      /* red-700 */
-  --hm-error-soft:    rgba(185, 28, 28, 0.08);
-  --hm-warn:          #B45309;      /* amber-700 */
-  --hm-warn-soft:     rgba(180, 83, 9, 0.08);
-  --hm-info:          #0369A1;      /* sky-700 */
-  --hm-info-soft:     rgba(3, 105, 161, 0.08);
+  --hm-success:      var(--success);
+  --hm-success-soft: var(--success-muted);
+  --hm-error:        var(--error);
+  --hm-error-soft:   var(--error-muted);
+  --hm-warn:         var(--warning);
+  --hm-warn-soft:    var(--warning-muted);
+  --hm-info:         var(--info);
+  --hm-info-soft:    var(--info-muted);
 
-  /* Fonts — editorial stack, no network imports */
-  --hm-font-serif: 'Playfair Display', 'Cormorant Garamond', 'Iowan Old Style',
-                   'Palatino Linotype', Palatino, Georgia, 'Times New Roman',
-                   'Noto Serif SC', 'Source Han Serif SC', serif;
-  --hm-font-sans:  'Inter', 'IBM Plex Sans', -apple-system, BlinkMacSystemFont,
-                   'Segoe UI', 'PingFang SC', 'Noto Sans SC', sans-serif;
-  --hm-font-mono:  'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Mono',
-                   'Fira Code', Consolas, 'Liberation Mono', monospace;
+  --hm-font-serif: var(--font-sans);
+  --hm-font-sans:  var(--font-sans);
+  --hm-font-mono:  var(--font-mono);
 
-  /* Radii — soft but not round */
-  --hm-radius-sm: 4px;
-  --hm-radius-md: 8px;
-  --hm-radius-lg: 12px;
-  --hm-radius-xl: 20px;
+  --hm-radius-sm: var(--radius-sm);
+  --hm-radius-md: var(--radius-md);
+  --hm-radius-lg: var(--radius-lg);
+  --hm-radius-xl: var(--radius-xl);
 
-  /* Shadows — no heavy drops; a warm ring instead */
-  --hm-shadow-sm: 0 1px 0 rgba(28, 25, 23, 0.03);
-  --hm-shadow-md: 0 1px 2px rgba(28, 25, 23, 0.04),
-                  0 8px 24px rgba(28, 25, 23, 0.04);
-  --hm-shadow-lg: 0 2px 4px rgba(28, 25, 23, 0.04),
-                  0 24px 48px rgba(28, 25, 23, 0.06);
-  --hm-glow-gold: 0 0 0 1px var(--hm-accent-ring),
-                  0 12px 32px rgba(202, 138, 4, 0.15);
+  --hm-shadow-sm: var(--shadow-sm);
+  --hm-shadow-md: var(--shadow-md);
+  --hm-shadow-lg: var(--shadow-lg);
+  --hm-glow-gold: var(--shadow-glow);
 
-  /* Motion — slower, more deliberate */
-  --hm-ease:       cubic-bezier(0.22, 1, 0.36, 1);
-  --hm-ease-serif: cubic-bezier(0.4, 0, 0.2, 1);
+  --hm-ease:       var(--transition-normal);
   --hm-dur-fast:   180ms;
   --hm-dur-normal: 280ms;
   --hm-dur-slow:   500ms;
 }
 
-/* Dark theme overrides — warm black, not cool slate */
+/* Dark — same mapping, global variables handle the dark values */
 [data-theme="dark"] [data-engine="hermes"],
 [data-engine="hermes"][data-theme="dark"] {
-  --hm-surface-0: #0C0A09;         /* stone-950 warm black */
-  --hm-surface-1: #1C1917;         /* stone-900 */
-  --hm-surface-2: #292524;         /* stone-800 */
-  --hm-surface-3: #44403C;         /* stone-700 */
+  --hm-surface-0: var(--bg-primary);
+  --hm-surface-1: var(--bg-secondary);
+  --hm-surface-2: var(--bg-tertiary);
+  --hm-surface-3: var(--bg-tertiary);
 
-  --hm-border:         rgba(250, 250, 249, 0.08);
-  --hm-border-subtle:  rgba(250, 250, 249, 0.04);
-  --hm-border-strong:  rgba(250, 250, 249, 0.20);
+  --hm-border:        var(--border-primary);
+  --hm-border-subtle: var(--border-secondary);
+  --hm-border-strong: var(--border-primary);
 
-  --hm-text-primary:   #FAFAF9;
-  --hm-text-secondary: #D6D3D1;    /* stone-300 */
-  --hm-text-tertiary:  #A8A29E;    /* stone-400 */
-  --hm-text-muted:     #78716C;    /* stone-500 */
-  --hm-text-inverse:   #1C1917;
+  --hm-text-primary:   var(--text-primary);
+  --hm-text-secondary: var(--text-secondary);
+  --hm-text-tertiary:  var(--text-tertiary);
+  --hm-text-muted:     var(--text-tertiary);
+  --hm-text-inverse:   var(--text-inverse);
 
-  --hm-accent:        #EAB308;      /* amber-500 slightly brighter for dark */
-  --hm-accent-hover:  #FACC15;      /* amber-400 */
-  --hm-accent-soft:   rgba(234, 179, 8, 0.12);
-  --hm-accent-ring:   rgba(234, 179, 8, 0.28);
+  --hm-accent:       var(--accent);
+  --hm-accent-hover: var(--accent-hover);
+  --hm-accent-soft:  var(--accent-muted);
+  --hm-accent-ring:  var(--border-focus);
 
-  --hm-success:       #84CC16;      /* lime-500 */
-  --hm-success-soft:  rgba(132, 204, 22, 0.14);
-  --hm-error:         #EF4444;      /* red-500 */
-  --hm-error-soft:    rgba(239, 68, 68, 0.12);
-  --hm-warn:          #F59E0B;      /* amber-500 */
-  --hm-warn-soft:     rgba(245, 158, 11, 0.12);
-  --hm-info:          #0EA5E9;      /* sky-500 */
-  --hm-info-soft:     rgba(14, 165, 233, 0.12);
+  --hm-success:      var(--success);
+  --hm-success-soft: var(--success-muted);
+  --hm-error:        var(--error);
+  --hm-error-soft:   var(--error-muted);
+  --hm-warn:         var(--warning);
+  --hm-warn-soft:    var(--warning-muted);
+  --hm-info:         var(--info);
+  --hm-info-soft:    var(--info-muted);
 
-  --hm-shadow-sm: 0 1px 0 rgba(0, 0, 0, 0.3);
-  --hm-shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4),
-                  0 8px 24px rgba(0, 0, 0, 0.4);
-  --hm-shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.4),
-                  0 24px 60px rgba(0, 0, 0, 0.6);
-  --hm-glow-gold: 0 0 0 1px var(--hm-accent-ring),
-                  0 12px 40px rgba(234, 179, 8, 0.22);
+  --hm-shadow-sm: var(--shadow-sm);
+  --hm-shadow-md: var(--shadow-md);
+  --hm-shadow-lg: var(--shadow-lg);
+  --hm-glow-gold: var(--shadow-glow);
 }
 
 /* ==========================================================================
@@ -217,15 +186,24 @@
   margin-left: 4px;
 }
 
+[data-engine="hermes"] .hm-hero-icon-wrap {
+  margin-bottom: 6px;
+}
+[data-engine="hermes"] .hm-hero-icon {
+  width: 48px;
+  height: 48px;
+  display: block;
+  object-fit: contain;
+}
+
 [data-engine="hermes"] .hm-hero-h1 {
-  font-family: var(--hm-font-serif);
-  font-size: 44px;
-  font-weight: 500;
+  font-family: var(--hm-font-sans);
+  font-size: 28px;
+  font-weight: 700;
   line-height: 1.05;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.04em;
   color: var(--hm-text-primary);
   margin: 0 0 10px 0;
-  font-feature-settings: 'liga', 'dlig', 'kern';
 }
 
 [data-engine="hermes"] .hm-hero-sub {
@@ -450,8 +428,8 @@
   /* Soft paper-lift elevation on cream page — gives cards presence
      without breaking the whisper-thin editorial aesthetic. */
   box-shadow:
-    0 1px 2px rgba(28, 25, 23, 0.03),
-    0 2px 6px rgba(28, 25, 23, 0.035);
+    0 1px 2px rgba(28, 25, 23,0.03),
+    0 2px 6px rgba(28, 25, 23,0.035);
   transition: border-color var(--hm-dur-normal) var(--hm-ease),
               box-shadow  var(--hm-dur-normal) var(--hm-ease);
 }
@@ -609,7 +587,7 @@
 /* CTA = the main action, gold */
 [data-engine="hermes"] .hm-btn--cta {
   background: var(--hm-accent);
-  color: #1C1917;
+  color: var(--hm-text-primary);
   border-color: var(--hm-accent);
   font-family: var(--hm-font-serif);
   font-weight: 500;
@@ -623,7 +601,7 @@
   box-shadow: var(--hm-glow-gold);
 }
 [data-theme="dark"] [data-engine="hermes"] .hm-btn--cta {
-  color: #0C0A09;
+  color: var(--hm-text-primary);
 }
 
 [data-engine="hermes"] .hm-btn--danger {
@@ -719,6 +697,17 @@
   gap: 8px;
 }
 
+[data-engine="hermes"] .hm-check-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--hm-text-secondary);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
 [data-engine="hermes"] .hm-field-label {
   font-family: var(--hm-font-serif);
   font-style: italic;
@@ -785,14 +774,14 @@
   font-size: 12px;
   line-height: 1.65;
   padding: 18px 20px;
-  background: #1C1917;
+  background: var(--hm-text-primary);
   color: #E7E5E4;
   border: 1px solid var(--hm-border);
   border-radius: var(--hm-radius-sm);
   overflow-x: auto;
 }
 [data-engine="hermes"] .hm-term .hm-muted {
-  color: #A8A29E;
+  color: var(--hm-text-muted);
 }
 
 /* ==========================================================================
@@ -1019,319 +1008,64 @@
 /* ==========================================================================
  * 13 · Global sidebar + content when Hermes engine is active
  * ==========================================================================
- * Applied via `body[data-active-engine="hermes"]` — OpenClaw unaffected.
- * We define the same tokens here so global components (sidebar etc.) can
- * consume them through standard var() resolution without knowing Hermes.
+ * Inherits macOS Tahoe glass-morphism from global CSS. Minimal overrides only.
  */
 body[data-active-engine="hermes"] {
-  /* Warm off-white page */
-  background: #FAFAF9;
+  background: var(--bg-primary);
 }
-
 body[data-active-engine="hermes"] #content {
-  background: #FAFAF9;
+  background: var(--bg-primary);
 }
 
-/* ---- Sidebar shell ---- */
-body[data-active-engine="hermes"] #sidebar {
-  background: #FFFFFF;
-  border-right: 1px solid rgba(28, 25, 23, 0.08);
-  font-family: 'Inter', 'IBM Plex Sans', -apple-system, BlinkMacSystemFont,
-               'Segoe UI', 'PingFang SC', 'Noto Sans SC', sans-serif;
-}
-
-/* Header (logo + close) */
-body[data-active-engine="hermes"] .sidebar-header {
-  border-bottom: 1px solid rgba(28, 25, 23, 0.06);
-  padding: 12px 6px;
-  height: auto;
-}
-body[data-active-engine="hermes"] .sidebar-logo-full img {
-  padding: 8px;
-  border-radius: 6px;
-}
-body[data-active-engine="hermes"] .sidebar-collapse-btn,
-body[data-active-engine="hermes"] .sidebar-close-btn {
-  color: #A8A29E;
-  background: transparent;
-  border: none;
-  font-size: 14px;
-  cursor: pointer;
-  transition: color 180ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-body[data-active-engine="hermes"] .sidebar-collapse-btn:hover,
-body[data-active-engine="hermes"] .sidebar-close-btn:hover {
-  color: #CA8A04;
-}
-
-/* Engine switcher — gold accent */
-body[data-active-engine="hermes"] .engine-switcher {
-  border-bottom: 1px solid rgba(28, 25, 23, 0.06);
-  padding: 14px 14px 16px;
-}
-body[data-active-engine="hermes"] .engine-switcher-label {
-  font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
-  font-style: italic;
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  text-transform: none;
-  color: #78716C;
-  padding: 0 4px 8px;
-}
+/* Engine switcher — Tahoe blue accent */
 body[data-active-engine="hermes"] .engine-current {
-  padding: 10px 12px;
-  border: 1px solid rgba(202, 138, 4, 0.25);
-  border-radius: 6px;
-  background: rgba(202, 138, 4, 0.05);
-  color: #1C1917;
-  font-size: 13px;
-  font-weight: 500;
-  transition: border-color 180ms, background 180ms;
+  border-color: var(--border-primary);
+  background: var(--bg-card);
 }
 body[data-active-engine="hermes"] .engine-current:hover {
-  border-color: #CA8A04;
-  background: rgba(202, 138, 4, 0.10);
+  border-color: var(--accent);
 }
-body[data-active-engine="hermes"] .engine-icon { color: #CA8A04; }
+body[data-active-engine="hermes"] .engine-icon { color: var(--accent); }
 body[data-active-engine="hermes"] .engine-dropdown {
-  background: #FFFFFF;
-  border: 1px solid rgba(28, 25, 23, 0.08);
-  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.04), 0 8px 24px rgba(28, 25, 23, 0.08);
-  border-radius: 8px;
-  padding: 4px;
-}
-body[data-active-engine="hermes"] .engine-option {
-  padding: 8px 10px;
-  border-radius: 4px;
-  color: #44403C;
+  background: var(--bg-glass-heavy);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-lg);
 }
 body[data-active-engine="hermes"] .engine-option:hover {
-  background: rgba(202, 138, 4, 0.08);
-  color: #1C1917;
+  background: var(--accent-muted);
 }
 body[data-active-engine="hermes"] .engine-option.active,
 body[data-active-engine="hermes"] .engine-active-check {
-  color: #CA8A04;
-  font-weight: 500;
+  color: var(--accent);
 }
 
-/* Section titles — italic serif */
+/* Nav items — let global Tahoe CSS handle everything */
 body[data-active-engine="hermes"] .nav-section-title {
-  font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
-  font-style: italic;
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  text-transform: none;
-  color: #A8A29E;
-  padding: 14px 14px 6px;
+  font-style: normal;
 }
-
-/* Nav items — minimal with gold active indicator */
-body[data-active-engine="hermes"] .sidebar-nav {
-  padding: 4px 10px;
-}
-body[data-active-engine="hermes"] .nav-item {
-  padding: 9px 14px;
-  border-radius: 6px;
-  color: #44403C;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.005em;
-  transition: background 180ms cubic-bezier(0.22, 1, 0.36, 1),
-              color 180ms cubic-bezier(0.22, 1, 0.36, 1);
-  position: relative;
-}
-body[data-active-engine="hermes"] .nav-item:hover {
-  background: rgba(28, 25, 23, 0.04);
-  color: #1C1917;
-}
-body[data-active-engine="hermes"] .nav-item.active {
-  background: rgba(202, 138, 4, 0.08);
-  color: #CA8A04;
-  font-weight: 500;
-}
-/* Thin gold accent line on active item (left edge) */
+/* Remove gold accent line */
 body[data-active-engine="hermes"] .nav-item.active::before {
-  content: '';
-  position: absolute;
-  left: 5px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 2px;
-  height: 16px;
-  background: #CA8A04;
-  border-radius: 2px;
-}
-body[data-active-engine="hermes"] .nav-item svg {
-  opacity: 0.6;
-  width: 16px;
-  height: 16px;
-}
-body[data-active-engine="hermes"] .nav-item.active svg {
-  opacity: 1;
-  color: #CA8A04;
+  display: none;
 }
 
-/* Footer (theme/lang/meta) */
-body[data-active-engine="hermes"] .sidebar-footer {
-  border-top: 1px solid rgba(28, 25, 23, 0.06);
-  padding: 8px 10px;
-}
-body[data-active-engine="hermes"] #btn-theme-toggle,
-body[data-active-engine="hermes"] .lang-trigger {
-  padding: 8px 14px;
-  border-radius: 6px;
-  color: #78716C;
-  font-size: 12.5px;
-  transition: background 180ms, color 180ms;
-}
-body[data-active-engine="hermes"] #btn-theme-toggle:hover,
-body[data-active-engine="hermes"] .lang-trigger:hover {
-  background: rgba(28, 25, 23, 0.04);
-  color: #1C1917;
-}
-body[data-active-engine="hermes"] .lang-dropdown {
-  background: #FFFFFF;
-  border: 1px solid rgba(28, 25, 23, 0.08);
-  box-shadow: 0 -4px 16px rgba(28, 25, 23, 0.08);
-  border-radius: 8px;
-}
-body[data-active-engine="hermes"] .lang-option {
-  padding: 8px 12px;
-  border-radius: 4px;
-  color: #44403C;
-  font-size: 12.5px;
-}
-body[data-active-engine="hermes"] .lang-option:hover {
-  background: rgba(202, 138, 4, 0.06);
-}
-body[data-active-engine="hermes"] .lang-option.active,
-body[data-active-engine="hermes"] .lang-option-check {
-  color: #CA8A04;
-  font-weight: 500;
-}
-body[data-active-engine="hermes"] .lang-option-code {
-  font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace;
-  font-size: 10.5px;
-  color: #A8A29E;
-}
-
-/* Footer meta strip (version + link) */
-body[data-active-engine="hermes"] .sidebar-meta {
-  font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace;
-  font-size: 10.5px;
-  padding: 8px 14px 4px;
-  color: #A8A29E;
-}
-body[data-active-engine="hermes"] .sidebar-link {
-  color: #A8A29E;
-  transition: color 180ms;
-}
-body[data-active-engine="hermes"] .sidebar-link:hover {
-  color: #CA8A04;
-}
-body[data-active-engine="hermes"] .sidebar-version { color: #A8A29E; }
-
-/* ---- Dark mode variants ---- */
+/* Dark — inherit global dark variables */
 [data-theme="dark"] body[data-active-engine="hermes"],
 body[data-active-engine="hermes"][data-theme="dark"] {
-  background: #0C0A09;
+  background: var(--bg-primary);
 }
 [data-theme="dark"] body[data-active-engine="hermes"] #content {
-  background: #0C0A09;
+  background: var(--bg-primary);
 }
-[data-theme="dark"] body[data-active-engine="hermes"] #sidebar {
-  background: #131210;
-  border-right-color: rgba(250, 250, 249, 0.06);
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .sidebar-header {
-  border-bottom-color: rgba(250, 250, 249, 0.06);
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .engine-switcher {
-  border-bottom-color: rgba(250, 250, 249, 0.06);
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .engine-switcher-label,
-[data-theme="dark"] body[data-active-engine="hermes"] .nav-section-title {
-  color: #78716C;
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .engine-current {
-  border-color: rgba(234, 179, 8, 0.35);
-  background: rgba(234, 179, 8, 0.08);
-  color: #FAFAF9;
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .engine-current:hover {
-  border-color: #EAB308;
-  background: rgba(234, 179, 8, 0.14);
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .engine-icon,
-[data-theme="dark"] body[data-active-engine="hermes"] .engine-option.active,
-[data-theme="dark"] body[data-active-engine="hermes"] .engine-active-check {
-  color: #EAB308;
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .engine-dropdown {
-  background: #1C1917;
-  border-color: rgba(250, 250, 249, 0.08);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .engine-option {
-  color: #D6D3D1;
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .engine-option:hover {
-  background: rgba(234, 179, 8, 0.10);
-  color: #FAFAF9;
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .nav-item {
-  color: #D6D3D1;
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .nav-item:hover {
-  background: rgba(250, 250, 249, 0.05);
-  color: #FAFAF9;
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .nav-item.active {
-  background: rgba(234, 179, 8, 0.12);
-  color: #EAB308;
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .nav-item.active::before {
-  background: #EAB308;
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .nav-item.active svg {
-  color: #EAB308;
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .sidebar-footer {
-  border-top-color: rgba(250, 250, 249, 0.06);
-}
-[data-theme="dark"] body[data-active-engine="hermes"] #btn-theme-toggle,
-[data-theme="dark"] body[data-active-engine="hermes"] .lang-trigger {
-  color: #A8A29E;
-}
-[data-theme="dark"] body[data-active-engine="hermes"] #btn-theme-toggle:hover,
-[data-theme="dark"] body[data-active-engine="hermes"] .lang-trigger:hover {
-  background: rgba(250, 250, 249, 0.05);
-  color: #FAFAF9;
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .lang-dropdown {
-  background: #1C1917;
-  border-color: rgba(250, 250, 249, 0.08);
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .lang-option {
-  color: #D6D3D1;
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .lang-option:hover {
-  background: rgba(234, 179, 8, 0.08);
-}
-[data-theme="dark"] body[data-active-engine="hermes"] .lang-option.active,
-[data-theme="dark"] body[data-active-engine="hermes"] .lang-option-check {
-  color: #EAB308;
-}
+/* Dark — inherit global Tahoe dark variables, no gold overrides */
 [data-theme="dark"] body[data-active-engine="hermes"] .sidebar-meta,
 [data-theme="dark"] body[data-active-engine="hermes"] .sidebar-link,
 [data-theme="dark"] body[data-active-engine="hermes"] .sidebar-version {
-  color: #78716C;
+  color: var(--hm-text-tertiary);
 }
 [data-theme="dark"] body[data-active-engine="hermes"] .sidebar-link:hover {
-  color: #EAB308;
+  color: var(--accent);
 }
 
 /* ==========================================================================
@@ -1377,7 +1111,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
 }
 [data-engine="hermes"] .hermes-phase.active .hermes-phase-dot {
   background: var(--hm-accent);
-  color: #1C1917;
+  color: var(--hm-text-primary);
   border-color: var(--hm-accent);
   box-shadow: var(--hm-glow-gold);
 }
@@ -1511,7 +1245,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
 }
 [data-engine="hermes"] .hermes-progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--hm-accent), #EAB308);
+  background: linear-gradient(90deg, var(--hm-accent), color-mix(in srgb, var(--hm-accent) 60%, white));
   border-radius: 2px;
   transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -1535,7 +1269,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
   border: 1px solid var(--hm-border);
   border-radius: var(--hm-radius-sm);
   overflow: hidden;
-  background: #1C1917;
+  background: var(--hm-text-primary);
 }
 [data-engine="hermes"] .hermes-log-content {
   max-height: 260px;
@@ -1545,8 +1279,8 @@ body[data-active-engine="hermes"][data-theme="dark"] {
   font-family: var(--hm-font-mono);
   font-size: 11.5px;
   line-height: 1.65;
-  color: #D6D3D1;
-  background: #1C1917;
+  color: var(--hm-text-secondary);
+  background: var(--hm-text-primary);
 }
 [data-engine="hermes"] .hermes-log-content div {
   white-space: pre-wrap;
@@ -1554,7 +1288,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
 }
 [data-engine="hermes"] .hermes-log-content:empty::before {
   content: '// waiting for stream…';
-  color: #78716C;
+  color: var(--hm-text-tertiary);
   font-style: italic;
 }
 
@@ -1590,7 +1324,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
 }
 [data-theme="dark"] [data-engine="hermes"] .hermes-mode-btn.btn-primary {
   background: var(--hm-accent);
-  color: #0C0A09;
+  color: var(--hm-text-primary);
   border-color: var(--hm-accent);
 }
 [data-engine="hermes"] .hermes-mode-btn.btn-secondary:hover {
@@ -1689,7 +1423,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
 }
 [data-engine="hermes"] .btn-primary {
   background: var(--hm-accent);
-  color: #1C1917;
+  color: var(--hm-text-primary);
   border-color: var(--hm-accent);
   font-family: var(--hm-font-serif);
   font-weight: 500;
@@ -1697,14 +1431,14 @@ body[data-active-engine="hermes"][data-theme="dark"] {
 [data-engine="hermes"] .btn-primary:hover:not(:disabled) {
   background: var(--hm-accent-hover);
   border-color: var(--hm-accent-hover);
-  color: #1C1917;
+  color: var(--hm-text-primary);
   box-shadow: var(--hm-glow-gold);
 }
 [data-theme="dark"] [data-engine="hermes"] .btn-primary {
-  color: #0C0A09;
+  color: var(--hm-text-primary);
 }
 [data-theme="dark"] [data-engine="hermes"] .btn-primary:hover:not(:disabled) {
-  color: #0C0A09;
+  color: var(--hm-text-primary);
 }
 /* .btn-secondary intentionally inherits default .btn appearance */
 
@@ -1789,7 +1523,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
 }
 [data-theme="dark"] [data-engine="hermes"] .hermes-chat-bubble.user {
   background: var(--hm-accent);
-  color: #0C0A09;
+  color: var(--hm-text-primary);
 }
 [data-engine="hermes"] .hermes-chat-bubble.assistant {
   background: var(--hm-surface-1);
@@ -1864,7 +1598,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
   border: 1px solid var(--hm-border);
   border-radius: var(--hm-radius-lg);
   background:
-    linear-gradient(135deg, rgba(202, 138, 4, 0.10), transparent 36%),
+    linear-gradient(135deg, color-mix(in srgb, var(--hm-accent) 10%, transparent), transparent 36%),
     var(--hm-surface-1);
   box-shadow: var(--hm-shadow-md);
   position: relative;
@@ -2026,7 +1760,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
 /* Memory edit button — promote the ghost CTA to a visible outline chip
    so users recognise it as an action, not inline meta-text. */
 [data-engine="hermes"] .hm-mem-edit {
-  border-color: var(--hm-border-strong, rgba(28, 25, 23, 0.18));
+  border-color: var(--hm-border-strong, rgba(28, 25, 23,0.18));
   color: var(--hm-text-secondary);
   background: var(--hm-surface-1);
 }
@@ -2249,8 +1983,8 @@ body[data-active-engine="hermes"][data-theme="dark"] {
   display: flex;
   flex-direction: column;
   box-shadow:
-    0 1px 2px rgba(28, 25, 23, 0.03),
-    0 2px 6px rgba(28, 25, 23, 0.035);
+    0 1px 2px rgba(28, 25, 23,0.03),
+    0 2px 6px rgba(28, 25, 23,0.035);
 }
 [data-theme="dark"] [data-engine="hermes"] .hm-logs-sidebar { box-shadow: none; }
 [data-engine="hermes"] .hm-logs-sidebar-title {
@@ -2313,8 +2047,8 @@ body[data-active-engine="hermes"][data-theme="dark"] {
   flex-direction: column;
   min-width: 0;
   box-shadow:
-    0 1px 2px rgba(28, 25, 23, 0.03),
-    0 2px 6px rgba(28, 25, 23, 0.035);
+    0 1px 2px rgba(28, 25, 23,0.03),
+    0 2px 6px rgba(28, 25, 23,0.035);
 }
 
 [data-engine="hermes"] .hm-logs-toolbar {
@@ -2720,8 +2454,8 @@ body[data-active-engine="hermes"][data-theme="dark"] {
   background: var(--hm-surface-1);
   overflow: hidden;
   box-shadow:
-    0 1px 2px rgba(28, 25, 23, 0.03),
-    0 2px 6px rgba(28, 25, 23, 0.035);
+    0 1px 2px rgba(28, 25, 23,0.03),
+    0 2px 6px rgba(28, 25, 23,0.035);
 }
 [data-theme="dark"] [data-engine="hermes"] .hm-skills-layout { box-shadow: none; }
 
@@ -2945,7 +2679,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
 }
 [data-engine="hermes"] .hm-switch.is-on .hm-switch-thumb {
   transform: translateX(14px);
-  background: #FFFFFF;
+  background: var(--hm-surface-1);
 }
 [data-engine="hermes"] .hm-switch.is-busy {
   opacity: 0.55;
@@ -3252,7 +2986,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
   background: var(--hm-surface-1);
   border: 1px solid var(--hm-border);
   border-radius: var(--hm-radius-md);
-  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.03), 0 2px 6px rgba(28, 25, 23, 0.035);
+  box-shadow: 0 1px 2px rgba(28, 25, 23,0.03), 0 2px 6px rgba(28, 25, 23,0.035);
 }
 [data-theme="dark"] [data-engine="hermes"] .hm-toolsets { box-shadow: none; }
 
@@ -5304,7 +5038,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
   position: fixed;
   inset: 0;
   z-index: 10500;
-  background: rgba(28, 25, 23, 0.35);
+  background: rgba(28, 25, 23,0.35);
   backdrop-filter: blur(3px);
   display: flex;
   align-items: flex-start;
@@ -5545,7 +5279,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
   border: 1px solid var(--hm-border);
   border-radius: 18px;
   background: var(--hm-surface-0);
-  box-shadow: 0 16px 36px rgba(28, 25, 23, 0.05);
+  box-shadow: 0 16px 36px rgba(28, 25, 23,0.05);
 }
 [data-engine="hermes"] .hm-usage-loading,
 [data-engine="hermes"] .hm-usage-empty {
@@ -5581,7 +5315,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
   border-radius: 18px;
   border: 1px solid var(--hm-border);
   background: var(--hm-surface-0);
-  box-shadow: 0 16px 36px rgba(28, 25, 23, 0.05);
+  box-shadow: 0 16px 36px rgba(28, 25, 23,0.05);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -5617,7 +5351,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
   border: 1px solid var(--hm-border);
   border-radius: 20px;
   background: var(--hm-surface-0);
-  box-shadow: 0 16px 36px rgba(28, 25, 23, 0.05);
+  box-shadow: 0 16px 36px rgba(28, 25, 23,0.05);
   padding: 18px 20px 20px;
 }
 [data-engine="hermes"] .hm-usage-card-head {
@@ -6001,7 +5735,7 @@ body[data-active-engine="hermes"][data-theme="dark"] {
     z-index: 19;
     opacity: 1;
     pointer-events: auto;
-    background: rgba(28, 25, 23, 0.28);
+    background: rgba(28, 25, 23,0.28);
     backdrop-filter: blur(2px);
     transition: opacity 0.18s ease;
   }

@@ -16,10 +16,10 @@ function NAV_ITEMS_FULL() { return [
   {
     section: '',
     items: [
-      { route: '/chat', label: t('sidebar.aiChat'), icon: 'chat' },
-      { route: '/agents', label: t('sidebar.digitalEmployees'), icon: 'agents' },
-      { route: '/cron', label: t('sidebar.cronJobs'), icon: 'clock' },
-      { route: '/dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
+      { route: '/chat', label: t('sidebar.aiChat'), icon: 'chat', color: 'blue' },
+      { route: '/agents', label: t('sidebar.digitalEmployees'), icon: 'agents', color: 'purple' },
+      { route: '/cron', label: t('sidebar.cronJobs'), icon: 'clock', color: 'orange' },
+      { route: '/dashboard', label: t('sidebar.dashboard'), icon: 'dashboard', color: 'teal' },
     ]
   },
   // 技能（默认折叠）
@@ -28,8 +28,8 @@ function NAV_ITEMS_FULL() { return [
     collapsed: true,
     id: 'skills',
     items: [
-      { route: '/skills', label: t('sidebar.skills'), icon: 'skills', gate: 'skills' },
-      { route: '/plugin-hub', label: t('sidebar.pluginHub'), icon: 'extensions' },
+      { route: '/skills', label: t('sidebar.skills'), icon: 'skills', gate: 'skills', color: 'pink' },
+      { route: '/plugin-hub', label: t('sidebar.pluginHub'), icon: 'extensions', color: 'yellow' },
     ]
   },
   // 设置（默认折叠）
@@ -38,14 +38,14 @@ function NAV_ITEMS_FULL() { return [
     collapsed: true,
     id: 'settings-group',
     items: [
-      { route: '/services', label: t('sidebar.engineManagement'), icon: 'services' },
-      { route: '/models', label: t('sidebar.models'), icon: 'models' },
-      { route: '/channels', label: t('sidebar.mobileConnect'), icon: 'channels' },
-      { route: '/gateway', label: t('sidebar.gateway'), icon: 'gateway' },
-      { route: '/communication', label: t('sidebar.communication'), icon: 'settings' },
-      { route: '/security', label: t('sidebar.security'), icon: 'security' },
-      { route: '/settings', label: t('sidebar.systemSettings'), icon: 'settings' },
-      { route: '/chat-debug', label: t('sidebar.checkRepair'), icon: 'diagnose' },
+      { route: '/services', label: t('sidebar.engineManagement'), icon: 'services', color: 'blue' },
+      { route: '/models', label: t('sidebar.models'), icon: 'models', color: 'green' },
+      { route: '/channels', label: t('sidebar.mobileConnect'), icon: 'channels', color: 'teal' },
+      { route: '/gateway', label: t('sidebar.gateway'), icon: 'gateway', color: 'purple' },
+      { route: '/communication', label: t('sidebar.communication'), icon: 'settings', color: 'gray' },
+      { route: '/security', label: t('sidebar.security'), icon: 'security', color: 'red' },
+      { route: '/settings', label: t('sidebar.systemSettings'), icon: 'settings', color: 'gray' },
+      { route: '/chat-debug', label: t('sidebar.checkRepair'), icon: 'diagnose', color: 'orange' },
     ]
   },
   // 数据（默认折叠）
@@ -54,11 +54,11 @@ function NAV_ITEMS_FULL() { return [
     collapsed: true,
     id: 'data',
     items: [
-      { route: '/usage', label: t('sidebar.usage'), icon: 'bar-chart' },
-      { route: '/memory', label: t('sidebar.memory'), icon: 'memory', gate: 'memory' },
-      { route: '/dreaming', label: t('sidebar.memoryOptimization'), icon: 'dreaming', gate: 'dreaming' },
-      { route: '/logs', label: t('sidebar.logs'), icon: 'logs' },
-      { route: '/about', label: t('sidebar.about'), icon: 'about' },
+      { route: '/usage', label: t('sidebar.usage'), icon: 'bar-chart', color: 'blue' },
+      { route: '/memory', label: t('sidebar.memory'), icon: 'memory', gate: 'memory', color: 'purple' },
+      { route: '/dreaming', label: t('sidebar.memoryOptimization'), icon: 'dreaming', gate: 'dreaming', color: 'pink' },
+      { route: '/logs', label: t('sidebar.logs'), icon: 'logs', color: 'gray' },
+      { route: '/about', label: t('sidebar.about'), icon: 'about', color: 'blue' },
     ]
   }
 ] }
@@ -67,15 +67,15 @@ function NAV_ITEMS_SETUP() { return [
   {
     section: '',
     items: [
-      { route: '/setup', label: t('sidebar.setup'), icon: 'setup' },
+      { route: '/setup', label: t('sidebar.setup'), icon: 'setup', color: 'blue' },
     ]
   },
   {
     section: '',
     items: [
-      { route: '/settings', label: t('sidebar.settings'), icon: 'settings' },
-      { route: '/chat-debug', label: t('sidebar.chatDebug'), icon: 'debug' },
-      { route: '/about', label: t('sidebar.about'), icon: 'about' },
+      { route: '/settings', label: t('sidebar.settings'), icon: 'settings', color: 'gray' },
+      { route: '/chat-debug', label: t('sidebar.chatDebug'), icon: 'debug', color: 'orange' },
+      { route: '/about', label: t('sidebar.about'), icon: 'about', color: 'blue' },
     ]
   }
 ] }
@@ -211,8 +211,8 @@ export function renderSidebar(el) {
       if (item.gate && engine && !engine.isFeatureAvailable(item.gate)) continue
       if (item.gate && !engine && !isFeatureAvailable(item.gate)) continue
       const active = current === item.route ? ' active' : ''
-      html += `<div class="nav-item${active}" data-route="${item.route}">
-        ${ICONS[item.icon] || ''}
+      html += `<div class="nav-item ic-${item.color || 'blue'}${active}" data-route="${item.route}">
+        <div class="nav-item-icon">${ICONS[item.icon] || ''}</div>
         <span>${item.label}</span>
       </div>`
     }
@@ -244,13 +244,13 @@ export function renderSidebar(el) {
       <div class="sidebar-collapse-mid" id="btn-sidebar-collapse" title="${t('sidebar.collapse')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/></svg></div>
 
     <div class="sidebar-footer">
-      <div class="nav-item" id="btn-theme-toggle">
-        ${isDark ? sunIcon : moonIcon}
+      <div class="nav-item ic-orange" id="btn-theme-toggle">
+        <div class="nav-item-icon">${isDark ? sunIcon : moonIcon}</div>
         <span>${isDark ? t('sidebar.themeLight') : t('sidebar.themeDark')}</span>
       </div>
       <div class="lang-switcher" id="lang-switcher">
-        <button class="nav-item lang-trigger" id="btn-lang-toggle">
-          ${globeIcon}
+        <button class="nav-item ic-teal lang-trigger" id="btn-lang-toggle">
+          <span class="nav-item-icon">${globeIcon}</span>
           <span>${currentLang.label}</span>
           <svg class="lang-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M18 15l-6-6-6 6"/></svg>
         </button>

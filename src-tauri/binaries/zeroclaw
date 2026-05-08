@@ -1,0 +1,13 @@
+#!/bin/bash
+# ZeroClaw 开发占位二进制 — 用于 Agent Planet 集成测试
+# 正式发布时替换为真正的 zeroclaw 可执行文件
+case "${1:-}" in
+  --version|version) echo "zeroclaw v0.1.0-dev" ;;
+  serve)
+    echo "ZeroClaw dev stub: serving on http://127.0.0.1:18790"
+    echo "Press Ctrl+C to stop"
+    # 模拟长期运行的服务进程
+    while true; do sleep 60; done
+    ;;
+  *) echo "ZeroClaw dev stub — args: $@" ;;
+esac

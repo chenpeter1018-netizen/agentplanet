@@ -1,0 +1,5 @@
+@echo off
+REM ZeroClaw 开发占位二进制 — Windows 版
+REM 正式发布时替换为真正的 zeroclaw.exe
+if "%1"=="--version" echo zeroclaw v0.1.0-dev
+if "%1"=="serve" echo ZeroClaw dev stub: serving on http://127.0.0.1:18790 & pause
