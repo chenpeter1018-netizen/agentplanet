@@ -117,7 +117,7 @@ jobs:
           # TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ env.TAG_NAME }}
-          releaseName: "Agent-Planet ${{ env.TAG_NAME }}"
+          releaseName: "agentplanet ${{ env.TAG_NAME }}"
           releaseBody: "正在构建所有平台安装包，请稍候..."
           releaseDraft: false
           prerelease: false
@@ -151,7 +151,7 @@ jobs:
           BUNDLE_DIR="src-tauri/target/release/bundle"
 
           # 确保 Release 已存在（可能被其他 matrix job 的 tauri-action 创建）
-          gh release create "$TAG_NAME" --title "Agent-Planet $TAG_NAME" \
+          gh release create "$TAG_NAME" --title "agentplanet $TAG_NAME" \
             --notes "正在构建所有平台安装包，请稍候..." 2>/dev/null || true
 
           # 重命名 NSIS exe 并上传

@@ -1,7 +1,7 @@
 /// Agent Planet 授权系统 — 首次激活需联网，之后离线可用
 /// Ed25519 数字签名验证 + 机器指纹绑定 + 3天离线试用
 
-use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
+use ed25519_dalek::{Signature, SigningKey, Verifier, VerifyingKey};
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};

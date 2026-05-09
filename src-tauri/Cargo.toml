@@ -32,10 +32,10 @@ base64 = "0.22"
 urlencoding = "2"
 regex = "1"
 tokio = { version = "1", features = ["process", "time", "sync"] }
-
-[target.'cfg(unix)'.dependencies]
 flate2 = "1"
 tar = "0.4"
+
+[target.'cfg(unix)'.dependencies]
 
 [target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
 tauri-plugin-autostart = "2"

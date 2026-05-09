@@ -38,7 +38,7 @@ export default {
   sectionConfig: _('配置', 'Config'),
   sectionManage: _('管理', 'Manage'),
   sectionExtension: _('扩展', 'Extensions'),
-  assistant: _('晴辰助手', 'Assistant'),
+  assistant: _('AI 助手', 'Assistant'),
   chat: _('实时聊天', 'Live Chat'),
   sessions: _('会话浏览', 'Sessions'),
   services: _('引擎管理', 'Engines'),

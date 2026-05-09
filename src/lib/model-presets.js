@@ -33,29 +33,6 @@ export const PROVIDER_PRESETS = [
   { key: 'nvidia', label: 'NVIDIA NIM', baseUrl: 'https://integrate.api.nvidia.com/v1', api: 'openai-completions', site: 'https://build.nvidia.com/models', desc: '英伟达推理平台，支持 Llama、Mistral 等模型' },
   { key: 'ollama', label: 'Ollama (本地)', baseUrl: 'http://127.0.0.1:11434/v1', api: 'openai-completions', site: 'https://ollama.com/' },
 ]
-
-// 晴辰云配置
-export const QTCOOL = {
-  baseUrl: 'https://gpt.qt.cool/v1',
-  defaultKey: '',
-  site: 'https://gpt.qt.cool/',
-  checkinUrl: 'https://gpt.qt.cool/checkin',
-  usageUrl: 'https://gpt.qt.cool/user?key=',
-  providerKey: 'qtcool',
-  brandName: '晴辰云',
-  api: 'openai-completions',
-  models: []  // 始终从 API 动态获取最新模型列表
-}
-
-// 胜算云推广配置
-export const SHENGSUANYUN = {
-  baseUrl: 'https://router.shengsuanyun.com/api/v1',
-  site: 'https://www.shengsuanyun.com/?from=CH_4BVI0BM2',
-  providerKey: 'shengsuanyun',
-  brandName: '胜算云',
-  api: 'openai-completions',
-}
-
 // 常用模型预设（按服务商分组）
 export const MODEL_PRESETS = {
   openai: [
@@ -96,38 +73,4 @@ export const MODEL_PRESETS = {
     { id: 'llama3.3:70b', name: 'Llama 3.3 70B', contextWindow: 8192 },
     { id: 'deepseek-r1:32b', name: 'DeepSeek R1 32B', contextWindow: 32768, reasoning: true },
   ],
-}
-
-/**
- * 动态获取 QTCOOL 模型列表
- * @param {string} [apiKey] - 自定义密钥；未传时尝试从已有配置读取
- * @returns {Promise<Array<{id:string, name:string, contextWindow:number, reasoning?:boolean}>>}
- */
-export async function fetchQtcoolModels(apiKey) {
-  let key = apiKey || QTCOOL.defaultKey
-  // 没有 key 时尝试从已有的 qtcool provider 配置读取
-  if (!key) {
-    try {
-      const { api } = await import('../lib/tauri-api.js')
-      const cfg = await api.readOpenclawConfig()
-      key = cfg?.models?.providers?.qtcool?.apiKey || ''
-    } catch { /* ignore */ }
-  }
-  try {
-    const headers = key ? { 'Authorization': 'Bearer ' + key } : {}
-    const resp = await fetch(QTCOOL.baseUrl + '/models', {
-      headers,
-      signal: AbortSignal.timeout(8000)
-    })
-    if (resp.ok) {
-      const data = await resp.json()
-      if (data.data && data.data.length) {
-        return data.data.map(m => ({
-          id: m.id, name: m.id, contextWindow: 128000,
-          reasoning: m.id.includes('codex')
-        })).sort((a, b) => b.id.localeCompare(a.id))
-      }
-    }
-  } catch { /* use fallback */ }
-  return QTCOOL.models
 }

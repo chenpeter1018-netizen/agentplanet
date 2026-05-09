@@ -570,7 +570,6 @@ function renderEnvironmentHint() {
               <div class="setup-help-label">${t('setup.wslWebHint')}</div>
               <div class="setup-help-copy">${t('setup.wslWebDesc')}</div>
               <code class="setup-help-code">curl -fsSL https://raw.githubusercontent.com/Agent Planet Systems/agent-planet/main/deploy.sh | bash</code>
-              <div class="setup-help-copy">${t('setup.domesticMirror')} <code>curl -fsSL https://gitee.com/QtCodeCreators/agent-planet/raw/main/deploy.sh | bash</code></div>
               <div class="setup-help-copy">${t('setup.wslWebPostDeploy')}</div>
             </div>
           ` : ''}
@@ -579,13 +578,11 @@ function renderEnvironmentHint() {
             <div class="setup-help-copy">${t('setup.dockerDesc')}</div>
             <code class="setup-help-code">npm i -g @Agent Planet Systems/openclaw-zh</code>
             <code class="setup-help-code">curl -fsSL https://raw.githubusercontent.com/Agent Planet Systems/agent-planet/main/deploy.sh | bash</code>
-            <div class="setup-help-copy">${t('setup.domesticMirrorShort')} <code>curl -fsSL https://gitee.com/QtCodeCreators/agent-planet/raw/main/deploy.sh | bash</code></div>
           </div>
           <div class="setup-help-block">
             <div class="setup-help-label">${t('setup.remoteHint')}</div>
             <div class="setup-help-copy">${t('setup.remoteDesc')}</div>
             <code class="setup-help-code">curl -fsSL https://raw.githubusercontent.com/Agent Planet Systems/agent-planet/main/deploy.sh | bash</code>
-            <div class="setup-help-copy">${t('setup.domesticMirrorShort')} <code>curl -fsSL https://gitee.com/QtCodeCreators/agent-planet/raw/main/deploy.sh | bash</code></div>
           </div>
         </div>
       </details>
