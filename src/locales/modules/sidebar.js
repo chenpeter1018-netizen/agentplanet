@@ -52,4 +52,7 @@ export default {
   chatDebug: _('系统诊断', 'Diagnostics'),
   extensions: _('扩展与主题', 'Extensions'),
   setup: _('初始设置', 'Setup'),
+  backup: _('备份管理', 'Backup'),
+  knowledge: _('知识库', 'Knowledge'),
+  sectionMaintain: _('运维维护', 'Maintenance'),
 }

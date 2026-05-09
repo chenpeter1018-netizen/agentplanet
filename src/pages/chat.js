@@ -61,6 +61,7 @@ let _sessionKey = null, _page = null, _messagesEl = null, _textarea = null
 let _sendBtn = null, _statusDot = null, _typingEl = null, _scrollBtn = null
 let _sessionListEl = null, _cmdPanelEl = null, _attachPreviewEl = null, _fileInputEl = null
 let _modelSelectEl = null
+let _agentMap = {} // agentId → { emoji, name }
 let _currentAiBubble = null, _currentAiText = '', _currentAiImages = [], _currentAiVideos = [], _currentAiAudios = [], _currentAiFiles = [], _currentAiTools = [], _currentRunId = null
 let _isStreaming = false, _isSending = false, _messageQueue = [], _streamStartTime = 0
 let _lastRenderTime = 0, _renderPending = false, _lastHistoryHash = ''
@@ -343,6 +344,7 @@ export async function render() {
   showPageGuide(_messagesEl)
 
   loadHostedDefaults().then(() => { loadHostedSessionConfig(); renderHostedPanel(); updateHostedBadge() })
+  loadAgentMap().then(() => applyAgentFromUrl())
   loadModelOptions()
   // 非阻塞：先返回 DOM，后台连接 Gateway
   connectGateway()
@@ -2013,12 +2015,23 @@ function handleChatEvent(payload) {
       appendFilesToEl(_currentAiBubble, _currentAiFiles)
       appendToolsToEl(_currentAiBubble, finalTools.length ? finalTools : _currentAiTools)
     }
-    // 添加时间戳 + 耗时 + token 消耗
+    // 添加消息底部元信息：头像 + agent名称 + 日期时间 + 耗时 + token + 模型
     const wrapper = _currentAiBubble?.parentElement
     if (wrapper) {
       const meta = document.createElement('div')
       meta.className = 'msg-meta'
-      let parts = [`<span class="msg-time">${formatTime(new Date())}</span>`]
+      const now = new Date()
+      let parts = []
+      // 头像 + agent 名称
+      const agentId = parseSessionAgent(_sessionKey)
+      const agentInfo = getAgentInfo(agentId)
+      const avatarHtml = agentInfo.emoji
+        ? `<span class="msg-agent-avatar">${escHtml(agentInfo.emoji)}</span>`
+        : ''
+      const agentName = agentInfo.name || agentId
+      parts.push(`<span class="msg-agent">${avatarHtml}<span class="msg-agent-name">${escHtml(agentName)}</span></span>`)
+      // 日期时间
+      parts.push(`<span class="msg-time">${formatTimeFull(now)}</span>`)
       // 计算响应耗时
       let durStr = ''
       if (payload.durationMs) {
@@ -2026,18 +2039,35 @@ function handleChatEvent(payload) {
       } else if (_streamStartTime) {
         durStr = ((Date.now() - _streamStartTime) / 1000).toFixed(1) + 's'
       }
-      if (durStr) parts.push(`<span class="meta-sep">·</span><span class="msg-duration">⏱ ${durStr}</span>`)
-      // token 消耗（从 payload.usage 或 payload.message.usage 提取）
+      // token 消耗
       const usage = payload.usage || payload.message?.usage || null
       if (usage) {
         const inp = usage.input_tokens || usage.prompt_tokens || 0
         const out = usage.output_tokens || usage.completion_tokens || 0
         const total = usage.total_tokens || (inp + out)
+        const cacheRead = usage.cache_read_input_tokens || 0
+        const cacheCreate = usage.cache_creation_input_tokens || 0
         if (total > 0) {
-          let tokenStr = `${total} tokens`
-          if (inp && out) tokenStr = `↑${inp} ↓${out}`
-          parts.push(`<span class="meta-sep">·</span><span class="msg-tokens">${tokenStr}</span>`)
+          parts.push('<span class="meta-sep">·</span>')
+          if (inp && out) {
+            parts.push(`<span class="msg-tokens">↑${formatTokenNum(inp)} ↓${formatTokenNum(out)}</span>`)
+          }
+          parts.push(`<span class="msg-total-tokens">R${formatTokenNum(total)}</span>`)
+          // 缓存命中率
+          const cachedTokens = cacheRead + cacheCreate
+          if (cachedTokens > 0 && inp > 0) {
+            const pct = Math.round((cachedTokens / inp) * 100)
+            parts.push(`<span class="msg-cache">${pct}% ctx</span>`)
+          }
         }
+      }
+      if (durStr) {
+        parts.push(`<span class="meta-sep">·</span><span class="msg-duration">${durStr}</span>`)
+      }
+      // 模型
+      if (_selectedModel) {
+        const modelLabel = _selectedModel.split('/').pop()
+        parts.push(`<span class="meta-sep">·</span><span class="msg-model">${escHtml(modelLabel)}</span>`)
       }
       parts.push(`<button class="msg-copy-btn" title="${t('common.copy')}">${svgIcon('copy', 12)}</button>`)
       meta.innerHTML = parts.join('')
@@ -2279,6 +2309,54 @@ function formatTime(date) {
   const mon = (date.getMonth() + 1).toString().padStart(2, '0')
   const day = date.getDate().toString().padStart(2, '0')
   return `${mon}-${day} ${h}:${m}`
+}
+
+function formatTimeFull(date) {
+  const y = date.getFullYear()
+  const M = date.getMonth() + 1
+  const d = date.getDate()
+  const h = date.getHours().toString().padStart(2, '0')
+  const m = date.getMinutes().toString().padStart(2, '0')
+  return `${y}年${M}月${d}日 ${h}:${m}`
+}
+
+function formatTokenNum(n) {
+  if (!n || n <= 0) return '0'
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
+  return String(n)
+}
+
+function getAgentInfo(agentId) {
+  if (!agentId) return { emoji: '', name: '' }
+  const info = _agentMap[agentId]
+  if (info) return info
+  return { emoji: '', name: agentId }
+}
+
+async function loadAgentMap() {
+  try {
+    const agents = await api.listAgents()
+    _agentMap = {}
+    for (const a of agents || []) {
+      _agentMap[a.id] = {
+        emoji: a.identityEmoji || a.identity?.emoji || '',
+        name: a.identityName || a.identity?.name || '',
+      }
+    }
+  } catch (_) { _agentMap = {} }
+}
+
+function applyAgentFromUrl() {
+  const hash = location.hash
+  const qIndex = hash.indexOf('?')
+  if (qIndex < 0) return
+  const params = new URLSearchParams(hash.slice(qIndex + 1))
+  const agentParam = params.get('agent')
+  if (!agentParam || !_agentMap[agentParam]) return
+  _workspaceCurrentAgentId = agentParam
+  const triggerAgentEl = _page?.querySelector('#chat-workspace-trigger-agent')
+  if (triggerAgentEl) triggerAgentEl.textContent = agentParam
+  if (_workspaceAgentBadgeEl) _workspaceAgentBadgeEl.textContent = agentParam
 }
 
 function formatFileSize(bytes) {
@@ -2728,7 +2806,11 @@ function appendAiMessage(text, msgTime, images, videos, audios, files, tools) {
 
   const meta = document.createElement('div')
   meta.className = 'msg-meta'
-  meta.innerHTML = `<span class="msg-time">${formatTime(msgTime || new Date())}</span><button class="msg-copy-btn" title="${t('common.copy')}">${svgIcon('copy', 12)}</button>`
+  const aid = parseSessionAgent(_sessionKey)
+  const ainfo = getAgentInfo(aid)
+  const avHtml = ainfo.emoji ? `<span class="msg-agent-avatar">${escHtml(ainfo.emoji)}</span>` : ''
+  const aName = ainfo.name || aid
+  meta.innerHTML = `<span class="msg-agent">${avHtml}<span class="msg-agent-name">${escHtml(aName)}</span></span><span class="msg-time">${formatTimeFull(msgTime || new Date())}</span><button class="msg-copy-btn" title="${t('common.copy')}">${svgIcon('copy', 12)}</button>`
 
   wrap.appendChild(bubble)
   wrap.appendChild(meta)
@@ -2736,7 +2818,6 @@ function appendAiMessage(text, msgTime, images, videos, audios, files, tools) {
   scrollToBottom()
 }
 
-/** 渲染图片到消息气泡（支持 Anthropic/OpenAI/直接格式） */
 function appendImagesToEl(el, images) {
   if (!images?.length) return
   const container = document.createElement('div')

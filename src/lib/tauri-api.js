@@ -402,7 +402,7 @@ export const api = {
   // Hermes Agent 管理
   checkPython: () => cachedInvoke('check_python', {}, 60000),
   checkHermes: () => cachedInvoke('check_hermes', {}, 30000),
-  installHermes: (method = 'uv-tool', extras = []) => invoke('install_hermes', { method, extras }),
+  installHermes: (method = 'uv-tool', extras = [], mirrorUrl = null, gitMirrorUrl = null) => invoke('install_hermes', { method, extras, mirrorUrl, gitMirrorUrl }),
   configureHermes: (provider, apiKey, model, baseUrl, opts) => invoke('configure_hermes', {
     provider, apiKey, model: model || null, baseUrl: baseUrl || null,
     stream: opts?.stream ?? null, fastMode: opts?.fast ?? null,

@@ -136,6 +136,9 @@ function renderAgents(page, state) {
             <span class="agent-info-value">${renderBindingBadges(a.id, state.bindings)}</span>
           </div>
         </div>
+        <div class="agent-card-footer">
+          <button class="btn btn-sm btn-primary" data-action="chat" data-id="${a.id}">${t('agents.goToChat')}</button>
+        </div>
       </div>
     `
   }).join('') + '</div>'
@@ -152,6 +155,7 @@ function attachAgentEvents(page, state) {
       else if (action === 'edit') showEditAgentDialog(page, state, id)
       else if (action === 'delete') await deleteAgent(page, state, id)
       else if (action === 'backup') await backupAgent(id)
+      else if (action === 'chat') location.hash = `#/chat?agent=${encodeURIComponent(id)}`
       return
     }
     // 点击卡片空白区域 → 进入详情页

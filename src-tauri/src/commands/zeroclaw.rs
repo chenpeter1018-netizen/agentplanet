@@ -146,6 +146,31 @@ pub async fn check_zeroclaw() -> Result<Value> {
     }))
 }
 
+/// 检测文件是否为真实可执行二进制（非脚本占位符）
+pub fn is_valid_binary(path: &std::path::Path) -> bool {
+    if let Ok(data) = std::fs::read(path) {
+        if data.is_empty() { return false }
+        // 脚本文件（#!/bin/sh, #!/bin/bash, @echo off 等）
+        if data.starts_with(b"#!") { return false }
+        if data.starts_with(b"@echo") { return false }
+        if data.starts_with(b"REM ") || data.starts_with(b"rem ") { return false }
+        // Windows PE 可执行文件 (MZ 魔数)
+        if data.starts_with(b"MZ") { return true }
+        // macOS Mach-O 魔数 (4 种字节序变体)
+        if data.starts_with(&[0xFE, 0xED, 0xFA, 0xCE]) { return true }
+        if data.starts_with(&[0xFE, 0xED, 0xFA, 0xCF]) { return true }
+        if data.starts_with(&[0xCF, 0xFA, 0xED, 0xFE]) { return true }
+        if data.starts_with(&[0xCE, 0xFA, 0xED, 0xFE]) { return true }
+        // Linux ELF (0x7F 'E' 'L' 'F')
+        if data.starts_with(&[0x7F, b'E', b'L', b'F']) { return true }
+        // 其他情况保守通过（可能是未识别的二进制格式）
+        // 至少检查前128字节是否包含足够非文本内容
+        let printable = data.iter().take(128).filter(|b| b.is_ascii_graphic() || b.is_ascii_whitespace()).count();
+        return printable < 100 // 真正的二进制文件会有很多非可打印字节
+    }
+    false
+}
+
 /// 从 Tauri 资源目录复制内嵌的 zeroclaw 二进制到数据目录（离线免下载）
 fn install_bundled_zeroclaw(app: &tauri::AppHandle) -> std::result::Result<PathBuf, String> {
     let bin_dir = zeroclaw_data_root().join("bin");
@@ -155,7 +180,7 @@ fn install_bundled_zeroclaw(app: &tauri::AppHandle) -> std::result::Result<PathB
     // 1. Tauri v2 生产模式 — 通过 AppHandle 解析资源目录
     if let Ok(resource_dir) = app.path().resource_dir() {
         let bundled = resource_dir.join("binaries").join(zeroclaw_bin_name());
-        if bundled.exists() {
+        if bundled.exists() && is_valid_binary(&bundled) {
             std::fs::copy(&bundled, &bin_path).map_err(|e| format!("复制失败: {}", e))?;
             #[cfg(unix)]
             {
@@ -172,7 +197,7 @@ fn install_bundled_zeroclaw(app: &tauri::AppHandle) -> std::result::Result<PathB
     let dev_bin = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("binaries")
         .join(zeroclaw_bin_name());
-    if dev_bin.exists() {
+    if dev_bin.exists() && is_valid_binary(&dev_bin) {
         std::fs::copy(&dev_bin, &bin_path).map_err(|e| format!("复制失败: {}", e))?;
         #[cfg(unix)]
         {
@@ -202,36 +227,93 @@ pub async fn install_zeroclaw(app: tauri::AppHandle, url: Option<String>, mirror
     let os = std::env::consts::OS;
     let arch = std::env::consts::ARCH;
 
-    let platform = match (os, arch) {
-        ("macos", "aarch64") => "zeroclaw-aarch64-apple-darwin",
-        ("macos", _) => "zeroclaw-x86_64-apple-darwin",
-        ("windows", _) => "zeroclaw-x86_64-pc-windows-msvc.exe",
-        ("linux", "aarch64") => "zeroclaw-aarch64-unknown-linux-gnu",
-        _ => "zeroclaw-x86_64-unknown-linux-gnu",
+    // 下载文件名（匹配 GitHub Release 实际 asset 名称）
+    let (asset_name, is_zip) = match (os, arch) {
+        ("macos", "aarch64") => ("zeroclaw-aarch64-apple-darwin.tar.gz", false),
+        ("macos", _) => ("zeroclaw-x86_64-apple-darwin.tar.gz", false),
+        ("windows", _) => ("zeroclaw-x86_64-pc-windows-msvc.zip", true),
+        ("linux", "aarch64") => ("zeroclaw-aarch64-unknown-linux-gnu.tar.gz", false),
+        _ => ("zeroclaw-x86_64-unknown-linux-gnu.tar.gz", false),
     };
 
     // 下载 URL 优先级：用户传入 > 中国镜像 > GitHub
-    let download_url = if let Some(u) = url {
-        u
+    let mut urls: Vec<String> = Vec::new();
+    if let Some(u) = url {
+        urls.push(u);
     } else if let Some(mirror) = mirror_url {
-        format!("{}/{}", mirror.trim_end_matches('/'), platform)
-    } else {
-        format!("https://github.com/zeroclaw-labs/zeroclaw/releases/latest/download/{}", platform)
-    };
+        urls.push(format!("{}/{}", mirror.trim_end_matches('/'), asset_name));
+    }
+    // 国内默认镜像
+    urls.push(format!("https://res1.hermesagent.org.cn/zeroclaw/{}", asset_name));
+    // GitHub 兜底
+    urls.push(format!("https://github.com/zeroclaw-labs/zeroclaw/releases/latest/download/{}", asset_name));
 
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(300))
         .build()
         .map_err(|e| e.to_string())?;
 
-    let resp = client.get(&download_url).send().await.map_err(|e| format!("网络请求失败: {}（请检查网络连接或 VPN）", e))?;
-    if !resp.status().is_success() {
-        return Err(format!("下载失败: HTTP {}（该地址可能在中国大陆无法访问，请尝试使用镜像地址）", resp.status()));
+    let mut last_err = String::new();
+    let mut bytes = None;
+    for download_url in &urls {
+        match client.get(download_url).send().await {
+            Ok(resp) if resp.status().is_success() => {
+                match resp.bytes().await {
+                    Ok(b) => { bytes = Some(b); break; }
+                    Err(e) => last_err = format!("读取失败: {e}"),
+                }
+            }
+            Ok(resp) => last_err = format!("HTTP {}（该地址可能在中国大陆无法访问，请尝试使用镜像地址）", resp.status()),
+            Err(e) => last_err = format!("网络请求失败: {}（请检查网络连接或 VPN）", e),
+        }
+    }
+    let bytes = bytes.ok_or_else(|| format!("下载失败（已尝试 {} 个地址）: {last_err}", urls.len()))?;
+
+    // 解压并提取 zeroclaw 二进制
+    let bin_dir = zeroclaw_data_root().join("bin");
+    std::fs::create_dir_all(&bin_dir).map_err(|e| e.to_string())?;
+    let bin_path = zeroclaw_bin();
+
+    if is_zip {
+        let reader = std::io::Cursor::new(&bytes);
+        let mut archive = zip::ZipArchive::new(reader).map_err(|e| format!("ZIP 解析失败: {e}"))?;
+        let mut found = false;
+        for i in 0..archive.len() {
+            let mut file = archive.by_index(i).map_err(|e| format!("ZIP 条目读取失败: {e}"))?;
+            if file.name().ends_with("zeroclaw.exe") {
+                let mut out = std::fs::File::create(&bin_path).map_err(|e| format!("创建文件失败: {e}"))?;
+                std::io::copy(&mut file, &mut out).map_err(|e| format!("写入失败: {e}"))?;
+                found = true;
+                break;
+            }
+        }
+        if !found { return Err("ZIP 中未找到 zeroclaw.exe".into()); }
+    } else {
+        // tar.gz 解压
+        let decoder = flate2::read::GzDecoder::new(&bytes[..]);
+        let mut archive = tar::Archive::new(decoder);
+        let mut found = false;
+        for entry in archive.entries().map_err(|e| format!("tar 解析失败: {e}"))? {
+            let mut entry = entry.map_err(|e| format!("tar 条目错误: {e}"))?;
+            if let Ok(path) = entry.path() {
+                if path.ends_with("zeroclaw") || path.file_name().map_or(false, |n| n == "zeroclaw") {
+                    entry.unpack(&bin_path).map_err(|e| format!("解压失败: {e}"))?;
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if !found { return Err("tar.gz 中未找到 zeroclaw 二进制".into()); }
     }
 
-    let bytes = resp.bytes().await.map_err(|e| e.to_string())?;
-    let bin_path = zeroclaw_bin();
-    std::fs::write(&bin_path, &bytes).map_err(|e| e.to_string())?;
+    // Unix: 确保可执行
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let mut perms = std::fs::metadata(&bin_path).map_err(|e| e.to_string())?.permissions();
+        perms.set_mode(0o755);
+        std::fs::set_permissions(&bin_path, perms).map_err(|e| e.to_string())?;
+    }
 
     #[cfg(unix)]
     {

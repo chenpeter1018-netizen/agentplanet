@@ -1,5 +1,6 @@
 /**
- * ZeroClaw 对话页面 — 连接 ZeroClaw Gateway 实时聊天
+ * ZeroClaw 对话页面 — 卡片化消息布局
+ * 每条助手消息显示：头像 + Agent名称 + 年月日 时:分 + Token + 模型
  */
 import { t } from '../../../lib/i18n.js'
 import { api } from '../../../lib/tauri-api.js'
@@ -14,68 +15,175 @@ function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }
 
+function formatTime(ts) {
+  if (!ts) return ''
+  const d = new Date(ts)
+  if (!Number.isFinite(d.getTime())) return ''
+  const y = d.getFullYear()
+  const mo = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  const h = String(d.getHours()).padStart(2, '0')
+  const mi = String(d.getMinutes()).padStart(2, '0')
+  return `${y}年${mo}月${day}日 ${h}:${mi}`
+}
+
+function formatTokens(n) {
+  if (!Number.isFinite(n) || n <= 0) return ''
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M'
+  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'k'
+  return String(Math.round(n))
+}
+
+const ICONS = {
+  send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+  user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  bot: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="10" r="1.5"/><circle cx="15" cy="10" r="1.5"/><path d="M9 15c.83.67 1.83 1 3 1s2.17-.33 3-1"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+}
+
+function mdToHtml(text) {
+  if (!text) return ''
+  let out = text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
+      `<pre><code class="lang-${esc(lang)}">${esc(code)}</code></pre>`)
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\n/g, '<br>')
+  return out
+}
+
+async function copyText(text) {
+  try {
+    if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(text); return true }
+  } catch {}
+  try {
+    const ta = document.createElement('textarea')
+    ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px'
+    document.body.appendChild(ta); ta.select()
+    const ok = document.execCommand('copy'); ta.remove(); return ok
+  } catch { return false }
+}
+
+// ============================================================
+//  Render
+// ============================================================
+
 export async function render() {
   _page = document.createElement('div')
-  _page.className = 'page'
+  _page.className = 'page zc-chat-page'
   _page.innerHTML = `
-    <div class="page-header">
-      <h1 class="page-title">ZeroClaw ${t('sidebar.aiChat')}</h1>
-      <p class="page-desc" id="zc-chat-status">${t('engine.loading')}</p>
-    </div>
-    <div id="zc-chat-body">
-      <div id="zc-chat-messages" style="flex:1;overflow-y:auto;padding:16px;min-height:300px;max-height:calc(100vh - 300px)">
-        <div class="form-hint" style="text-align:center;margin-top:60px">ZeroClaw Gateway</div>
-      </div>
-      <div style="display:flex;gap:8px;padding:8px 16px 16px;border-top:1px solid var(--border-color)">
-        <textarea id="zc-chat-input" class="chat-input" rows="2"
-          placeholder="${t('engine.chatPlaceholder')}"
-          style="flex:1;resize:none;padding:10px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:14px;font-family:inherit"
-        ></textarea>
-        <button class="btn btn-primary" id="zc-chat-send" style="align-self:flex-end;height:40px">
-          ${t('engine.chatSend')}
-        </button>
+    <div class="zc-chat-shell">
+      <div class="zc-chat-main">
+        <div class="zc-chat-header">
+          <div class="zc-chat-header-left">
+            <span class="zc-chat-logo">ZC</span>
+            <div>
+              <div class="zc-chat-title">ZeroClaw Chat</div>
+              <div class="zc-chat-status" id="zc-chat-status">${t('engine.loading')}</div>
+            </div>
+          </div>
+          <div class="zc-chat-header-right">
+            <span class="zc-chat-model-badge" id="zc-chat-model-badge"></span>
+          </div>
+        </div>
+        <div class="zc-chat-messages" id="zc-chat-messages">
+          <div class="zc-chat-empty">
+            <div class="zc-chat-empty-icon">${ICONS.bot}</div>
+            <div class="zc-chat-empty-title">ZeroClaw Gateway</div>
+            <div class="zc-chat-empty-sub">${t('engine.zcChatDesc')}</div>
+          </div>
+        </div>
+        <div class="zc-chat-input-area">
+          <div class="zc-chat-input-wrap">
+            <textarea id="zc-chat-input" class="zc-chat-input"
+              placeholder="${t('engine.chatPlaceholder')}"
+              rows="2"></textarea>
+            <button class="zc-chat-send-btn" id="zc-chat-send"
+              title="${t('engine.chatSend')}" disabled>
+              ${ICONS.send}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   `
+
   bindEvents()
   checkStatus()
   return _page
 }
 
-function bindEvents() {
-  _page.querySelector('#zc-chat-send')?.addEventListener('click', sendMessage)
-  _page.querySelector('#zc-chat-input')?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
-  })
-}
+// ============================================================
+//  Status
+// ============================================================
 
 async function checkStatus() {
   const statusEl = _page?.querySelector('#zc-chat-status')
+  const badgeEl = _page?.querySelector('#zc-chat-model-badge')
   try {
     const info = await api.checkZeroclaw()
     if (info?.running) {
-      if (statusEl) statusEl.innerHTML = `<span style="color:#22c55e">●</span> ZeroClaw v${esc(info.version || '?')} — ${t('engine.gatewayRunning')}`
+      if (statusEl) statusEl.innerHTML = `<span class="zc-dot zc-dot--on"></span> Gateway v${esc(info.version || '?')}`
+      if (badgeEl) badgeEl.textContent = info.version || ''
     } else {
-      if (statusEl) statusEl.innerHTML = `<span style="color:#9ca3af">●</span> ${t('engine.serviceStopped')} — <a href="#/z/service">${t('engine.goToService')}</a>`
+      if (statusEl) statusEl.innerHTML = `<span class="zc-dot zc-dot--off"></span> ${t('engine.serviceStopped')} — <a href="#/z/service" style="color:var(--accent)">${t('engine.goToService')}</a>`
+      if (badgeEl) badgeEl.textContent = ''
     }
   } catch {
     if (statusEl) statusEl.textContent = t('engine.loadFailed')
   }
 }
 
+// ============================================================
+//  Events
+// ============================================================
+
+function bindEvents() {
+  const input = _page?.querySelector('#zc-chat-input')
+  const sendBtn = _page?.querySelector('#zc-chat-send')
+
+  input?.addEventListener('input', () => {
+    sendBtn.disabled = !input.value.trim() || _streaming
+  })
+
+  input?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
+  })
+
+  sendBtn?.addEventListener('click', sendMessage)
+
+  // Copy buttons (delegated)
+  _page?.addEventListener('click', async (e) => {
+    const copyBtn = e.target.closest('.zc-msg-copy')
+    if (!copyBtn) return
+    const mid = copyBtn.dataset.mid
+    const msg = _messages.find(m => m.id === mid)
+    if (!msg?.content) return
+    const ok = await copyText(msg.content)
+    toast(ok ? t('common.copied') : t('engine.chatCopyFailed'), ok ? 'success' : 'error')
+  })
+}
+
+// ============================================================
+//  Send
+// ============================================================
+
 async function sendMessage() {
   const input = _page?.querySelector('#zc-chat-input')
-  const btn = _page?.querySelector('#zc-chat-send')
+  const sendBtn = _page?.querySelector('#zc-chat-send')
   const text = input?.value?.trim()
   if (!text || _streaming) return
 
   input.value = ''
-  btn.disabled = true
+  sendBtn.disabled = true
   _streaming = true
 
-  const msgEl = _page?.querySelector('#zc-chat-messages')
-  appendMessage('user', text)
-  const assistId = appendMessage('assistant', '')
+  appendMessage({ role: 'user', content: text, timestamp: Date.now() })
+  const assistId = appendMessage({ role: 'assistant', content: '', timestamp: Date.now(), streaming: true })
+  scrollBottom()
 
   try {
     const resp = await api.zeroclawApiProxy('POST', '/v1/chat', {
@@ -84,39 +192,111 @@ async function sendMessage() {
       stream: false,
     })
     if (resp?.body?.session_id) _sessionId = resp.body.session_id
-    const reply = resp?.body?.content || resp?.body?.message || resp?.body?.reply || JSON.stringify(resp?.body)
-    updateMessage(assistId, reply)
+
+    const body = resp?.body || {}
+    const reply = body.content || body.message || body.reply || JSON.stringify(body)
+    const meta = {
+      agentName: body.agent_name || body.agentName || body.agent || 'ZeroClaw',
+      model: body.model || '',
+      inputTokens: body.input_tokens || body.usage?.input_tokens || 0,
+      outputTokens: body.output_tokens || body.usage?.output_tokens || 0,
+      timestamp: Date.now(),
+    }
+    updateMessage(assistId, reply, meta)
   } catch (e) {
-    updateMessage(assistId, '⚠️ ' + (e?.message || e))
+    updateMessage(assistId, '⚠️ ' + esc(e?.message || String(e)), { agentName: 'Error', timestamp: Date.now() })
   }
 
   _streaming = false
-  btn.disabled = false
+  sendBtn.disabled = false
   input.focus()
   scrollBottom()
 }
 
-function appendMessage(role, content) {
-  const id = uid()
-  _messages.push({ id, role, content })
-  const msgsEl = _page?.querySelector('#zc-chat-messages')
-  const emptyHint = msgsEl?.querySelector('.form-hint')
-  if (emptyHint) emptyHint.remove()
+// ============================================================
+//  Messages
+// ============================================================
 
-  const el = document.createElement('div')
-  el.id = `msg-${id}`
-  el.style.cssText = `margin-bottom:12px;padding:8px 12px;border-radius:8px;max-width:85%;${role === 'user' ? 'margin-left:auto;background:var(--accent-color);color:#fff' : 'background:var(--bg-secondary);color:var(--text-primary)'}`
-  el.innerHTML = role === 'assistant' ? '<span style="opacity:0.5">...</span>' : esc(content)
-  msgsEl?.appendChild(el)
+function appendMessage(msg) {
+  const id = uid()
+  _messages.push({ id, ...msg })
+  const msgsEl = _page?.querySelector('#zc-chat-messages')
+  const emptyEl = msgsEl?.querySelector('.zc-chat-empty')
+  if (emptyEl) emptyEl.remove()
+  renderMessages()
   return id
 }
 
-function updateMessage(id, content) {
-  const el = _page?.querySelector(`#msg-${id}`)
-  if (el) el.innerHTML = esc(content).replace(/\n/g, '<br>')
-  const msg = _messages.find(m => m.id === id)
-  if (msg) msg.content = content
+function updateMessage(id, content, meta = {}) {
+  const idx = _messages.findIndex(m => m.id === id)
+  if (idx === -1) return
+  _messages[idx] = { ..._messages[idx], content, ...meta, streaming: false }
+  renderMessages()
   scrollBottom()
+}
+
+function renderMessages() {
+  const msgsEl = _page?.querySelector('#zc-chat-messages')
+  if (!msgsEl) return
+
+  // Remove existing message elements (keep empty state if any)
+  msgsEl.querySelectorAll('.zc-chat-msg').forEach(el => el.remove())
+
+  _messages.forEach(m => {
+    const el = renderMessage(m)
+    msgsEl.appendChild(el)
+  })
+}
+
+function renderMessage(m) {
+  const el = document.createElement('div')
+  el.className = `zc-chat-msg zc-chat-msg--${m.role}`
+
+  if (m.role === 'user') {
+    el.innerHTML = `
+      <div class="zc-msg-body">
+        <div class="zc-msg-bubble zc-msg-bubble--user">
+          <div class="zc-msg-content">${mdToHtml(m.content)}</div>
+        </div>
+        <div class="zc-msg-meta zc-msg-meta--user">
+          <span class="zc-msg-time">${formatTime(m.timestamp)}</span>
+        </div>
+      </div>
+      <div class="zc-msg-avatar zc-msg-avatar--user">${ICONS.user}</div>
+    `
+  } else {
+    const isStreaming = m.streaming && !m.content
+    const agentName = m.agentName || 'ZeroClaw'
+    const model = m.model || ''
+    const tokens = []
+    if (m.inputTokens > 0) tokens.push(`↑${formatTokens(m.inputTokens)}`)
+    if (m.outputTokens > 0) tokens.push(`↓${formatTokens(m.outputTokens)}`)
+    const tokenStr = tokens.join(' ')
+
+    el.innerHTML = `
+      <div class="zc-msg-avatar zc-msg-avatar--assistant">${ICONS.bot}</div>
+      <div class="zc-msg-body">
+        <div class="zc-msg-sender">
+          <span class="zc-msg-agent-name">${esc(agentName)}</span>
+          ${model ? `<span class="zc-msg-model">${esc(model)}</span>` : ''}
+        </div>
+        <div class="zc-msg-bubble zc-msg-bubble--assistant">
+          ${isStreaming
+            ? '<span class="zc-streaming-dots"><span>.</span><span>.</span><span>.</span></span>'
+            : `<div class="zc-msg-content">${mdToHtml(m.content)}</div>`}
+        </div>
+        <div class="zc-msg-meta zc-msg-meta--assistant">
+          <span class="zc-msg-time">${formatTime(m.timestamp)}</span>
+          ${tokenStr ? `<span class="zc-msg-tokens">${tokenStr}</span>` : ''}
+          <button class="zc-msg-copy" data-mid="${esc(m.id)}" title="${t('engine.chatCopyMessageShort')}">
+            ${ICONS.copy}
+          </button>
+        </div>
+      </div>
+    `
+  }
+
+  return el
 }
 
 function scrollBottom() {

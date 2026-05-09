@@ -44,7 +44,7 @@ import './style/assistant.css'
 import './style/notes.css'
 // 引擎专属样式（scope 到 [data-engine="<id>"] 子树，不影响其他引擎）
 import './engines/hermes/style/hermes.css'
-// ZeroClaw engine uses shared styles only
+import './engines/zeroclaw/style/zeroclaw.css'
 
 
 // 初始化主题 + 国际化

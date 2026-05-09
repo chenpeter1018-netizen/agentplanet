@@ -109,6 +109,14 @@
   word-break: break-all;
 }
 
+.agent-card-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-secondary);
+}
+
 .page-subhint {
   margin-top: 6px;
   font-size: var(--font-size-sm);

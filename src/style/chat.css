@@ -1339,6 +1339,35 @@
   opacity: 0.8;
 }
 
+.msg-meta .msg-agent {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.msg-meta .msg-agent-avatar {
+  font-size: 14px;
+  line-height: 1;
+}
+.msg-meta .msg-agent-name {
+  font-size: var(--font-size-xs);
+}
+.msg-meta .msg-total-tokens {
+  font-size: var(--font-size-xs);
+  opacity: 0.8;
+  font-weight: 500;
+}
+.msg-meta .msg-cache {
+  font-size: var(--font-size-xs);
+  opacity: 0.7;
+  color: var(--accent-color);
+}
+.msg-meta .msg-model {
+  font-size: var(--font-size-xs);
+  opacity: 0.7;
+  font-style: italic;
+}
 .msg-meta .meta-sep {
   color: var(--text-tertiary);
   opacity: 0.4;

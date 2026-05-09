@@ -678,3 +678,103 @@ src-tauri/binaries/.gitkeep
 ✅ cargo check 通过（仅 2 个无害 warning）
 ⏳ macOS 安装包构建中
 ⏳ Windows GitHub Actions 待配置
+
+
+
+
+已经到了 0.1.9，三个引擎都开发好了
+接下来是体验优化的开发。
+第一个解决的是程序开启后自动检测的方案。
+第二个解决的是对话的响应速度解决方案
+然后是网页开发、AI 资源、收藏夹和学习资料。
+Skilled 推荐以及点击后如何安装的提示。
+数字员工的网页需要网站空间。
+怎么抓取同行的数字员工转化为我们的网页选项？添加数字员工自动下载后添加到员工管理页面自动配置。数字员工人设。
+对话的时候自动添加推荐技能，让用户确认是否允许我检测并安装没有的技能
+研究开发一个内置浏览器窗口。用于装载我们的线上功能知识库。学习库隐藏网址，便于管理
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────
+📋 开发记录 2026-05-09
+
+一、ZeroClaw 对话页卡片化重构
+──────────────────────────
+1. src/engines/zeroclaw/pages/chat.js 完整重写
+   — 从纯文本对话升级为卡片化消息布局
+   — 每条消息卡片包含：头像 SVG、Agent 名称、模型 badge、时间戳（年月日 时:分）、Token 信息
+   — 用户消息右对齐蓝底（--accent），AI 消息左对齐灰底边框
+   — Markdown 渲染：粗体/斜体/代码块/链接/列表
+   — 流式输出打字动画（三点脉动 zcDotPulse）
+   — 复制按钮悬停显示（hover reveal），点击复制消息内容
+   — formatTime() 产生"2026年05月09日 10:00"中文格式
+   — formatTokens() 产生"1.2k"/"3M"紧凑格式
+
+2. ZeroClaw 模型配置页 src/engines/zeroclaw/pages/models.js
+   — 通过 zeroclawApiProxy 与 ZeroClaw Gateway 通信
+   — 模型列表按服务商分组展示（provider header + 模型卡片）
+   — 新建模型弹窗：modelId / provider / apiBase / apiKey
+   — 编辑模型弹窗支持修改模型 ID 和服务商
+   — Gateway 状态指示灯
+
+3. ZeroClaw 样式 src/engines/zeroclaw/style/zeroclaw.css
+   — 完整的聊天界面 CSS（header / messages / input）
+   — 消息卡片样式：.zc-chat-msg, .zc-msg-avatar, .zc-msg-bubble
+   — 模型配置页样式：.zc-models-page, .zc-models-provider-header, .zc-model-item
+   — 输入框聚焦光环动画
+
+4. ZeroClaw 引擎注册
+   — src/engines/zeroclaw/index.js: 新增 /z/models 导航项和路由
+   — src/main.js: 导入 zeroclaw.css
+
+5. 国际化补充
+   — src/locales/modules/models.js: 新增 6 个 key
+   — src/locales/modules/sidebar.js: 新增 models 导航项
+   — src/locales/modules/engine.js: 新增 ZeroClaw 提示语
+   — src/locales/zh-CN.json: 同步更新
+
+二、OpenClaw 员工卡片「去对话」功能
+──────────────────────────
+6. src/pages/agents.js
+   — renderAgents(): 每张员工卡片底部新增「去对话」按钮
+   — attachAgentEvents(): 处理 data-action="chat"，跳转 #/chat?agent={agentId}
+
+7. src/pages/chat.js
+   — 新增 applyAgentFromUrl(): 从 URL hash 解析 ?agent= 参数
+   — 校验 Agent 存在后自动设置 _workspaceCurrentAgentId
+   — 同步更新 header 中的 Agent 标识 badge
+
+8. src/style/agents.css
+   — .agent-card-footer: 顶部分隔线 + 右对齐布局
+
+9. src/locales/modules/agents.js
+   — 新增 goToChat: 去对话 / Go to Chat
+
+三、版本号
+──────────────────────────
+10. 版本号 0.1.0 → 0.1.9
+    — package.json
+    — src-tauri/tauri.conf.json
+
+四、构建状态
+────────────────
+✅ npm run build 通过
+✅ cargo check 通过
+
+
+
+
+技术工程师（权）2026年5月9日 2:03 ↑3.9k ↓626 R47.9k 5% ctx deepseek-v4-pro
+
+下载安装了，windows 和 mac 都安装测试了，1、openclaw 模式下  AI对话窗口  对话的时候 智能体回答问题的时候  
+                                                                                                          
+    ，每条回答 信息 底部跟一个头像和 agent 名称（不是 agent iD）年月日 时:分 和 token 信息 模型信息  
+    比如：main技术 2026年5月9日 2:03 ↑3.9k ↓626 R47.9k 5% ctx deepseek-v4-pro
+
+    仍需处理                                                        
+                                                                                                               
+  - Hermes 安装页面前端 - 需要在 setup 页面添加国内镜像 URL 输入框         ：国内镜像地址curl -fsSL https://res1.hermesagent.org.cn/install.sh | bash  直接写入代码                                    
+  - Windows uv.exe - 需要添加真实 Windows uv 二进制到 src-tauri/binaries/                                      
+  - ZeroClaw 对话页卡片化 + 模型配置 - 参考 Hermes 模型设置                  
+
+  跟进：                                                                                                   
+  - ZeroClaw 对话页卡片化 + 模型配置页（参考 Hermes）                                                          
+  - 需要真实的 ZeroClaw 二进制文件（目前 GitHub release 上也没有）

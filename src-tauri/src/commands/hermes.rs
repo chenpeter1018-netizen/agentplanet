@@ -13,6 +13,7 @@ use serde_json::Value;
 use std::path::PathBuf;
 use std::process::Command;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use tauri::Manager;
 use std::sync::OnceLock;
 use tauri::Emitter;
 
@@ -1048,17 +1049,19 @@ pub async fn install_hermes(
     app: tauri::AppHandle,
     method: String,
     extras: Vec<String>,
+    mirror_url: Option<String>,
+    git_mirror_url: Option<String>,
 ) -> Result<String, String> {
     let _ = app.emit("hermes-install-log", "🚀 开始安装 Hermes Agent...");
     let _ = app.emit("hermes-install-progress", 0u32);
 
     // Step 1: 确保 uv 可用
-    let uv_path = ensure_uv(&app).await?;
+    let uv_path = ensure_uv(&app, mirror_url.as_deref()).await?;
     let _ = app.emit("hermes-install-progress", 20u32);
 
     // Step 2: 执行安装
     match method.as_str() {
-        "uv-tool" | "" => install_via_uv_tool(&app, &uv_path, &extras).await?,
+        "uv-tool" | "" => install_via_uv_tool(&app, &uv_path, &extras, git_mirror_url.as_deref()).await?,
         "uv-pip" => install_via_uv_pip(&app, &uv_path, &extras).await?,
         other => return Err(format!("不支持的安装方式: {other}")),
     };
@@ -1094,7 +1097,7 @@ pub async fn install_hermes(
 }
 
 /// 确保 uv 二进制可用，不存在则下载
-async fn ensure_uv(app: &tauri::AppHandle) -> Result<String, String> {
+async fn ensure_uv(app: &tauri::AppHandle, mirror_url: Option<&str>) -> Result<String, String> {
     let uv_path = uv_bin_path();
 
     // 已有 uv
@@ -1116,31 +1119,54 @@ async fn ensure_uv(app: &tauri::AppHandle) -> Result<String, String> {
         return Ok("uv".into());
     }
 
-    // 需要下载 uv
+    // 尝试内嵌二进制（离线免下载）
+    if let Ok(bundled_path) = install_bundled_uv(app) {
+        if let Ok(ver) = run_silent(&bundled_path.to_string_lossy(), &["--version"]) {
+            let _ = app.emit("hermes-install-log", format!("✓ uv 已从安装包释放: {ver}"));
+            return Ok(bundled_path.to_string_lossy().to_string());
+        }
+    }
+
+    // 需要下载 uv（优先国内镜像 → GitHub）
     let _ = app.emit("hermes-install-log", "📦 下载 uv 包管理器...");
     let _ = app.emit("hermes-install-progress", 5u32);
 
-    let version = "0.7.12"; // 稳定版本
-    let url = uv_download_url(version);
-    let _ = app.emit("hermes-install-log", format!("下载: {url}"));
+    let version = "0.7.12";
+    let platform = {
+        #[cfg(all(target_os = "windows", target_arch = "x86_64"))] { "uv-x86_64-pc-windows-msvc.zip" }
+        #[cfg(all(target_os = "macos", target_arch = "aarch64"))] { "uv-aarch64-apple-darwin.tar.gz" }
+        #[cfg(all(target_os = "macos", target_arch = "x86_64"))] { "uv-x86_64-apple-darwin.tar.gz" }
+        #[cfg(all(target_os = "linux", target_arch = "x86_64"))] { "uv-x86_64-unknown-linux-gnu.tar.gz" }
+        #[cfg(all(target_os = "linux", target_arch = "aarch64"))] { "uv-aarch64-unknown-linux-gnu.tar.gz" }
+    };
+
+    // 构建下载 URL 列表（用户镜像 > 国内默认镜像 > GitHub）
+    let mut urls: Vec<String> = Vec::new();
+    if let Some(mirror) = mirror_url {
+        urls.push(format!("{}/{}", mirror.trim_end_matches('/'), platform));
+    }
+    urls.push(format!("{}/{}", CN_MIRROR_BASE, platform));
+    urls.push(uv_download_url(version));
 
     let client = super::build_http_client(std::time::Duration::from_secs(300), Some("Agent Planet"))
         .map_err(|e| format!("HTTP 客户端创建失败: {e}"))?;
 
-    let resp = client
-        .get(&url)
-        .send()
-        .await
-        .map_err(|e| format!("uv 下载失败: {e}"))?;
-
-    if !resp.status().is_success() {
-        return Err(format!("uv 下载失败 (HTTP {})", resp.status()));
+    let mut last_err = String::new();
+    let mut bytes = None;
+    for url in &urls {
+        let _ = app.emit("hermes-install-log", format!("下载: {url}"));
+        match client.get(url).send().await {
+            Ok(resp) if resp.status().is_success() => {
+                match resp.bytes().await {
+                    Ok(b) => { bytes = Some(b); break; }
+                    Err(e) => last_err = format!("读取失败: {e}"),
+                }
+            }
+            Ok(resp) => last_err = format!("HTTP {}", resp.status()),
+            Err(e) => last_err = format!("网络请求失败: {e}"),
+        }
     }
-
-    let bytes = resp
-        .bytes()
-        .await
-        .map_err(|e| format!("uv 下载读取失败: {e}"))?;
+    let bytes = bytes.ok_or_else(|| format!("uv 下载失败（已尝试 {} 个地址）: {last_err}", urls.len()))?;
 
     let _ = app.emit(
         "hermes-install-log",
@@ -1239,24 +1265,77 @@ fn extract_uv_tar_gz(data: &[u8], dest: &std::path::Path) -> Result<(), String> 
 /// Hermes Agent 的 GitHub 仓库地址（不在 PyPI 上发布，只能从 GitHub 安装）
 const HERMES_GIT_URL: &str = "git+https://github.com/NousResearch/hermes-agent.git";
 
-/// 通过 uv tool install 安装 Hermes Agent（从 GitHub）
+/// 国内镜像基础 URL（免 VPN，优先使用）
+const CN_MIRROR_BASE: &str = "https://res1.hermesagent.org.cn";
+
+/// 内嵌 uv 二进制名
+fn uv_bin_name() -> &'static str {
+    #[cfg(target_os = "windows")] { "uv.exe" }
+    #[cfg(not(target_os = "windows"))] { "uv" }
+}
+
+/// 从 Tauri 资源复制内嵌的 uv 二进制（离线免下载）
+fn install_bundled_uv(app: &tauri::AppHandle) -> std::result::Result<PathBuf, String> {
+    let bin_dir = uv_bin_dir();
+    std::fs::create_dir_all(&bin_dir).map_err(|e| e.to_string())?;
+    let dest = uv_bin_path();
+
+    // 生产模式 — 通过 AppHandle 解析资源目录
+    if let Ok(resource_dir) = app.path().resource_dir() {
+        let bundled = resource_dir.join("binaries").join(uv_bin_name());
+        if bundled.exists() && super::zeroclaw::is_valid_binary(&bundled) {
+            std::fs::copy(&bundled, &dest).map_err(|e| format!("复制失败: {e}"))?;
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                let mut perms = std::fs::metadata(&dest).map_err(|e| e.to_string())?.permissions();
+                perms.set_mode(0o755);
+                std::fs::set_permissions(&dest, perms).map_err(|e| e.to_string())?;
+            }
+            return Ok(dest);
+        }
+    }
+
+    // 开发模式 — CARGO_MANIFEST_DIR/binaries
+    let dev_bin = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("binaries")
+        .join(uv_bin_name());
+    if dev_bin.exists() && super::zeroclaw::is_valid_binary(&dev_bin) {
+        std::fs::copy(&dev_bin, &dest).map_err(|e| format!("复制失败: {e}"))?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mut perms = std::fs::metadata(&dest).map_err(|e| e.to_string())?.permissions();
+            perms.set_mode(0o755);
+            std::fs::set_permissions(&dest, perms).map_err(|e| e.to_string())?;
+        }
+        return Ok(dest);
+    }
+
+    Err("bundled uv binary not found".into())
+}
+
+/// 通过 uv tool install 安装 Hermes Agent（从 GitHub，支持镜像）
 async fn install_via_uv_tool(
     app: &tauri::AppHandle,
     uv_path: &str,
     extras: &[String],
+    git_mirror_url: Option<&str>,
 ) -> Result<(), String> {
+    let git_url = git_mirror_url.unwrap_or(HERMES_GIT_URL);
+    let source_label = if git_mirror_url.is_some() { "镜像" } else { "GitHub" };
     let _ = app.emit(
         "hermes-install-log",
-        "📦 通过 uv tool install 从 GitHub 安装 Hermes Agent...",
+        format!("📦 通过 uv tool install 从 {} 安装 Hermes Agent...", source_label),
     );
     let _ = app.emit("hermes-install-progress", 25u32);
 
     // 构造包名（PEP 508 格式: "pkg[extras] @ git+url"）
-    // hermes-agent 未发布到 PyPI，必须从 GitHub 安装
+    // hermes-agent 未发布到 PyPI，必须从 GitHub/镜像安装
     let pkg = if extras.is_empty() {
-        format!("hermes-agent @ {}", HERMES_GIT_URL)
+        format!("hermes-agent @ {}", git_url)
     } else {
-        format!("hermes-agent[{}] @ {}", extras.join(","), HERMES_GIT_URL)
+        format!("hermes-agent[{}] @ {}", extras.join(","), git_url)
     };
 
     let mut cmd = tokio::process::Command::new(uv_path);

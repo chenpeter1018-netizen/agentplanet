@@ -79,6 +79,7 @@ export default {
       { section: '', items: [
         { route: '/z/dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
         { route: '/z/chat', label: t('sidebar.aiChat'), icon: 'chat' },
+        { route: '/z/models', label: t('sidebar.models'), icon: 'models' },
         { route: '/z/service', label: t('sidebar.services'), icon: 'services' },
       ]},
       { section: t('sidebar.sectionMaintain'), collapsed: true, id: 'maintain', items: [
@@ -97,6 +98,7 @@ export default {
       { path: '/z/setup', loader: () => import('./pages/setup.js') },
       { path: '/z/dashboard', loader: () => import('./pages/dashboard.js') },
       { path: '/z/chat', loader: () => import('./pages/chat.js') },
+      { path: '/z/models', loader: () => import('./pages/models.js') },
       { path: '/z/service', loader: () => import('./pages/service.js') },
       { path: '/z/backup', loader: () => import('./pages/backup.js') },
       { path: '/z/logs', loader: () => import('./pages/logs.js') },

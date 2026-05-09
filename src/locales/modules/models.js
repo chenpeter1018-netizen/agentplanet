@@ -187,4 +187,10 @@ export default {
   setAsPrimary: _('设为主用', 'Set as Primary', '設為主用'),
   remove: _('移除', 'Remove', '移除'),
   add: _('加入', 'Add', '加入'),
+  noModels: _('暂无模型', 'No models', '暫無模型'),
+  noModelsHint: _('启动 ZeroClaw Gateway 后点击刷新获取模型列表', 'Start ZeroClaw Gateway and click refresh to get model list', '啟動 ZeroClaw Gateway 後點擊刷新獲取模型列表'),
+  addFailed: _('添加失败', 'Add failed', '新增失敗'),
+  updateFailed: _('更新失败', 'Update failed', '更新失敗'),
+  provider: _('服务商', 'Provider', '服務商'),
+  apiBase: _('API 地址', 'API Base URL', 'API 位址'),
 }
