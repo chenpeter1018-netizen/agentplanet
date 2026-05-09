@@ -48,7 +48,7 @@ export default {
   installCount: _('{count} 个安装', '{count} installations', '{count} 個安裝', '{count} インストール', '{count}개 설치'),
   retry: _('重试', 'Retry', '重試', '再試行', '재시도', 'Thử lại', 'Reintentar', 'Tentar novamente', 'Повторить', 'Réessayer', 'Wiederholen'),
   servicesLoadFail: _('服务状态加载失败', 'Failed to load service status', '服務狀態載入失敗', 'サービス状態の読み込みに失敗', '서비스 상태 로드 실패'),
-  versionLoadFail: _('版本信息加载失败', 'Failed to load version info', '版本資訊載入失敗', 'バージョン情報の読み込みに失敗', '버전 정보 로드 실패'),
+  versionLoadFail: _('请稍等片刻，OpenClaw 正在启动中……', 'Please wait, OpenClaw is starting...', '請稍等片刻，OpenClaw 正在啟動中……'),
   notSet: _('未设置', 'Not set', '未設定', '未設定', '미설정', 'Chưa đặt', 'No configurado', 'Não definido', 'Не задано', 'Non défini', 'Nicht gesetzt'),
   port: _('端口', 'Port', '連接埠', 'ポート', '포트', 'Cổng', 'Puerto', 'Porta', 'Порт'),
   startBtn: _('启动', 'Start', '啟動', '起動', '시작', 'Khởi động', 'Iniciar', 'Iniciar', 'Запустить', 'Démarrer', 'Starten'),

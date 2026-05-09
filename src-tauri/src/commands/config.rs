@@ -6622,12 +6622,41 @@ pub fn copy_env_installers(app: tauri::AppHandle) -> Result<serde_json::Value, S
 #[tauri::command]
 pub fn get_openclaw_gateway_models() -> Result<serde_json::Value, String> {
     let config = read_openclaw_config()?;
-    let models = if let Some(arr) = config.get("models").and_then(|v| v.as_array()) {
-        arr.clone()
-    } else if let Some(arr) = config.get("gateway").and_then(|g| g.get("models")).and_then(|v| v.as_array()) {
-        arr.clone()
-    } else {
-        vec![]
-    };
+    let mut models: Vec<serde_json::Value> = vec![];
+
+    // OpenClaw 模型结构: models.providers.{key}.models[]
+    if let Some(providers) = config
+        .get("models")
+        .and_then(|m| m.get("providers"))
+        .and_then(|p| p.as_object())
+    {
+        for (provider_key, provider_val) in providers {
+            let provider_models = provider_val
+                .get("models")
+                .and_then(|v| v.as_array())
+                .cloned()
+                .unwrap_or_default();
+            for mut model in provider_models {
+                // 注入 provider 信息到每个模型
+                if let Some(obj) = model.as_object_mut() {
+                    if !obj.contains_key("provider") {
+                        obj.insert("provider".to_string(), serde_json::Value::String(provider_key.clone()));
+                    }
+                    if !obj.contains_key("api_base") {
+                        if let Some(base_url) = provider_val.get("baseUrl").or_else(|| provider_val.get("base_url")) {
+                            obj.insert("api_base".to_string(), base_url.clone());
+                        }
+                    }
+                    if !obj.contains_key("api_key") {
+                        if let Some(api_key) = provider_val.get("apiKey").or_else(|| provider_val.get("api_key")) {
+                            obj.insert("api_key".to_string(), api_key.clone());
+                        }
+                    }
+                }
+                models.push(model);
+            }
+        }
+    }
+
     Ok(serde_json::json!({ "models": models }))
 }

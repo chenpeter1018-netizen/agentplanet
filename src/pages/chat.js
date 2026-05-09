@@ -18,6 +18,7 @@ const STORAGE_MODEL_KEY = 'agent-planet-chat-selected-model'
 const STORAGE_SIDEBAR_KEY = 'agent-planet-chat-sidebar-open'
 const STORAGE_SESSION_NAMES_KEY = 'agent-planet-chat-session-names'
 const STORAGE_WORKSPACE_PANEL_KEY = 'agent-planet-chat-workspace-open'
+const STORAGE_COLLAPSED_AGENTS_KEY = 'agent-planet-chat-collapsed-agents'
 
 const COMMANDS = [
   { title: 'chat.cmdSession', commands: [
@@ -111,6 +112,7 @@ let _hostedAbort = null
 let _hostedLastTargetTs = 0
 let _hostedAutoStopTimer = null
 let _hostedStartTime = 0
+let _thinkSelectEl = null
 let _workspaceBtn = null, _workspacePanelEl = null, _workspaceAgentBadgeEl = null, _workspaceAgentTitleEl = null
 let _workspacePathEl = null, _workspaceCoreListEl = null, _workspaceTreeEl = null, _workspaceCurrentFileEl = null
 let _workspaceMetaEl = null, _workspaceEditorEl = null, _workspacePreviewEl = null, _workspaceEmptyEl = null
@@ -159,6 +161,14 @@ export async function render() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
             </button>
           </div>
+          <select class="form-input" id="chat-think-select" style="width:110px;max-width:16vw;padding:6px 8px;font-size:var(--font-size-xs)" title="${t('chat.cmdThinkMode')}">
+            <option value="auto">${t('chat.cmdThinkMode')}</option>
+            <option value="off">${t('chat.cmdThinkOff')}</option>
+            <option value="low">${t('chat.cmdThinkLow')}</option>
+            <option value="medium">${t('chat.cmdThinkMedium')}</option>
+            <option value="high">${t('chat.cmdThinkHigh')}</option>
+          </select>
+          <span style="font-size:var(--font-size-xs);color:var(--text-tertiary);white-space:nowrap">${t('chat.viewWorkspaceFiles')}</span>
           <button class="btn btn-sm btn-ghost chat-workspace-trigger" id="btn-chat-workspace" title="${t('chat.openWorkspaceFolder')}">
             ${svgIcon('folder', 16)}
             <span class="chat-workspace-trigger-label">${t('chat.workspace')}</span>
@@ -317,6 +327,7 @@ export async function render() {
   _hostedAutoStopEl = page.querySelector('#hosted-agent-auto-stop')
   _hostedSaveBtn = page.querySelector('#hosted-agent-save')
   _hostedCloseBtn = page.querySelector('#hosted-agent-close')
+  _thinkSelectEl = page.querySelector('#chat-think-select')
   _workspaceBtn = page.querySelector('#btn-chat-workspace')
   _workspacePanelEl = page.querySelector('#chat-workspace-panel')
   _workspaceAgentBadgeEl = page.querySelector('#chat-workspace-agent-badge')
@@ -387,6 +398,17 @@ function bindEvents(page) {
       if (_selectedModel) localStorage.setItem(STORAGE_MODEL_KEY, _selectedModel)
       else localStorage.removeItem(STORAGE_MODEL_KEY)
       applySelectedModel()
+    })
+  }
+
+  if (_thinkSelectEl) {
+    _thinkSelectEl.addEventListener('change', () => {
+      const level = _thinkSelectEl.value
+      if (level === 'auto') return
+      localStorage.setItem('agent-planet-chat-think', level)
+      _textarea.value = `/think ${level}`
+      sendMessage()
+      _thinkSelectEl.value = 'auto'
     })
   }
 
@@ -1307,33 +1329,91 @@ function renderSessionList(sessions) {
     return
   }
   sessions.sort((a, b) => (b.updatedAt || b.lastActivity || 0) - (a.updatedAt || a.lastActivity || 0))
-  _sessionListEl.innerHTML = sessions.map(s => {
+
+  // 按 agent 分组
+  const groups = {}
+  const ungrouped = []
+  for (const s of sessions) {
     const key = s.sessionKey || s.key || ''
-    const active = key === _sessionKey ? ' active' : ''
-    const label = parseSessionLabel(key)
-    const ts = s.updatedAt || s.lastActivity || s.createdAt || 0
-    const timeStr = ts ? formatSessionTime(ts) : ''
-    const msgCount = s.messageCount || s.messages || 0
-    const agentId = parseSessionAgent(key)
-    const displayLabel = getDisplayLabel(key) || label
-    const cpCount = s.compactionCheckpointCount || 0
-    return `<div class="chat-session-card${active}" data-key="${escapeAttr(key)}">
-      <div class="chat-session-card-header">
-        <span class="chat-session-label" title="${t('chat.doubleClickRename')}">${escapeAttr(displayLabel)}</span>
-        <div style="display:flex;gap:2px;align-items:center">
-          ${cpCount > 0 ? `<button class="chat-session-del" data-compaction="${escapeAttr(key)}" title="${t('chat.compactionHistory')}" style="color:var(--text-tertiary);font-size:11px">⟳${cpCount}</button>` : ''}
-          <button class="chat-session-del" data-del="${escapeAttr(key)}" title="${t('common.delete')}">×</button>
+    const agentId = parseSessionAgent(key) || 'main'
+    if (!groups[agentId]) groups[agentId] = []
+    groups[agentId].push(s)
+  }
+
+  // 排序：main 在最前，其余按名称排序
+  const sortedAgents = Object.keys(groups).sort((a, b) => {
+    if (a === 'main') return -1
+    if (b === 'main') return 1
+    const na = _agentMap[a]?.name || a
+    const nb = _agentMap[b]?.name || b
+    return na.localeCompare(nb, 'zh-CN')
+  })
+
+  // 读取折叠状态
+  let collapsedSet
+  try { collapsedSet = new Set(JSON.parse(localStorage.getItem(STORAGE_COLLAPSED_AGENTS_KEY)) || []) }
+  catch { collapsedSet = new Set() }
+
+  _sessionListEl.innerHTML = sortedAgents.map(agentId => {
+    const agentSessions = groups[agentId]
+    const info = _agentMap[agentId]
+    const name = info?.name || (agentId === 'main' ? t('chat.mainSession') : agentId)
+    const avatar = info?.emoji || ''
+    const collapsed = collapsedSet.has(agentId)
+    const chevron = collapsed ? '﹀' : '︿'
+
+    const avatarHtml = avatar
+      ? (avatar.startsWith('/') || avatar.startsWith('http')
+          ? `<img class="chat-agent-group-avatar" src="${escapeAttr(avatar)}" alt="">`
+          : `<span class="chat-agent-group-emoji">${escapeAttr(avatar)}</span>`)
+      : `<span class="chat-agent-group-emoji">🤖</span>`
+
+    const sessionCards = collapsed ? '' : agentSessions.map(s => {
+      const key = s.sessionKey || s.key || ''
+      const active = key === _sessionKey ? ' active' : ''
+      const label = parseSessionLabel(key)
+      const ts = s.updatedAt || s.lastActivity || s.createdAt || 0
+      const timeStr = ts ? formatSessionTime(ts) : ''
+      const msgCount = s.messageCount || s.messages || 0
+      const displayLabel = getDisplayLabel(key) || label
+      const cpCount = s.compactionCheckpointCount || 0
+      return `<div class="chat-session-card${active}" data-key="${escapeAttr(key)}">
+        <div class="chat-session-card-header">
+          <span class="chat-session-label" title="${t('chat.doubleClickRename')}">${escapeAttr(displayLabel)}</span>
+          <div style="display:flex;gap:2px;align-items:center">
+            ${cpCount > 0 ? `<button class="chat-session-del" data-compaction="${escapeAttr(key)}" title="${t('chat.compactionHistory')}" style="color:var(--text-tertiary);font-size:11px">⟳${cpCount}</button>` : ''}
+            <button class="chat-session-del" data-del="${escapeAttr(key)}" title="${t('common.delete')}">×</button>
+          </div>
         </div>
+        <div class="chat-session-card-meta">
+          ${msgCount > 0 ? `<span>${msgCount} msgs</span>` : ''}
+          ${timeStr ? `<span>${timeStr}</span>` : ''}
+        </div>
+      </div>`
+    }).join('')
+
+    return `<div class="chat-agent-group">
+      <div class="chat-agent-group-header" data-agent="${escapeAttr(agentId)}">
+        ${avatarHtml}
+        <span class="chat-agent-group-name">${escapeAttr(name)}</span>
+        <span class="chat-agent-group-count">${agentSessions.length}</span>
+        <span class="chat-agent-group-chevron">${chevron}</span>
       </div>
-      <div class="chat-session-card-meta">
-        ${agentId && agentId !== 'main' ? `<span class="chat-session-agent">${escapeAttr(agentId)}</span>` : ''}
-        ${msgCount > 0 ? `<span>${msgCount} msgs</span>` : ''}
-        ${timeStr ? `<span>${timeStr}</span>` : ''}
-      </div>
+      <div class="chat-agent-group-sessions">${sessionCards}</div>
     </div>`
   }).join('')
 
   _sessionListEl.onclick = (e) => {
+    // 折叠/展开 agent 分组
+    const groupHeader = e.target.closest('.chat-agent-group-header')
+    if (groupHeader) {
+      const agentId = groupHeader.dataset.agent
+      if (collapsedSet.has(agentId)) collapsedSet.delete(agentId)
+      else collapsedSet.add(agentId)
+      localStorage.setItem(STORAGE_COLLAPSED_AGENTS_KEY, JSON.stringify([...collapsedSet]))
+      renderSessionList(sessions)
+      return
+    }
     const cpBtn = e.target.closest('[data-compaction]')
     if (cpBtn) { e.stopPropagation(); showCompactionHistory(cpBtn.dataset.compaction); return }
     const delBtn = e.target.closest('[data-del]')

@@ -225,7 +225,7 @@ function renderStatCards(page, services, version, agents, config, panelConfig) {
   const foreignGateway = isForeignGatewayService(gw)
   const runningCount = services.filter(s => s.running).length
   const versionMeta = version.recommended
-    ? `${version.ahead_of_recommended ? t('dashboard.versionAhead', { version: version.recommended }) : version.is_recommended ? t('dashboard.versionStable', { version: version.recommended }) : t('dashboard.versionRecommend', { version: version.recommended })}${version.latest_update_available && version.latest ? ' · ' + t('dashboard.versionLatest', { version: version.latest }) : ''}`
+    ? `${version.is_recommended ? t('dashboard.versionStable', { version: version.recommended }) : t('dashboard.versionRecommend', { version: version.recommended })}${version.latest_update_available && version.latest ? ' · ' + t('dashboard.versionLatest', { version: version.latest }) : ''}`
     : (version.latest_update_available && version.latest ? t('dashboard.versionLatest', { version: version.latest }) : t('dashboard.versionUnknown'))
 
   // CLI 路径信息

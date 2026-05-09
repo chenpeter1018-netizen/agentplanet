@@ -930,3 +930,63 @@
     padding: var(--space-md) var(--space-md);
   }
 }
+
+/* ═══════ 赛博朋克主题覆盖 ═══════ */
+
+[data-theme="cyberpunk"] body {
+  background: linear-gradient(135deg, #0a0a1a 0%, #0d1b3e 30%, #1a1040 60%, #0a1a2e 100%);
+  background-attachment: fixed;
+}
+
+[data-theme="cyberpunk"] #sidebar {
+  background: linear-gradient(180deg, #00e5ff, #3b82f6, #8b5cf6);
+}
+
+[data-theme="cyberpunk"] .sidebar-footer {
+  border-top-color: rgba(0, 229, 255, 0.1);
+}
+
+[data-theme="cyberpunk"] .sidebar-collapse-mid {
+  color: rgba(0, 229, 255, 0.5);
+}
+[data-theme="cyberpunk"] .sidebar-collapse-mid:hover {
+  color: #00e5ff;
+}
+
+/* Nav items: hover cyan glow */
+[data-theme="cyberpunk"] .nav-item:hover {
+  background: rgba(0, 229, 255, 0.08);
+  color: #00e5ff;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+}
+
+/* Nav items: active gold underline */
+[data-theme="cyberpunk"] .nav-item.active {
+  background: rgba(255, 215, 0, 0.1);
+  color: #ffd700;
+  border-bottom: 2px solid #ffd700;
+  box-shadow: none;
+}
+
+[data-theme="cyberpunk"] .nav-item-icon {
+  background: rgba(0, 229, 255, 0.12);
+}
+[data-theme="cyberpunk"] .nav-item:hover .nav-item-icon {
+  background: rgba(0, 229, 255, 0.22);
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.3);
+}
+[data-theme="cyberpunk"] .nav-item.active .nav-item-icon {
+  background: var(--icon-color, #ffd700);
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.4);
+}
+[data-theme="cyberpunk"] .nav-item.active .nav-item-icon svg {
+  color: #0a0a1a;
+}
+
+/* Cyberpunk scrollbar */
+[data-theme="cyberpunk"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.3);
+}
+[data-theme="cyberpunk"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 229, 255, 0.5);
+}

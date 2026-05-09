@@ -5,6 +5,7 @@ export default {
   closeMenu: _('关闭菜单', 'Close menu'),
   themeLight: _('日间模式', 'Light Mode'),
   themeDark: _('夜间模式', 'Dark Mode'),
+  themeCyberpunk: _('赛博朋克', 'Cyberpunk'),
 
   sectionSkills: _('技能', 'Skills'),
   sectionSettings: _('设置', 'Settings'),

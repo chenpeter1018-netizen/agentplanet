@@ -53,5 +53,8 @@ export default {
   backupDone: _('备份完成: {file}', 'Backup done: {file}', '備份完成: {file}', 'バックアップ完了: {file}', '백업 완료: {file}'),
   backupFailed: _('备份失败', 'Backup failed', '備份失敗', 'バックアップ失敗', '백업 실패'),
   goToChat: _('去对话', 'Go to Chat', '去對話'),
+  openWorkspace: _('工作文件夹', 'Workspace', '工作資料夾'),
+  noWorkspace: _('未设置工作区路径', 'No workspace path configured', '未設定工作區路徑'),
+  openWorkspaceFailed: _('打开工作文件夹失败', 'Failed to open workspace', '打開工作資料夾失敗'),
   detailHint: _('点击卡片空白区域或”详情”按钮，进入新的 Agent 详情页。', 'Click a card or the Details button to open the new Agent detail page.', '點擊卡片空白區域或「詳情」按鈕，進入新的 Agent 詳情頁。', 'カード余白または「詳細」ボタンから Agent 詳細へ移動します。', '카드 빈 영역 또는 상세 버튼으로 Agent 상세 페이지로 이동합니다.'),
 }

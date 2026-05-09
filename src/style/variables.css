@@ -108,6 +108,60 @@
   --glass-border: rgba(255,255,255,0.08);
 }
 
+/* 赛博朋克主题 — Cyberpunk */
+[data-theme="cyberpunk"] {
+  --bg-primary: #0a0a1a;
+  --bg-secondary: rgba(10, 15, 30, 0.72);
+  --bg-tertiary: rgba(20, 30, 55, 0.48);
+  --bg-glass: rgba(10, 10, 30, 0.55);
+  --bg-glass-heavy: rgba(10, 10, 30, 0.85);
+  --bg-card: rgba(10, 10, 30, 0.7);
+  --bg-card-hover: rgba(20, 25, 50, 0.64);
+  --bg-hover: rgba(0, 229, 255, 0.08);
+  --bg-glass-hover: rgba(0, 229, 255, 0.08);
+
+  --border-primary: rgba(0, 229, 255, 0.15);
+  --border-secondary: rgba(0, 229, 255, 0.06);
+  --border-focus: rgba(0, 229, 255, 0.4);
+
+  --text-primary: #e0e8f0;
+  --text-secondary: #90a0c0;
+  --text-tertiary: #556080;
+  --text-inverse: #0a0a1a;
+
+  --accent: #00e5ff;
+  --accent-hover: #40f0ff;
+  --accent-muted: rgba(0, 229, 255, 0.12);
+
+  --icon-blue: #00e5ff;
+  --icon-green: #00e676;
+  --icon-orange: #ffab40;
+  --icon-red: #ff5252;
+  --icon-purple: #b388ff;
+  --icon-teal: #18ffff;
+  --icon-pink: #ff80ab;
+  --icon-yellow: #ffd700;
+  --icon-gray: #78909c;
+
+  --success: #00e676;
+  --success-muted: rgba(0, 230, 118, 0.12);
+  --warning: #ffab40;
+  --warning-muted: rgba(255, 171, 64, 0.12);
+  --error: #ff5252;
+  --error-muted: rgba(255, 82, 82, 0.12);
+  --info: #00e5ff;
+  --info-muted: rgba(0, 229, 255, 0.12);
+
+  --shadow-sm: 0 0.5px 1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 1px 4px rgba(0, 229, 255, 0.08);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 24px rgba(0, 229, 255, 0.18);
+
+  --glass-blur: saturate(180%) blur(20px);
+  --glass-blur-light: saturate(180%) blur(10px);
+  --glass-border: rgba(0, 229, 255, 0.08);
+}
+
 /* ═══════ 共享变量 ═══════ */
 :root {
   /* 兼容别名 — 旧代码引用映射到新变量 */

@@ -679,3 +679,60 @@ mark {
     grid-template-columns: 1fr;
   }
 }
+
+/* ═══════ 赛博朋克组件覆盖 ═══════ */
+
+/* Cards: semi-transparent dark + cyan border + backdrop blur */
+[data-theme="cyberpunk"] .card,
+[data-theme="cyberpunk"] .stat-card,
+[data-theme="cyberpunk"] .service-card {
+  background: rgba(10, 10, 30, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 229, 255, 0.15);
+}
+
+/* Buttons: cyan gradient primary */
+[data-theme="cyberpunk"] .btn-primary {
+  background: linear-gradient(135deg, #00e5ff, #3b82f6);
+  color: #0a0a1a;
+  border: none;
+}
+[data-theme="cyberpunk"] .btn-primary:hover {
+  background: linear-gradient(135deg, #40f0ff, #60a5fa);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
+}
+
+/* Toast */
+[data-theme="cyberpunk"] .toast {
+  background: rgba(10, 10, 30, 0.9);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+}
+
+/* Modal */
+[data-theme="cyberpunk"] .modal {
+  background: rgba(10, 10, 30, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+}
+
+/* Links */
+[data-theme="cyberpunk"] a {
+  color: #00e5ff;
+}
+[data-theme="cyberpunk"] a:hover {
+  color: #ffd700;
+}
+
+/* Tabs */
+[data-theme="cyberpunk"] .tab.active {
+  border-bottom-color: #00e5ff;
+  color: #00e5ff;
+}
+
+/* Headings in cyberpunk */
+[data-theme="cyberpunk"] h1, [data-theme="cyberpunk"] h2, [data-theme="cyberpunk"] h3,
+[data-theme="cyberpunk"] .page-title, [data-theme="cyberpunk"] .card-title {
+  color: #f0c060;
+}

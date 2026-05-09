@@ -1,13 +1,13 @@
 /**
- * 主题管理（日间/夜间模式）
+ * 主题管理（日间/夜间/赛博朋克 三模式循环）
  *
- * 桌面端：除了切换 `<html data-theme>`，还会同步 Tauri 原生窗口标题栏的
- * 主题（Windows 下通过 DwmSetWindowAttribute 切 immersive dark mode），
- * 避免夜间模式下出现"应用黑、窗口栏白"的割裂观感。Web 端该步骤会安静跳过。
+ * 桌面端：除了切换 <html data-theme>，还会同步 Tauri 原生窗口标题栏的
+ * 主题，避免夜间/赛博朋克模式下出现颜色割裂。Web 端该步骤会安静跳过。
  */
 import { isTauriRuntime } from './tauri-api.js'
 
 const THEME_KEY = 'agent-planet-theme'
+export const THEMES = ['light', 'dark', 'cyberpunk']
 
 // 延迟加载 Tauri window 模块，Web 构建不会真正拉取
 let _tauriWindowModule = null
@@ -33,28 +33,34 @@ async function syncTauriTitleBar(theme) {
   const win = await getTauriCurrentWindow()
   if (!win || typeof win.setTheme !== 'function') return
   try {
-    // Tauri v2: 接受 'light' | 'dark' | null（null = 跟随系统）
-    await win.setTheme(theme === 'dark' ? 'dark' : 'light')
-  } catch (_) {
-    // 某些 WebView2 版本或未授权时会抛错，静默忽略
-  }
+    // Tauri v2: 接受 'light' | 'dark' | null，赛博朋克用 dark
+    await win.setTheme(theme === 'light' ? 'light' : 'dark')
+  } catch (_) {}
 }
 
 export function initTheme() {
   const saved = localStorage.getItem(THEME_KEY)
-  const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+  const theme = (saved && THEMES.includes(saved))
+    ? saved
+    : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
   applyTheme(theme)
 }
 
-export function toggleTheme(onApply) {
+export function cycleTheme(onApply) {
   const html = document.documentElement
   const current = html.dataset.theme || 'light'
-  const next = current === 'dark' ? 'light' : 'dark'
+  const currentIndex = THEMES.indexOf(current)
+  const next = THEMES[(currentIndex + 1) % THEMES.length]
 
-  // 设置扩散起点：白切黑从左下角，黑切白从右上角
-  const toDark = next === 'dark'
-  html.style.setProperty('--theme-reveal-x', toDark ? '0%' : '100%')
-  html.style.setProperty('--theme-reveal-y', toDark ? '100%' : '0%')
+  // 设置扩散起点：切换到赛博朋克从中心展开
+  if (next === 'cyberpunk') {
+    html.style.setProperty('--theme-reveal-x', '50%')
+    html.style.setProperty('--theme-reveal-y', '50%')
+  } else {
+    const toDark = next === 'dark'
+    html.style.setProperty('--theme-reveal-x', toDark ? '0%' : '100%')
+    html.style.setProperty('--theme-reveal-y', toDark ? '100%' : '0%')
+  }
 
   const doApply = () => {
     applyTheme(next)
@@ -76,6 +82,12 @@ export function getTheme() {
 function applyTheme(theme) {
   document.documentElement.dataset.theme = theme
   localStorage.setItem(THEME_KEY, theme)
-  // Fire-and-forget，不等待 Tauri IPC 返回，避免阻塞 DOM 更新和过渡动画
   syncTauriTitleBar(theme)
+
+  // 星场动画：赛博朋克启动，其他停止
+  if (theme === 'cyberpunk') {
+    import('./starfield.js').then(m => m.startStarfield()).catch(() => {})
+  } else {
+    import('./starfield.js').then(m => { if (m.isStarfieldRunning()) m.stopStarfield() }).catch(() => {})
+  }
 }

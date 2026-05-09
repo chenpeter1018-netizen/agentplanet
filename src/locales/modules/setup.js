@@ -52,7 +52,7 @@ export default {
   configModels: _('配置模型', 'Configure Models', '設定模型', 'モデル設定', '모델 설정', 'Cấu hình mô hình', 'Configurar modelos', 'Configurar modelos', 'Настроить модели', 'Configurer les modèles', 'Modelle konfigurieren'),
   gatewaySetup: _('Gateway 设置', 'Gateway Setup', 'Gateway 設定', 'Gateway 設定', 'Gateway 설정', 'Cấu hình Gateway', 'Configurar Gateway', 'Configurar Gateway', 'Настроить Gateway', 'Configurer Gateway', 'Gateway konfigurieren'),
   messageChannels: _('消息渠道', 'Message Channels', '訊息頻道', 'チャンネル', '채널', 'Kênh', 'Canales', 'Canais', 'Каналы', 'Canaux', 'Kanäle'),
-  enterPanel: _('进入面板', 'Enter Panel', '進入面板', 'パネルに入る', '패널 진입', 'Vào panel', 'Entrar al panel', 'Entrar no painel', 'Войти в панель', 'Entrer dans le panneau', 'Panel betreten'),
+  enterPanel: _('进入运行状态', 'Enter Dashboard', '進入運行狀態'),
   installHint: _('点击安装后，将默认安装当前 Agent Planet 版本绑定的推荐稳定版；如需升降级，可稍后到「关于」页面切换版本。', 'Installation will use the recommended stable version bound to this Agent Planet release. To change versions later, go to the About page.', '点擊安裝后，將預設安裝目前 Agent Planet 版本綁定的推薦穩定版；如需升降級，可稍后到「關於」頁面切換版本。'),
   installHint2: _('如果你是为了体验最新版功能，建议先安装推荐稳定版再手动切换；若希望面板优先适配最新版，欢迎提交 issue。', 'To try latest features, install the recommended stable version first then switch manually. To request latest version support, submit an issue.', '如果你是為了體驗最新版功能，建議先安裝推薦穩定版再手動切換；若希望面板優先適配最新版，欢迎提交 issue。'),
   sourceChineseLabel: _('汉化优化版（推荐）', 'Chinese Optimized (Recommended)', '漢化最佳化版（推薦）'),

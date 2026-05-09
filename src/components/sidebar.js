@@ -2,12 +2,12 @@
  * 侧边导航栏
  */
 import { navigate, getCurrentRoute, reloadCurrentRoute } from '../router.js'
-import { toggleTheme, getTheme } from '../lib/theme.js'
+import { cycleTheme, getTheme } from '../lib/theme.js'
 import { isOpenclawReady } from '../lib/app-state.js'
 import { api } from '../lib/tauri-api.js'
 import { toast } from './toast.js'
 const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0'
-import { t, getLang, setLang, getAvailableLangs } from '../lib/i18n.js'
+import { t } from '../lib/i18n.js'
 import { isFeatureAvailable } from '../lib/feature-gates.js'
 import { getActiveEngine, getActiveEngineId, listEngines, switchEngine, onEngineChange } from '../lib/engine-manager.js'
 
@@ -247,43 +247,22 @@ export function renderSidebar(el) {
     html += '</div>'
   }
 
-  // 主题切换按钮
-  const isDark = getTheme() === 'dark'
+  // 主题切换按钮（三模式循环）
+  const curTheme = getTheme()
   const sunIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>'
   const moonIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>'
+  const cyberIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>'
 
-  const langCode = getLang()
-  const langs = getAvailableLangs()
-  const currentLang = langs.find(l => l.code === langCode) || langs[0]
-  const globeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>'
-  const checkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>'
-
-  const langOptions = langs.map(l => `
-    <div class="lang-option${l.code === langCode ? ' active' : ''}" data-lang="${l.code}">
-      <span class="lang-option-label">${l.label}</span>
-      <span class="lang-option-code">${l.code}</span>
-      ${l.code === langCode ? `<span class="lang-option-check">${checkIcon}</span>` : ''}
-    </div>
-  `).join('')
+  const themeIconMap = { light: moonIcon, dark: cyberIcon, cyberpunk: sunIcon }
+  const themeLabelMap = { light: t('sidebar.themeDark'), dark: t('sidebar.themeCyberpunk'), cyberpunk: t('sidebar.themeLight') }
 
   html += `
       <div class="sidebar-collapse-mid" id="btn-sidebar-collapse" title="${t('sidebar.collapse')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/></svg></div>
 
     <div class="sidebar-footer">
-      <div class="nav-item ic-orange" id="btn-theme-toggle">
-        <div class="nav-item-icon">${isDark ? sunIcon : moonIcon}</div>
-        <span>${isDark ? t('sidebar.themeLight') : t('sidebar.themeDark')}</span>
-      </div>
-      <div class="lang-switcher" id="lang-switcher">
-        <button class="nav-item ic-teal lang-trigger" id="btn-lang-toggle">
-          <span class="nav-item-icon">${globeIcon}</span>
-          <span>${currentLang.label}</span>
-          <svg class="lang-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M18 15l-6-6-6 6"/></svg>
-        </button>
-        <div class="lang-dropdown" id="lang-dropdown">
-          ${langs.length > 4 ? '<div class="lang-search-wrap"><input class="lang-search" id="lang-search" type="text" placeholder="Search..." autocomplete="off"></div>' : ''}
-          <div class="lang-options" id="lang-options">${langOptions}</div>
-        </div>
+      <div class="nav-item ic-orange" id="btn-theme-toggle" title="${themeLabelMap[curTheme] || ''}">
+        <div class="nav-item-icon">${themeIconMap[curTheme] || moonIcon}</div>
+        <span>${themeLabelMap[curTheme] || t('sidebar.themeDark')}</span>
       </div>
       <div class="sidebar-meta">
         <span class="sidebar-version">v${APP_VERSION}</span>
@@ -355,29 +334,10 @@ export function renderSidebar(el) {
         // 不需要整体重渲染
         return
       }
-      // 主题切换
+      // 主题切换（三模式循环）
       const themeBtn = e.target.closest('#btn-theme-toggle')
       if (themeBtn) {
-        toggleTheme(() => renderSidebar(el))
-        return
-      }
-      // 语言切换器：打开/关闭下拉
-      const langBtn = e.target.closest('#btn-lang-toggle')
-      if (langBtn) {
-        _toggleLangDropdown(el)
-        return
-      }
-      // 语言选项点击
-      const langOpt = e.target.closest('.lang-option[data-lang]')
-      if (langOpt) {
-        const code = langOpt.dataset.lang
-        if (code !== getLang()) {
-          setLang(code)
-          renderSidebar(el)
-          reloadCurrentRoute()
-        } else {
-          _closeLangDropdown()
-        }
+        cycleTheme(() => renderSidebar(el))
         return
       }
       // 引擎切换器：打开/关闭下拉
@@ -434,9 +394,6 @@ export function renderSidebar(el) {
       if (!e.target.closest('.engine-switcher')) {
         _closeEngineDropdown()
       }
-      if (!e.target.closest('.lang-switcher')) {
-        _closeLangDropdown()
-      }
     })
 
   }
@@ -466,38 +423,3 @@ export function openMobileSidebar() {
   }
   requestAnimationFrame(() => overlay.classList.add('visible'))
 }
-
-function _closeLangDropdown() {
-  const sw = document.getElementById('lang-switcher')
-  const dd = document.getElementById('lang-dropdown')
-  if (dd) dd.classList.remove('open')
-  if (sw) sw.classList.remove('open')
-}
-
-function _toggleLangDropdown(sidebarEl) {
-  const sw = document.getElementById('lang-switcher')
-  const dd = document.getElementById('lang-dropdown')
-  if (!dd) return
-  if (dd.classList.contains('open')) { dd.classList.remove('open'); if (sw) sw.classList.remove('open'); return }
-  dd.classList.add('open')
-  if (sw) sw.classList.add('open')
-  const searchInput = dd.querySelector('#lang-search')
-  if (searchInput) {
-    searchInput.value = ''
-    _filterLangOptions('')
-    requestAnimationFrame(() => searchInput.focus())
-    searchInput.oninput = () => _filterLangOptions(searchInput.value)
-  }
-}
-
-function _filterLangOptions(query) {
-  const opts = document.querySelectorAll('#lang-options .lang-option')
-  const q = query.toLowerCase().trim()
-  opts.forEach(opt => {
-    if (!q) { opt.style.display = ''; return }
-    const label = (opt.querySelector('.lang-option-label')?.textContent || '').toLowerCase()
-    const code = (opt.querySelector('.lang-option-code')?.textContent || '').toLowerCase()
-    opt.style.display = (label.includes(q) || code.includes(q)) ? '' : 'none'
-  })
-}
-

@@ -119,6 +119,7 @@ export default {
   cmdContext: _('上下文信息', 'Context info', '上下文資訊'),
   workspace: _('工作区', 'Workspace', '工作區'),
   openWorkspace: _('打开工作区文件面板', 'Open workspace files panel'),
+  viewWorkspaceFiles: _('查看员工产生的文件 ➡️', 'View agent files ➡️', '查看員工產生的檔案 ➡️'),
   openWorkspaceFolder: _('在文件管理器中打开当前 Agent 工作区', 'Open current agent workspace in file manager'),
   workspaceFiles: _('工作区文件', 'Workspace Files', '工作區檔案'),
   coreFiles: _('核心文件', 'Core Files', '核心檔案'),

@@ -176,12 +176,19 @@ async function importFromOpenclaw() {
     for (const m of models) {
       const modelId = m.id || m.name || m.model
       if (!modelId) continue
+      const cfg = m.config || {}
       try {
         await api.zeroclawApiProxy('POST', '/v1/models', {
           id: modelId,
+          name: m.name || modelId,
           provider: m.provider || m.owned_by || '',
           api_base: m.api_base || m.base_url || undefined,
           api_key: m.api_key || undefined,
+          stream: cfg.stream !== undefined ? cfg.stream : true,
+          fast: cfg.fast !== undefined ? cfg.fast : false,
+          think: cfg.think || 'low',
+          temperature: cfg.temperature || undefined,
+          max_tokens: cfg.maxTokens || undefined,
         })
         imported++
       } catch (e) {

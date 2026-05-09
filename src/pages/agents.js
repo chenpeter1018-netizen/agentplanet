@@ -106,7 +106,7 @@ function renderAgents(page, state) {
       ? (avatar.startsWith('/') || avatar.startsWith('http')
           ? `<img class="agent-avatar" src="${escapeAttr(avatar)}" alt="${escapeAttr(name)}" />`
           : `<span class="agent-avatar-emoji">${escapeAttr(avatar)}</span>`)
-      : `<span class="agent-avatar-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>`
+      : `<span class="agent-avatar-placeholder">🤖</span>`
     return `
       <div class="agent-card" data-id="${a.id}">
         <div class="agent-card-header">
@@ -137,6 +137,7 @@ function renderAgents(page, state) {
           </div>
         </div>
         <div class="agent-card-footer">
+          <button class="btn btn-sm btn-secondary" data-action="workspace" data-id="${a.id}">${t('agents.openWorkspace')}</button>
           <button class="btn btn-sm btn-primary" data-action="chat" data-id="${a.id}">${t('agents.goToChat')}</button>
         </div>
       </div>
@@ -156,6 +157,7 @@ function attachAgentEvents(page, state) {
       else if (action === 'delete') await deleteAgent(page, state, id)
       else if (action === 'backup') await backupAgent(id)
       else if (action === 'chat') location.hash = `#/chat?agent=${encodeURIComponent(id)}`
+      else if (action === 'workspace') await openWorkspace(state, id)
       return
     }
     // 点击卡片空白区域 → 进入详情页
@@ -233,6 +235,7 @@ async function showEditAgentDialog(page, state, id) {
   if (!agent) return
 
   const name = agent.identityName ? agent.identityName.split(',')[0].trim() : ''
+  const emoji = agent.identityEmoji || agent.identity?.emoji || ''
 
   // 获取模型列表
   let models = []
@@ -252,6 +255,7 @@ async function showEditAgentDialog(page, state, id) {
 
   const fields = [
     { name: 'name', label: t('agents.agentName'), value: name, placeholder: t('agents.agentNamePlaceholder') },
+    { name: 'emoji', label: t('agents.agentEmoji'), value: emoji, placeholder: t('agents.agentEmojiPlaceholder') },
   ]
 
   if (models.length) {
@@ -279,17 +283,19 @@ async function showEditAgentDialog(page, state, id) {
     fields,
     onConfirm: async (result) => {
       const newName = (result.name || '').trim()
+      const newEmoji = (result.emoji || '').trim()
       const model = (result.model || '').trim()
 
       try {
-        if (newName) {
-          await api.updateAgentIdentity(id, newName, null)
+        if (newName || newEmoji) {
+          await api.updateAgentIdentity(id, newName || null, newEmoji || null)
         }
         if (model && model !== agent.model) {
           await api.updateAgentModel(id, model)
         }
 
         if (newName) agent.identityName = newName
+        if (newEmoji) agent.identityEmoji = newEmoji
         if (model) agent.model = model
         renderAgents(page, state)
 
@@ -300,6 +306,20 @@ async function showEditAgentDialog(page, state, id) {
       }
     }
   })
+}
+
+async function openWorkspace(state, id) {
+  const agent = state.agents.find(a => a.id === id)
+  if (!agent?.workspace) {
+    toast(t('agents.noWorkspace'), 'warning')
+    return
+  }
+  try {
+    const { open } = await import('@tauri-apps/plugin-shell')
+    await open(agent.workspace)
+  } catch (e) {
+    toast(t('agents.openWorkspaceFailed') + ': ' + (e?.message || e), 'error')
+  }
 }
 
 async function deleteAgent(page, state, id) {
