@@ -234,7 +234,7 @@ export async function render() {
           <textarea id="chat-input" rows="1" placeholder="${t('chat.inputPlaceholder')}"></textarea>
         </div>
         <button class="chat-send-btn" id="chat-send-btn" disabled>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
         </button>
         
       </div>
@@ -3092,7 +3092,7 @@ function updateSendState() {
     _sendBtn.title = t('chat.cmdStopGen')
   } else {
     _sendBtn.disabled = !_textarea.value.trim() && !_attachments.length
-    _sendBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>'
+    _sendBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>'
     _sendBtn.title = t('chat.send')
   }
 }

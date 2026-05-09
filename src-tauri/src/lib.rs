@@ -146,6 +146,7 @@ pub fn run() {
             config::patch_model_vision,
             config::check_panel_update,
             config::get_openclaw_dir,
+            config::get_openclaw_gateway_models,
             config::read_panel_config,
             config::write_panel_config,
             config::test_proxy,

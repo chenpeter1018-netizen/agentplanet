@@ -441,6 +441,7 @@ export const api = {
   zeroclawRestoreSnapshot: (name) => { invalidate('check_zeroclaw'); return invoke('zeroclaw_restore_snapshot', { name }) },
   zeroclawOpenDir: (kind) => invoke('zeroclaw_open_dir', { kind }),
   zeroclawApiProxy: (method, path, body, headers) => invoke('zeroclaw_api_proxy', { method, path, body: body || null, headers: headers || null }),
+  getOpenclawGatewayModels: () => invoke('get_openclaw_gateway_models'),
 
   // Hermes Sessions / Logs / Skills / Memory
   hermesSessionsList: (source, limit, profile) => invoke('hermes_sessions_list', { source: source || null, limit: limit || null, profile: profile || null }),

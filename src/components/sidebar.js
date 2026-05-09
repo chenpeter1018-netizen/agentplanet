@@ -187,26 +187,19 @@ export function renderSidebar(el) {
   const engine = getActiveEngine()
   const navItems = engine ? engine.getNavItems() : (isOpenclawReady() ? NAV_ITEMS_FULL() : NAV_ITEMS_SETUP())
 
+  // 分离顶部直排导航和底部固定分组
+  const topSections = []
+  const bottomSections = []
   for (const section of navItems) {
-    const canCollapse = section.collapsed === true
-    const sectionId = section.id || ''
-    // 从 localStorage 恢复折叠状态
-    const lsKey = sectionId ? `nav-collapse-${sectionId}` : ''
-    const isCollapsed = canCollapse && sectionId
-      ? (localStorage.getItem(lsKey) !== '0')
-      : canCollapse
-
-    html += `<div class="nav-section${canCollapse ? ' nav-section-collapsible' : ''}${isCollapsed ? ' collapsed' : ''}"${sectionId ? ` data-section="${sectionId}"` : ''}>`
-
-    if (section.section) {
-      html += `<div class="nav-section-title${canCollapse ? ' nav-section-toggle' : ''}">
-        ${canCollapse ? '<svg class="nav-section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M9 18l6-6-6-6"/></svg>' : ''}
-        <span>${section.section}</span>
-      </div>`
+    if (section.section && section.collapsed) {
+      bottomSections.push(section)
+    } else {
+      topSections.push(section)
     }
+  }
 
-    html += `<div class="nav-section-items${canCollapse ? ' nav-section-collapse' : ''}">`
-
+  // 渲染顶部导航（扁平化，不分组）
+  for (const section of topSections) {
     for (const item of section.items) {
       if (item.gate && engine && !engine.isFeatureAvailable(item.gate)) continue
       if (item.gate && !engine && !isFeatureAvailable(item.gate)) continue
@@ -216,10 +209,43 @@ export function renderSidebar(el) {
         <span>${item.label}</span>
       </div>`
     }
-    html += '</div></div>'
   }
 
   html += '</nav>'
+
+  // 底部固定分组（向上展开式弹出菜单）
+  if (bottomSections.length > 0) {
+    html += '<div class="sidebar-bottom-sections">'
+    for (const section of bottomSections) {
+      const sectionId = section.id || ''
+      const hasItems = section.items.some(item => {
+        if (item.gate && engine && !engine.isFeatureAvailable(item.gate)) return false
+        if (item.gate && !engine && !isFeatureAvailable(item.gate)) return false
+        return true
+      })
+      if (!hasItems) continue
+      html += `<div class="bottom-section-wrap" data-section-id="${sectionId}">
+        <button class="bottom-section-trigger" data-bottom-section="${sectionId}">
+          <span>${section.section}</span>
+          <svg class="bottom-section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M18 15l-6-6-6 6"/></svg>
+        </button>
+        <div class="bottom-section-popup">
+          ${section.items.filter(item => {
+            if (item.gate && engine && !engine.isFeatureAvailable(item.gate)) return false
+            if (item.gate && !engine && !isFeatureAvailable(item.gate)) return false
+            return true
+          }).map(item => {
+            const active = current === item.route ? ' active' : ''
+            return `<div class="nav-item ic-${item.color || 'blue'}${active}" data-route="${item.route}">
+              <div class="nav-item-icon">${ICONS[item.icon] || ''}</div>
+              <span>${item.label}</span>
+            </div>`
+          }).join('')}
+        </div>
+      </div>`
+    }
+    html += '</div>'
+  }
 
   // 主题切换按钮
   const isDark = getTheme() === 'dark'
@@ -274,6 +300,29 @@ export function renderSidebar(el) {
   if (!_delegated) {
     _delegated = true
     el.addEventListener('click', (e) => {
+      // 底部固定分组弹出菜单
+      const bottomTrigger = e.target.closest('.bottom-section-trigger')
+      if (bottomTrigger) {
+        const sectionId = bottomTrigger.dataset.bottomSection
+        const wrap = bottomTrigger.closest('.bottom-section-wrap')
+        if (wrap) {
+          const isOpen = wrap.classList.toggle('open')
+          // 关闭其他打开的 bottom 分组
+          el.querySelectorAll('.bottom-section-wrap.open').forEach(w => {
+            if (w !== wrap) w.classList.remove('open')
+          })
+        }
+        return
+      }
+      // 底部弹出菜单内的导航项点击
+      const popupItem = e.target.closest('.bottom-section-popup .nav-item[data-route]')
+      if (popupItem) {
+        navigate(popupItem.dataset.route)
+        _closeMobileSidebar()
+        // 关闭弹出菜单
+        el.querySelectorAll('.bottom-section-wrap.open').forEach(w => w.classList.remove('open'))
+        return
+      }
       // 折叠分组切换
       const sectionToggle = e.target.closest('.nav-section-toggle')
       if (sectionToggle) {

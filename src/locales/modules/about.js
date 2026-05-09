@@ -134,7 +134,7 @@ export default {
   projectClawApp: _('跨平台移动聊天客户端，H5 + 代理服务器架构，支持离线和流式传输', 'Cross-platform mobile chat client, H5 + proxy server architecture, offline and streaming support', '跨平台移動聊天用戶端，H5 + 代理伺服器架構，支援離線和流式傳輸'),
   projectCftunnel: _('全协议内网穿透工具，Cloud 模式免费 HTTP/WS + Relay 模式自建中继', 'Full-protocol tunnel tool, Cloud mode free HTTP/WS + Relay mode self-hosted', '全协議內網穿透工具，Cloud 模式免費 HTTP/WS + Relay 模式自建中繼'),
   domesticMirror: _('国内镜像', 'China Mirror', '國內鏡像'),
-  linkWebsite:
+  linkWebsite: _('项目官网', 'Project Website', '項目官網'),
   linkCftunnel: _('cftunnel 内网穿透', 'cftunnel Tunnel Tool', 'cftunnel 內網穿透'),
   contributeDesc: _('Agent Planet 是开源项目，欢迎参与贡献！遇到问题请提 Issue，功能建议和代码改进欢迎提 PR。', 'Agent Planet is open source! Report bugs via Issues, submit feature requests and code improvements via PRs.', 'Agent Planet 是開源項目，欢迎參與貢獻！遇到問題請提 Issue，功能建議和代碼改進欢迎提 PR。', 'Agent Planet はオープンソースプロジェクトです。Issue や PR を歓迎します！', 'Agent Planet은 오픈소스 프로젝트입니다. Issue와 PR을 환영합니다!'),
   submitIssue: _('提交 Issue', 'Submit Issue', '', 'Issue を提出', 'Issue 제출', 'Gửi Issue', 'Enviar Issue', 'Enviar Issue', 'Создать Issue', 'Soumettre un Issue', 'Issue einreichen'),

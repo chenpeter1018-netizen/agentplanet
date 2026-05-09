@@ -74,6 +74,7 @@ export default {
       { section: '', items: [
         { route: '/h/chat', label: t('sidebar.aiChat'), icon: 'chat' },
         { route: '/h/sessions', label: t('sidebar.sessions'), icon: 'inbox' },
+        { route: '/h/models', label: t('sidebar.models'), icon: 'models' },
         { route: '/h/dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
       ]},
       { section: t('sidebar.sectionSkills'), collapsed: true, id: 'skills', items: [
@@ -95,6 +96,7 @@ export default {
       // Hermes 专属页面（/h/ 前缀）
       { path: '/h/setup', loader: () => import('./pages/setup.js') },
       { path: '/h/dashboard', loader: () => import('./pages/dashboard.js') },
+      { path: '/h/models', loader: () => import('./pages/models.js') },
       { path: '/h/chat', loader: () => import('./pages/chat.js') },
       { path: '/h/sessions', loader: () => import('./pages/sessions.js') },
       { path: '/h/logs', loader: () => import('./pages/logs.js') },

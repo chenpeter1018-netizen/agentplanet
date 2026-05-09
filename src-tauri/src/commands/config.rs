@@ -6618,3 +6618,16 @@ pub fn copy_env_installers(app: tauri::AppHandle) -> Result<serde_json::Value, S
         "desktop": dest_dir.to_string_lossy(),
     }))
 }
+
+#[tauri::command]
+pub fn get_openclaw_gateway_models() -> Result<serde_json::Value, String> {
+    let config = read_openclaw_config()?;
+    let models = if let Some(arr) = config.get("models").and_then(|v| v.as_array()) {
+        arr.clone()
+    } else if let Some(arr) = config.get("gateway").and_then(|g| g.get("models")).and_then(|v| v.as_array()) {
+        arr.clone()
+    } else {
+        vec![]
+    };
+    Ok(serde_json::json!({ "models": models }))
+}

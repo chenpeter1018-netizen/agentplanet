@@ -169,4 +169,8 @@ export default {
   updateFailed: _('更新失败', 'Update failed', '更新失敗'),
   provider: _('服务商', 'Provider', '服務商'),
   apiBase: _('API 地址', 'API Base URL', 'API 位址'),
+  importFromOpenClaw: _('从 OpenClaw 导入', 'Import from OpenClaw', '從 OpenClaw 匯入'),
+  noModelsToImport: _('没有可导入的模型', 'No models to import', '沒有可匯入的模型'),
+  importedCount: _('已导入 {count} 个模型', 'Imported {count} models', '已匯入 {count} 個模型'),
+  importFailed: _('导入失败', 'Import failed', '匯入失敗'),
 }

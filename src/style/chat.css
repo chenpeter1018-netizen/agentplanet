@@ -812,8 +812,8 @@
   color: var(--text-primary);
   outline: none;
   transition: border-color 0.15s;
-  min-height: 44px;
-  max-height: 200px;
+  min-height: 132px;
+  max-height: 300px;
   font-family: inherit;
 }
 
@@ -831,14 +831,14 @@
   height: 40px;
   border-radius: var(--radius-md, 8px);
   border: none;
-  background: var(--accent);
+  background: #e53935;
   color: #fff;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: opacity 0.15s, background 0.15s;
+  transition: transform 0.15s, opacity 0.15s, background 0.15s;
 }
 
 .chat-send-btn:hover:not(:disabled) {

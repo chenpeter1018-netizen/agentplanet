@@ -51,6 +51,19 @@ import './engines/zeroclaw/style/zeroclaw.css'
 initTheme()
 initI18n()
 
+// 窗口自适应：居中 + 宽度70% + 高度95%
+if (isTauriRuntime()) {
+  (async () => {
+    try {
+      const { getCurrentWindow } = await import('@tauri-apps/api/window')
+      const w = Math.round(window.screen.availWidth * 0.7)
+      const h = Math.round(window.screen.availHeight * 0.95)
+      await getCurrentWindow().setSize(new (await import('@tauri-apps/api/window')).PhysicalSize(w, h))
+      await getCurrentWindow().center()
+    } catch (_) { /* non-critical */ }
+  })()
+}
+
 /** HTML 转义，防止 XSS 注入 */
 function escapeHtml(str) {
   return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
