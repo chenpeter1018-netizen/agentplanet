@@ -132,11 +132,11 @@ function openPanel() {
   _panel.className = 'notes-panel'
   _panel.innerHTML = `
     <div class="notes-panel-header">
-      <span class="notes-panel-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> ${t('notes.quickNotes', 'Quick Notes')}</span>
+      <span class="notes-panel-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> 灵光闪现笔记</span>
       <button class="notes-btn-close" title="${t('common.close', 'Close')}">${CLOSE_ICON}</button>
     </div>
     <div class="notes-input-area">
-      <textarea class="notes-input" placeholder="${t('notes.enterNote', '输入笔记内容...')}" rows="3"></textarea>
+      <textarea class="notes-input" placeholder="灵光闪现来不及发给 AI，AI 正在处理就在这里临时小笔记下吧" rows="3"></textarea>
       <button class="notes-save-btn">${t('common.save', 'Save')}</button>
     </div>
     <div class="notes-list"></div>
@@ -224,10 +224,27 @@ function bindPanelEvents() {
 
   _panel.querySelector('.notes-btn-close').addEventListener('click', closePanel)
 
-  // 保存按钮
+  const textarea = _panel.querySelector('.notes-input')
+
+  // 自动保存：输入后停顿 1.5 秒自动新建笔记
+  let _autoSaveTimer = null
+  textarea.addEventListener('input', () => {
+    clearTimeout(_autoSaveTimer)
+    _autoSaveTimer = setTimeout(() => {
+      if (textarea.value.trim()) {
+        const notes = loadNotes()
+        notes.unshift({ text: textarea.value.trim(), ts: Date.now() })
+        saveNotes(notes)
+        textarea.value = ''
+        renderNoteList()
+      }
+    }, 1500)
+  })
+
+  // 保存按钮（立即保存）
   _panel.querySelector('.notes-save-btn').addEventListener('click', () => {
-    const textarea = _panel.querySelector('.notes-input')
-    if (textarea && textarea.value.trim()) {
+    clearTimeout(_autoSaveTimer)
+    if (textarea.value.trim()) {
       const notes = loadNotes()
       notes.unshift({ text: textarea.value.trim(), ts: Date.now() })
       saveNotes(notes)
@@ -237,7 +254,7 @@ function bindPanelEvents() {
   })
 
   // Ctrl+Enter / Cmd+Enter 快捷保存
-  _panel.querySelector('.notes-input').addEventListener('keydown', (e) => {
+  textarea.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault()
       _panel.querySelector('.notes-save-btn').click()

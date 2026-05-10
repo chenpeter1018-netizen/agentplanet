@@ -236,10 +236,12 @@ export async function render() {
       <div class="chat-attachments-preview" id="chat-attachments-preview" style="display:none"></div>
       <div class="chat-input-area">
         <input type="file" id="chat-file-input" accept="image/*" multiple style="display:none">
-        <button class="chat-attach-btn" id="chat-attach-btn" title="${t('chat.uploadImage')}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-        </button>
-	        <button class="chat-skill-btn" id="chat-skill-btn" title="${t('chat.skill')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg><span>${t('chat.skill')}</span></button>
+        <div class="chat-input-actions">
+          <button class="chat-attach-btn" id="chat-attach-btn" title="${t('chat.uploadImage')}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+          </button>
+          <button class="chat-skill-btn" id="chat-skill-btn" title="${t('chat.skill')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></button>
+        </div>
         <div class="chat-input-wrapper">
           <textarea id="chat-input" rows="1" placeholder="${t('chat.inputPlaceholder')}"></textarea>
         </div>

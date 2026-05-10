@@ -1195,6 +1195,15 @@
   color: var(--text-secondary);
 }
 
+/* 输入框左侧操作按钮 — 垂直排列 */
+.chat-input-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
 /* 文件上传 */
 .chat-attach-btn {
   background: none;
@@ -1216,31 +1225,25 @@
 
 /* 技能按钮 */
 .chat-skill-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md, 8px);
-  background: var(--bg-secondary, var(--bg-card));
+  background: none;
+  border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: var(--font-size-sm);
-  white-space: nowrap;
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   transition: all 0.15s;
-  height: 34px;
 }
 .chat-skill-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
   background: var(--bg-hover);
+  color: var(--text-primary);
 }
 .chat-skill-btn.active {
-  border-color: var(--accent);
   color: var(--accent);
-  background: var(--accent-light, rgba(99, 102, 241, 0.1));
-  font-weight: 600;
+  background: var(--accent-muted);
 }
 
 /* 技能下拉面板 */

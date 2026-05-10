@@ -10,7 +10,7 @@
   flex-direction: column;
   flex-shrink: 0;
   transition: width var(--transition-normal), background var(--transition-normal);
-  overflow: hidden;
+  overflow: visible;
   box-shadow: inset -1px 0 0 var(--glass-border);
 }
 
@@ -800,7 +800,7 @@
   position: absolute;
   bottom: calc(100% + 6px);
   left: 0;
-  min-width: 180px;
+  min-width: 150px;
   background: var(--bg-glass-heavy);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
