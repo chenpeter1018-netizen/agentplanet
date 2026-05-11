@@ -77,7 +77,7 @@ export default {
         { route: '/h/models', label: t('sidebar.models'), icon: 'models' },
         { route: '/h/dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
       ]},
-      { section: t('sidebar.sectionSkills'), collapsed: true, id: 'skills', items: [
+      { section: '', divider: true, items: [
         { route: '/h/skills', label: t('sidebar.skills'), icon: 'skills' },
         { route: '/plugin-hub', label: t('sidebar.pluginHub'), icon: 'extensions' },
       ]},

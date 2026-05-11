@@ -240,7 +240,7 @@ export async function render() {
           <button class="chat-attach-btn" id="chat-attach-btn" title="${t('chat.uploadImage')}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
           </button>
-          <button class="chat-skill-btn" id="chat-skill-btn" title="${t('chat.skill')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></button>
+          <button class="chat-skill-btn" id="chat-skill-btn" title="${t('chat.skill')}"><span style="font-size:17px;line-height:1">🔧</span></button>
         </div>
         <div class="chat-input-wrapper">
           <textarea id="chat-input" rows="1" placeholder="${t('chat.inputPlaceholder')}"></textarea>
@@ -2892,7 +2892,12 @@ function appendAiMessage(text, msgTime, images, videos, audios, files, tools) {
   const ainfo = getAgentInfo(aid)
   const avHtml = ainfo.emoji ? `<span class="msg-agent-avatar">${escHtml(ainfo.emoji)}</span>` : ''
   const aName = ainfo.name || aid
-  meta.innerHTML = `<span class="msg-agent">${avHtml}<span class="msg-agent-name">${escHtml(aName)}</span></span><span class="msg-time">${formatTimeFull(msgTime || new Date())}</span><button class="msg-copy-btn" title="${t('common.copy')}">${svgIcon('copy', 12)}</button>`
+  let modelPart = ''
+  if (_selectedModel) {
+    const modelLabel = _selectedModel.split('/').pop()
+    modelPart = `<span class="meta-sep">·</span><span class="msg-model">${escHtml(modelLabel)}</span>`
+  }
+  meta.innerHTML = `<span class="msg-agent">${avHtml}<span class="msg-agent-name">${escHtml(aName)}</span></span><span class="msg-time">${formatTimeFull(msgTime || new Date())}</span>${modelPart}<button class="msg-copy-btn" title="${t('common.copy')}">${svgIcon('copy', 12)}</button>`
 
   wrap.appendChild(bubble)
   wrap.appendChild(meta)

@@ -55,7 +55,7 @@ export default {
         { route: '/cron', label: t('sidebar.cronJobs'), icon: 'clock' },
         { route: '/dashboard', label: t('sidebar.dashboard'), icon: 'dashboard' },
       ]},
-      { section: t('sidebar.sectionSkills'), collapsed: true, id: 'skills', items: [
+      { section: '', divider: true, items: [
         { route: '/skills', label: t('sidebar.skills'), icon: 'skills', gate: 'skills' },
         { route: '/plugin-hub', label: t('sidebar.pluginHub'), icon: 'extensions' },
       ]},

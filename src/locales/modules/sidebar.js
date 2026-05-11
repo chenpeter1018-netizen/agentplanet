@@ -3,9 +3,9 @@ import { _ } from '../helper.js'
 export default {
   collapse: _('折叠/展开', 'Collapse / Expand'),
   closeMenu: _('关闭菜单', 'Close menu'),
-  themeLight: _('日间模式', 'Light Mode'),
-  themeDark: _('夜间模式', 'Dark Mode'),
-  themeCyberpunk: _('赛博朋克', 'Cyberpunk'),
+  themeLight: _('浅色', 'Light'),
+  themeDark: _('深色', 'Dark'),
+  themeCyberpunk: _('科技', 'Tech'),
 
   sectionSkills: _('技能', 'Skills'),
   sectionSettings: _('设置', 'Settings'),

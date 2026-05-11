@@ -3217,6 +3217,26 @@ const handlers = {
     return readOpenclawConfigRequired()
   },
 
+  get_openclaw_gateway_models() {
+    const config = readOpenclawConfigRequired()
+    const models = []
+    const providers = config && config.models && config.models.providers
+    if (providers && typeof providers === 'object') {
+      for (const [providerKey, providerVal] of Object.entries(providers)) {
+        const providerModels = providerVal && providerVal.models
+        if (!Array.isArray(providerModels)) continue
+        for (const model of providerModels) {
+          const entry = { ...model }
+          if (!entry.provider) entry.provider = providerKey
+          if (!entry.api_base) entry.api_base = providerVal.baseUrl || providerVal.base_url || ''
+          if (!entry.api_key) entry.api_key = providerVal.apiKey || providerVal.api_key || ''
+          models.push(entry)
+        }
+      }
+    }
+    return { models }
+  },
+
   calibrate_openclaw_config({ mode } = {}) {
     return calibrateOpenclawConfig(mode)
   },

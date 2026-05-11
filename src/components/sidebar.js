@@ -2,7 +2,7 @@
  * 侧边导航栏
  */
 import { navigate, getCurrentRoute, reloadCurrentRoute } from '../router.js'
-import { cycleTheme, getTheme } from '../lib/theme.js'
+import { getTheme, setTheme } from '../lib/theme.js'
 import { isOpenclawReady } from '../lib/app-state.js'
 import { api } from '../lib/tauri-api.js'
 import { toast } from './toast.js'
@@ -22,11 +22,10 @@ function NAV_ITEMS_FULL() { return [
       { route: '/dashboard', label: t('sidebar.dashboard'), icon: 'dashboard', color: 'teal' },
     ]
   },
-  // 技能（默认折叠）
+  // 分割线后的工具项
   {
-    section: t('sidebar.sectionSkills'),
-    collapsed: true,
-    id: 'skills',
+    section: '',
+    divider: true,
     items: [
       { route: '/skills', label: t('sidebar.skills'), icon: 'skills', gate: 'skills', color: 'pink' },
       { route: '/plugin-hub', label: t('sidebar.pluginHub'), icon: 'extensions', color: 'yellow' },
@@ -200,6 +199,9 @@ export function renderSidebar(el) {
 
   // 渲染顶部导航（扁平化，不分组）
   for (const section of topSections) {
+    if (section.divider) {
+      html += '<div class="nav-divider"></div>'
+    }
     for (const item of section.items) {
       if (item.gate && engine && !engine.isFeatureAvailable(item.gate)) continue
       if (item.gate && !engine && !isFeatureAvailable(item.gate)) continue
@@ -247,22 +249,26 @@ export function renderSidebar(el) {
     html += '</div>'
   }
 
-  // 主题切换按钮（三模式循环）
+  // 三色块主题切换
   const curTheme = getTheme()
-  const sunIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>'
-  const moonIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>'
-  const cyberIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>'
-
-  const themeIconMap = { light: moonIcon, dark: cyberIcon, cyberpunk: sunIcon }
-  const themeLabelMap = { light: t('sidebar.themeDark'), dark: t('sidebar.themeCyberpunk'), cyberpunk: t('sidebar.themeLight') }
+  const themeBlocks = [
+    { id: 'light', color: '#f0f0f0', label: t('sidebar.themeLight') || '浅色' },
+    { id: 'dark', color: '#2a2a2a', label: t('sidebar.themeDark') || '深色' },
+    { id: 'cyberpunk', color: '#6c3ce0', label: t('sidebar.themeCyberpunk') || '科技' },
+  ]
+  const themeBlocksHtml = themeBlocks.map(tb =>
+    `<div class="theme-block-item${curTheme === tb.id ? ' active' : ''}" data-theme="${tb.id}" title="${tb.label}">
+      <span class="theme-block-dot" style="background:${tb.color}"></span>
+      <span class="theme-block-label">${tb.label}</span>
+    </div>`
+  ).join('')
 
   html += `
       <div class="sidebar-collapse-mid" id="btn-sidebar-collapse" title="${t('sidebar.collapse')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/></svg></div>
 
     <div class="sidebar-footer">
-      <div class="nav-item ic-orange" id="btn-theme-toggle" title="${themeLabelMap[curTheme] || ''}">
-        <div class="nav-item-icon">${themeIconMap[curTheme] || moonIcon}</div>
-        <span>${themeLabelMap[curTheme] || t('sidebar.themeDark')}</span>
+      <div class="theme-picker" id="theme-picker">
+        ${themeBlocksHtml}
       </div>
       <div class="sidebar-meta">
         <span class="sidebar-version">v${APP_VERSION}</span>
@@ -282,14 +288,21 @@ export function renderSidebar(el) {
       // 底部固定分组弹出菜单
       const bottomTrigger = e.target.closest('.bottom-section-trigger')
       if (bottomTrigger) {
-        const sectionId = bottomTrigger.dataset.bottomSection
         const wrap = bottomTrigger.closest('.bottom-section-wrap')
         if (wrap) {
-          const isOpen = wrap.classList.toggle('open')
+          const isOpen = !wrap.classList.contains('open')
           // 关闭其他打开的 bottom 分组
           el.querySelectorAll('.bottom-section-wrap.open').forEach(w => {
-            if (w !== wrap) w.classList.remove('open')
+            w.classList.remove('open')
           })
+          if (isOpen) {
+            wrap.classList.add('open')
+            // 弹出菜单对齐侧边栏左边缘
+            const popup = wrap.querySelector('.bottom-section-popup')
+            const sidebarRect = el.getBoundingClientRect()
+            const wrapRect = wrap.getBoundingClientRect()
+            if (popup) popup.style.left = `${sidebarRect.left - wrapRect.left}px`
+          }
         }
         return
       }
@@ -334,10 +347,13 @@ export function renderSidebar(el) {
         // 不需要整体重渲染
         return
       }
-      // 主题切换（三模式循环）
-      const themeBtn = e.target.closest('#btn-theme-toggle')
-      if (themeBtn) {
-        cycleTheme(() => renderSidebar(el))
+      // 主题色块点击
+      const themeBlock = e.target.closest('.theme-block-item[data-theme]')
+      if (themeBlock) {
+        const targetTheme = themeBlock.dataset.theme
+        if (targetTheme !== getTheme()) {
+          setTheme(targetTheme, () => renderSidebar(el))
+        }
         return
       }
       // 引擎切换器：打开/关闭下拉

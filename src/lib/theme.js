@@ -47,24 +47,32 @@ export function initTheme() {
 }
 
 export function cycleTheme(onApply) {
-  const html = document.documentElement
-  const current = html.dataset.theme || 'light'
+  const current = getTheme()
   const currentIndex = THEMES.indexOf(current)
   const next = THEMES[(currentIndex + 1) % THEMES.length]
+  return setTheme(next, onApply)
+}
 
-  // 设置扩散起点：切换到赛博朋克从中心展开
-  if (next === 'cyberpunk') {
+export function getTheme() {
+  return document.documentElement.dataset.theme || 'light'
+}
+
+export function setTheme(theme, onApply) {
+  if (!THEMES.includes(theme)) return getTheme()
+
+  const html = document.documentElement
+  if (theme === 'cyberpunk') {
     html.style.setProperty('--theme-reveal-x', '50%')
     html.style.setProperty('--theme-reveal-y', '50%')
   } else {
-    const toDark = next === 'dark'
+    const toDark = theme === 'dark'
     html.style.setProperty('--theme-reveal-x', toDark ? '0%' : '100%')
     html.style.setProperty('--theme-reveal-y', toDark ? '100%' : '0%')
   }
 
   const doApply = () => {
-    applyTheme(next)
-    if (onApply) onApply(next)
+    applyTheme(theme)
+    if (onApply) onApply(theme)
   }
 
   if (document.startViewTransition) {
@@ -72,11 +80,7 @@ export function cycleTheme(onApply) {
   } else {
     doApply()
   }
-  return next
-}
-
-export function getTheme() {
-  return document.documentElement.dataset.theme || 'light'
+  return theme
 }
 
 function applyTheme(theme) {
