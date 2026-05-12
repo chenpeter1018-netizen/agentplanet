@@ -1,6 +1,6 @@
 {
   "name": "agent-planet",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "description": "Agent Planet - OpenClaw 可视化管理面板，基于 Tauri v2 的跨平台桌面应用",
   "type": "module",

@@ -88,10 +88,25 @@ fn is_process_alive(pid: u32) -> bool {
     }
 }
 
-/// 获取 ZeroClaw 侦听端口（从 zeroclaw.json 读取，缺省 18790）
+/// 获取 ZeroClaw 侦听端口（从 config.toml 或 zeroclaw.json 读取，缺省 18790）
 fn zeroclaw_port() -> u16 {
-    let config_path = zeroclaw_config_dir().join("zeroclaw.json");
-    if let Ok(content) = std::fs::read_to_string(&config_path) {
+    // v0.7.5+ 使用 config.toml
+    let toml_path = zeroclaw_config_dir().join("config.toml");
+    if let Ok(content) = std::fs::read_to_string(&toml_path) {
+        for line in content.lines() {
+            let line = line.trim();
+            if line.starts_with("port = ") || line.starts_with("port=") {
+                if let Some(val) = line.split('=').nth(1) {
+                    if let Ok(p) = val.trim().parse::<u16>() {
+                        if p > 0 { return p }
+                    }
+                }
+            }
+        }
+    }
+    // 兼容旧版 zeroclaw.json
+    let json_path = zeroclaw_config_dir().join("zeroclaw.json");
+    if let Ok(content) = std::fs::read_to_string(&json_path) {
         if let Ok(val) = serde_json::from_str::<Value>(&content) {
             if let Some(port) = val.get("port").and_then(|p| p.as_u64()) {
                 if port > 0 && port < 65536 {
@@ -365,12 +380,13 @@ pub async fn zeroclaw_start() -> Result<Value> {
 
     ensure_dirs();
 
+    let port = zeroclaw_port().to_string();
     #[cfg(windows)]
     {
         use std::os::windows::process::CommandExt;
         const CREATE_NO_WINDOW: u32 = 0x08000000;
         let child = std::process::Command::new(&bin)
-            .args(["serve", "--config", &zeroclaw_config_dir().to_string_lossy()])
+            .args(["gateway", "start", "-p", &port, "--config-dir", &zeroclaw_config_dir().to_string_lossy()])
             .current_dir(zeroclaw_data_root())
             .creation_flags(CREATE_NO_WINDOW)
             .stdout(std::process::Stdio::null())
@@ -383,7 +399,7 @@ pub async fn zeroclaw_start() -> Result<Value> {
     #[cfg(not(windows))]
     {
         let child = std::process::Command::new(&bin)
-            .args(["serve", "--config", &zeroclaw_config_dir().to_string_lossy()])
+            .args(["gateway", "start", "-p", &port, "--config-dir", &zeroclaw_config_dir().to_string_lossy()])
             .current_dir(zeroclaw_data_root())
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())
@@ -526,6 +542,70 @@ pub async fn zeroclaw_open_dir(kind: String) -> Result<Value> {
     Ok(serde_json::json!({ "ok": true }))
 }
 
+fn zeroclaw_token_file() -> PathBuf {
+    zeroclaw_data_root().join(".token")
+}
+
+fn read_token() -> Option<String> {
+    std::fs::read_to_string(zeroclaw_token_file())
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+}
+
+fn write_token(token: &str) {
+    let _ = std::fs::write(zeroclaw_token_file(), token);
+}
+
+/// 自动配对 ZeroClaw Gateway：从日志中提取配对码，POST /pair 获取 token
+async fn auto_pair(port: u16) -> Option<String> {
+    // 读取网关日志查找配对码
+    let log_file = zeroclaw_logs_dir().join("zeroclaw.log");
+    if let Ok(log) = std::fs::read_to_string(&log_file) {
+        // 在日志中匹配 ┌──────────────┐ ... │  918305  │ ... └──────────────┘ 中的 6 位数字
+        for line in log.lines().rev() {
+            let trimmed = line.trim();
+            if let Some(code_start) = trimmed.find('│') {
+                let inner = &trimmed[code_start..];
+                if let Some(code) = inner.chars()
+                    .filter(|c| c.is_ascii_digit())
+                    .collect::<String>()
+                    .get(..6)
+                {
+                    let code = code.to_string();
+                    if code.len() == 6 {
+                        let client = reqwest::Client::new();
+                        if let Ok(resp) = client
+                            .post(format!("http://127.0.0.1:{}/pair", port))
+                            .header("X-Pairing-Code", &code)
+                            .send()
+                            .await
+                        {
+                            if resp.status().is_success() {
+                                if let Ok(json) = resp.json::<Value>().await {
+                                    if let Some(token) = json.get("token").and_then(|t| t.as_str()) {
+                                        write_token(token);
+                                        return Some(token.to_string());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    None
+}
+
+/// 获取或执行配对，返回 bearer token
+async fn ensure_paired(port: u16) -> Option<String> {
+    if let Some(token) = read_token() {
+        return Some(token);
+    }
+    auto_pair(port).await
+}
+
 /// HTTP 代理：转发请求到 ZeroClaw Gateway（用于前端聊天等）
 #[tauri::command]
 pub async fn zeroclaw_api_proxy(method: String, path: String, body: Option<Value>, headers: Option<Value>) -> Result<Value> {
@@ -536,8 +616,15 @@ pub async fn zeroclaw_api_proxy(method: String, path: String, body: Option<Value
         "GET" => client.get(&url),
         "POST" => client.post(&url),
         "PUT" => client.put(&url),
+        "PATCH" => client.patch(&url),
         "DELETE" => client.delete(&url),
         _ => return Err(format!("不支持的 HTTP 方法: {}", method)),
+    };
+    // 注入配对 token
+    let req = if let Some(token) = ensure_paired(port).await {
+        req.header("Authorization", format!("Bearer {}", token))
+    } else {
+        req
     };
     let req = if let Some(h) = &headers {
         if let Some(obj) = h.as_object() {

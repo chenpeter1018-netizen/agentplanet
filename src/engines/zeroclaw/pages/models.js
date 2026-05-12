@@ -1,6 +1,6 @@
 /**
  * ZeroClaw 模型配置页面
- * 通过 ZeroClaw Gateway 管理模型
+ * 通过 ZeroClaw Gateway (v0.7.5+) JSON Patch API 管理模型
  */
 import { t } from '../../../lib/i18n.js'
 import { api } from '../../../lib/tauri-api.js'
@@ -8,6 +8,27 @@ import { toast } from '../../../components/toast.js'
 import { showModal, showConfirm } from '../../../components/modal.js'
 
 function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+/// 根据 base_url 猜测服务商类型
+function guessProvider(m) {
+  const url = (m.api_base || '').toLowerCase()
+  if (url.includes('openai.com') || url.includes('api.openai')) return 'OpenAI'
+  if (url.includes('anthropic.com')) return 'Anthropic'
+  if (url.includes('deepseek.com')) return 'DeepSeek'
+  if (url.includes('ollama') || url.includes('11434')) return 'Ollama'
+  if (url.includes('openrouter')) return 'OpenRouter'
+  if (url.includes('groq.com')) return 'Groq'
+  if (url.includes('googleapis.com') || url.includes('generativelanguage')) return 'Google Gemini'
+  if (url.includes('mistral.ai')) return 'Mistral'
+  if (url.includes('x.ai') || url.includes('x.ai')) return 'xAI'
+  if (url.includes('siliconflow')) return '硅基流动'
+  if (url.includes('aliyuncs.com') || url.includes('dashscope')) return '阿里云百炼'
+  if (url.includes('bigmodel.cn') || url.includes('zhipu')) return '智谱AI'
+  if (url.includes('moonshot') || url.includes('kimi')) return 'Moonshot'
+  if (url.includes('minimax')) return 'MiniMax'
+  if (url.includes('volces.com') || url.includes('volcengine')) return '火山引擎'
+  return m.name || ''
+}
 
 let _page = null
 let _config = null
@@ -42,6 +63,46 @@ function bindEvents() {
   _page.querySelector('#zc-refresh-models')?.addEventListener('click', loadModels)
 }
 
+/// 从 config.list 条目中提取模型列表 (providers.models.<name> 的顶层条目)
+/// v0.7.5 ModelProviderConfig 字段: model, base-url, api-key, name, temperature, max-tokens 等
+/// 注: v0.7.5 没有 provider 字段，provider 类型由 base-url 自动推断
+function parseModelsFromConfigList(entries) {
+  const modelMap = {}
+  const prefix = 'providers.models.'
+  for (const entry of entries) {
+    const path = entry.path || ''
+    if (!path.startsWith(prefix)) continue
+    const rest = path.slice(prefix.length)
+    const dotIdx = rest.indexOf('.')
+    if (dotIdx === -1) {
+      const name = rest
+      if (!modelMap[name]) modelMap[name] = { id: name, name: '', model: '', api_base: '', api_key: '', has_values: false }
+    }
+  }
+  for (const entry of entries) {
+    const path = entry.path || ''
+    if (!path.startsWith(prefix)) continue
+    const rest = path.slice(prefix.length)
+    const dotIdx = rest.indexOf('.')
+    if (dotIdx === -1) continue
+    const name = rest.slice(0, dotIdx)
+    if (!modelMap[name]) continue
+    const prop = rest.slice(dotIdx + 1)
+    const raw = entry.value
+    if (raw === '<unset>' || raw === undefined || raw === null) continue
+    const val = String(raw)
+    modelMap[name].has_values = true
+    switch (prop) {
+      case 'name': modelMap[name].name = val; break
+      case 'model': modelMap[name].model = val; break
+      case 'base-url': modelMap[name].api_base = val; break
+      case 'api-key': modelMap[name].api_key = entry.is_secret ? '••••••' : val; break
+    }
+  }
+  // 过滤掉没有任何属性被填充的空模型
+  return Object.values(modelMap).filter(m => m.has_values || m.model)
+}
+
 async function loadModels() {
   _loading = true
   const body = _page?.querySelector('#zc-models-body')
@@ -49,22 +110,14 @@ async function loadModels() {
   if (!body) return
 
   try {
-    // Read zeroclaw config to get current model settings
     const info = await api.checkZeroclaw()
     _config = info || {}
 
-    // Try to get models from gateway
     let gatewayModels = []
     try {
-      const resp = await api.zeroclawApiProxy('GET', '/v1/models', null, null)
-      if (resp?.status >= 200 && resp?.status < 300 && resp?.body) {
-        if (Array.isArray(resp.body)) {
-          gatewayModels = resp.body
-        } else if (Array.isArray(resp.body.data)) {
-          gatewayModels = resp.body.data
-        } else if (Array.isArray(resp.body.models)) {
-          gatewayModels = resp.body.models
-        }
+      const resp = await api.zeroclawApiProxy('GET', '/api/config/list', null, null)
+      if (resp?.status >= 200 && resp?.status < 300 && resp?.body?.entries) {
+        gatewayModels = parseModelsFromConfigList(resp.body.entries)
       }
     } catch (_) { /* gateway may not be running */ }
 
@@ -97,10 +150,9 @@ function renderModelList(body) {
     return
   }
 
-  // Group models by provider/owner if available
   const grouped = {}
   _models.forEach(m => {
-    const owner = m.owned_by || m.provider || m.owner || 'Default'
+    const owner = guessProvider(m) || 'Default'
     if (!grouped[owner]) grouped[owner] = []
     grouped[owner].push(m)
   })
@@ -115,11 +167,12 @@ function renderModelList(body) {
         ${models.map(m => `
           <div class="zc-model-item">
             <div>
-              <span class="zc-model-item-name">${esc(m.id || m.name || m.model)}</span>
-              ${m.created ? `<span style="font-size:11px;color:var(--text-tertiary);margin-left:8px">${esc(String(m.created))}</span>` : ''}
+              <span class="zc-model-item-name">${esc(m.model || m.id)}</span>
+              ${m.id ? `<span style="font-size:11px;color:var(--text-tertiary);margin-left:8px">${esc(m.id)}</span>` : ''}
             </div>
             <div class="zc-model-item-actions">
-              <button class="btn btn-secondary btn-xs zc-model-edit" data-model-id="${esc(m.id || m.name || m.model)}">${t('common.edit')}</button>
+              <button class="btn btn-secondary btn-xs zc-model-edit" data-model-id="${esc(m.id)}">${t('common.edit')}</button>
+              <button class="btn btn-danger btn-xs zc-model-delete" data-model-id="${esc(m.id)}">${t('common.delete')}</button>
             </div>
           </div>
         `).join('')}
@@ -127,12 +180,30 @@ function renderModelList(body) {
     </div>
   `).join('')
 
-  // Bind edit buttons
   body.querySelectorAll('.zc-model-edit').forEach(btn => {
     btn.addEventListener('click', () => {
       const modelId = btn.dataset.modelId
-      const model = _models.find(m => (m.id || m.name || m.model) === modelId)
+      const model = _models.find(m => m.id === modelId)
       if (model) openEditModel(model)
+    })
+  })
+  body.querySelectorAll('.zc-model-delete').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const modelId = btn.dataset.modelId
+      const model = _models.find(m => m.id === modelId)
+      const name = model?.model || modelId
+      const confirmed = await showConfirm({ title: t('models.confirmDeleteModel', { name }), message: '' })
+      if (!confirmed) return
+      try {
+        // v0.7.5 不支持删除 map key，清除所有属性使其不可见
+        const propsToRemove = ['model', 'base-url', 'api-key', 'name']
+        const patches = propsToRemove.map(prop => ({ op: 'remove', path: `providers.models.${modelId}.${prop}` }))
+        await api.zeroclawApiProxy('PATCH', '/api/config', patches)
+        toast(t('models.modelDeleted', { name }), 'success')
+        await loadModels()
+      } catch (e) {
+        toast(`${t('models.deleteFailed')}: ${esc(e?.message || String(e))}`, 'error')
+      }
     })
   })
 }
@@ -142,20 +213,24 @@ function openAddModel() {
     title: t('models.addModel'),
     width: 480,
     fields: [
-      { name: 'modelId', label: t('models.modelId'), type: 'text', required: true, placeholder: 'gpt-4o' },
-      { name: 'provider', label: t('models.provider'), type: 'text', required: true, placeholder: 'openai' },
-      { name: 'apiBase', label: t('models.apiBase'), type: 'text', placeholder: 'https://api.openai.com/v1' },
+      { name: 'modelId', label: t('models.modelId'), type: 'text', required: true, placeholder: 'my-model' },
+      { name: 'model', label: t('models.modelId'), type: 'text', required: true, placeholder: 'gpt-4o' },
+      { name: 'apiBase', label: t('models.baseUrl'), type: 'text', placeholder: 'https://api.openai.com/v1' },
       { name: 'apiKey', label: t('models.apiKey'), type: 'password', placeholder: 'sk-...' },
     ],
     onConfirm: async (values) => {
       try {
-        await api.zeroclawApiProxy('POST', '/v1/models', {
-          id: values.modelId,
-          provider: values.provider,
-          api_base: values.apiBase || undefined,
-          api_key: values.apiKey || undefined,
-        })
-        toast(t('models.modelAdded'), 'success')
+        // Step 1: 创建 map-key 条目
+        const mapKeyPath = `/api/config/map-key?path=providers.models&key=${encodeURIComponent(values.modelId)}`
+        await api.zeroclawApiProxy('POST', mapKeyPath, null, null)
+        // Step 2: PATCH 设置属性
+        const patches = [
+          { op: 'replace', path: `providers.models.${values.modelId}.model`, value: values.model },
+        ]
+        if (values.apiBase) patches.push({ op: 'replace', path: `providers.models.${values.modelId}.base-url`, value: values.apiBase })
+        if (values.apiKey) patches.push({ op: 'replace', path: `providers.models.${values.modelId}.api-key`, value: values.apiKey })
+        await api.zeroclawApiProxy('PATCH', '/api/config', patches)
+        toast(t('models.modelAdded', { name: values.model }), 'success')
         await loadModels()
       } catch (e) {
         toast(`${t('models.addFailed')}: ${esc(e?.message || String(e))}`, 'error')
@@ -176,26 +251,28 @@ async function importFromOpenclaw() {
     for (const m of models) {
       const modelId = m.id || m.name || m.model
       if (!modelId) continue
-      const cfg = m.config || {}
+      const safeKey = modelId.replace(/[^a-zA-Z0-9_.-]/g, '-')
       try {
-        await api.zeroclawApiProxy('POST', '/v1/models', {
-          id: modelId,
-          name: m.name || modelId,
-          provider: m.provider || m.owned_by || '',
-          api_base: m.api_base || m.base_url || undefined,
-          api_key: m.api_key || undefined,
-          stream: cfg.stream !== undefined ? cfg.stream : true,
-          fast: cfg.fast !== undefined ? cfg.fast : false,
-          think: cfg.think || 'low',
-          temperature: cfg.temperature || undefined,
-          max_tokens: cfg.maxTokens || undefined,
-        })
+        // Step 1: 创建 map-key
+        const mapKeyPath = `/api/config/map-key?path=providers.models&key=${encodeURIComponent(safeKey)}`
+        await api.zeroclawApiProxy('POST', mapKeyPath, null, null)
+        // Step 2: PATCH 设置属性
+        const patches = [
+          { op: 'replace', path: `providers.models.${safeKey}.model`, value: modelId },
+        ]
+        if (m.api_base || m.base_url) patches.push({ op: 'replace', path: `providers.models.${safeKey}.base-url`, value: m.api_base || m.base_url })
+        if (m.api_key) patches.push({ op: 'replace', path: `providers.models.${safeKey}.api-key`, value: m.api_key })
+        await api.zeroclawApiProxy('PATCH', '/api/config', patches)
         imported++
       } catch (e) {
-        console.warn(`[zeroclaw] import model ${modelId} failed:`, e)
+        console.warn(`[zeroclaw] import model ${safeKey} failed:`, e)
       }
     }
-    toast(t('models.importedCount', { count: imported }), 'success')
+    if (imported > 0) {
+      toast(t('models.importedCount', { count: imported }), 'success')
+    } else {
+      toast(t('models.importFailed'), 'error')
+    }
     await loadModels()
   } catch (e) {
     toast(`${t('models.importFailed')}: ${esc(e?.message || String(e))}`, 'error')
@@ -203,21 +280,27 @@ async function importFromOpenclaw() {
 }
 
 function openEditModel(model) {
-  const modelId = model.id || model.name || model.model
+  const modelId = model.id
   showModal({
     title: `${t('common.edit')} ${modelId}`,
     width: 480,
     fields: [
-      { name: 'modelId', label: t('models.modelId'), type: 'text', value: modelId, required: true },
-      { name: 'provider', label: t('models.provider'), type: 'text', value: model.owned_by || model.provider || '', required: true },
+      { name: 'model', label: t('models.modelId'), type: 'text', value: model.model, required: true },
+      { name: 'name', label: t('models.displayName'), type: 'text', value: model.name || '' },
+      { name: 'apiBase', label: t('models.baseUrl'), type: 'text', value: model.api_base || '' },
     ],
     onConfirm: async (values) => {
       try {
-        // Update via gateway
-        await api.zeroclawApiProxy('PUT', `/v1/models/${encodeURIComponent(modelId)}`, {
-          id: values.modelId !== modelId ? values.modelId : undefined,
-          provider: values.provider,
-        })
+        const patches = [
+          { op: 'replace', path: `providers.models.${modelId}.model`, value: values.model },
+        ]
+        if (values.name) {
+          patches.push({ op: 'replace', path: `providers.models.${modelId}.name`, value: values.name })
+        }
+        if (values.apiBase) {
+          patches.push({ op: 'replace', path: `providers.models.${modelId}.base-url`, value: values.apiBase })
+        }
+        await api.zeroclawApiProxy('PATCH', '/api/config', patches)
         toast(t('models.modelUpdated'), 'success')
         await loadModels()
       } catch (e) {
