@@ -1009,7 +1009,7 @@ function showActivationOverlay(status) {
       <div id="activation-msg" style="margin-top:12px;font-size:13px;min-height:20px"></div>
       ${trialInfo}
       <p style="margin-top:24px;font-size:11px;color:#a1a1aa">
-        首次激活需联网验证 · 激活后永久离线使用 · <a href="https://github.com/chenpeter1018-netizen/agentplanet" target="_blank" style="color:#6366f1">获取注册码</a>
+        首次激活需联网验证 · 激活后永久离线使用
       </p>
     </div>
   `
