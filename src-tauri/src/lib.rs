@@ -333,6 +333,7 @@ pub fn run() {
             zeroclaw::zeroclaw_restore_snapshot,
             zeroclaw::zeroclaw_open_dir,
             zeroclaw::zeroclaw_api_proxy,
+            zeroclaw::zeroclaw_chat_send,
         ])
         .on_window_event(|window, event| {
             // 关闭窗口时最小化到托盘，不退出应用

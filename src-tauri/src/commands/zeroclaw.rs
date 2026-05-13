@@ -4,7 +4,9 @@
 use serde_json::Value;
 use std::path::PathBuf;
 use std::sync::Mutex;
+use tauri::Emitter;
 use tauri::Manager;
+use futures_util::{SinkExt, StreamExt};
 
 fn planet_data_root() -> PathBuf {
     super::openclaw_dir().join("agent-planet")
@@ -25,6 +27,10 @@ fn zeroclaw_bin() -> PathBuf {
 fn zeroclaw_bin_name() -> &'static str {
     #[cfg(target_os = "windows")]
     { "zeroclaw.exe" }
+    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+    { "zeroclaw-aarch64" }
+    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+    { "zeroclaw-linux" }
     #[cfg(not(target_os = "windows"))]
     { "zeroclaw" }
 }
@@ -251,17 +257,15 @@ pub async fn install_zeroclaw(app: tauri::AppHandle, url: Option<String>, mirror
         _ => ("zeroclaw-x86_64-unknown-linux-gnu.tar.gz", false),
     };
 
-    // 下载 URL 优先级：用户传入 > 中国镜像 > GitHub
+    // 下载 URL 优先级：用户传入 > GitHub Releases
     let mut urls: Vec<String> = Vec::new();
     if let Some(u) = url {
         urls.push(u);
     } else if let Some(mirror) = mirror_url {
         urls.push(format!("{}/{}", mirror.trim_end_matches('/'), asset_name));
     }
-    // 国内默认镜像
-    urls.push(format!("https://res1.hermesagent.org.cn/zeroclaw/{}", asset_name));
     // GitHub 兜底
-    urls.push(format!("https://github.com/zeroclaw-labs/zeroclaw/releases/latest/download/{}", asset_name));
+    urls.push(format!("https://github.com/zeroclaw-labs/zeroclaw/releases/download/v0.7.5/{}", asset_name));
 
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(300))
@@ -343,9 +347,26 @@ pub async fn install_zeroclaw(app: tauri::AppHandle, url: Option<String>, mirror
 }
 
 fn write_version(bin_path: &PathBuf) {
-    if let Ok(output) = std::process::Command::new(bin_path).arg("--version").output() {
-        if let Ok(ver) = String::from_utf8(output.stdout) {
-            let _ = std::fs::write(zeroclaw_data_root().join("VERSION"), ver.trim());
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        if let Ok(output) = std::process::Command::new(bin_path)
+            .arg("--version")
+            .creation_flags(CREATE_NO_WINDOW)
+            .output()
+        {
+            if let Ok(ver) = String::from_utf8(output.stdout) {
+                let _ = std::fs::write(zeroclaw_data_root().join("VERSION"), ver.trim());
+            }
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        if let Ok(output) = std::process::Command::new(bin_path).arg("--version").output() {
+            if let Ok(ver) = String::from_utf8(output.stdout) {
+                let _ = std::fs::write(zeroclaw_data_root().join("VERSION"), ver.trim());
+            }
         }
     }
 }
@@ -645,4 +666,137 @@ pub async fn zeroclaw_api_proxy(method: String, path: String, body: Option<Value
     let resp_body = resp.text().await.unwrap_or_default();
     let json_body: Value = serde_json::from_str(&resp_body).unwrap_or(Value::String(resp_body));
     Ok(serde_json::json!({ "status": status, "body": json_body }))
+}
+
+/// WebSocket 聊天代理：连接到 ZeroClaw Gateway 的 /ws/chat 端点
+/// 通过 Tauri 事件向前端推送流式响应
+#[tauri::command]
+pub async fn zeroclaw_chat_send(
+    app: tauri::AppHandle,
+    session_id: String,
+    message: String,
+) -> Result<Value> {
+    let port = zeroclaw_port();
+    let token = ensure_paired(port).await.unwrap_or_default();
+
+    let ws_url = format!("ws://127.0.0.1:{}/ws/chat?token={}", port, token);
+
+    let (ws_stream, _) = tokio_tungstenite::connect_async(&ws_url)
+        .await
+        .map_err(|e| format!("WebSocket 连接失败: {e}"))?;
+
+    let (write, mut read) = ws_stream.split();
+
+    // 发送消息
+    let payload = serde_json::json!({
+        "type": "message",
+        "content": message,
+        "session_id": session_id,
+    });
+    let msg = tokio_tungstenite::tungstenite::Message::Text(payload.to_string());
+    let mut write = write;
+    write.send(msg)
+        .await
+        .map_err(|e| format!("WebSocket 发送失败: {e}"))?;
+
+    // 后台任务读取响应并发射事件
+    let app_handle = app.clone();
+    let sid = session_id.clone();
+    tokio::spawn(async move {
+        let mut full_response = String::new();
+        while let Some(msg) = read.next().await {
+            match msg {
+                Ok(tokio_tungstenite::tungstenite::Message::Text(text)) => {
+                    let data: Value = match serde_json::from_str(&text) {
+                        Ok(v) => v,
+                        Err(_) => continue,
+                    };
+                    let msg_type = data["type"].as_str().unwrap_or("");
+                    match msg_type {
+                        "chunk" => {
+                            let delta = data["content"].as_str().unwrap_or("");
+                            full_response.push_str(delta);
+                            let _ = app_handle.emit(
+                                "zeroclaw-chat-chunk",
+                                serde_json::json!({
+                                    "session_id": sid,
+                                    "delta": delta,
+                                }),
+                            );
+                        }
+                        "tool_call" => {
+                            let _ = app_handle.emit(
+                                "zeroclaw-chat-tool",
+                                serde_json::json!({
+                                    "session_id": sid,
+                                    "name": data["name"],
+                                    "args": data["args"],
+                                    "status": "running",
+                                }),
+                            );
+                        }
+                        "tool_result" => {
+                            let _ = app_handle.emit(
+                                "zeroclaw-chat-tool",
+                                serde_json::json!({
+                                    "session_id": sid,
+                                    "name": data["name"],
+                                    "content": data["content"],
+                                    "status": "done",
+                                }),
+                            );
+                        }
+                        "done" => {
+                            let _ = app_handle.emit(
+                                "zeroclaw-chat-done",
+                                serde_json::json!({
+                                    "session_id": sid,
+                                    "full_response": full_response,
+                                    "model": data["model"],
+                                    "usage": data["usage"],
+                                }),
+                            );
+                            return;
+                        }
+                        "error" => {
+                            let _ = app_handle.emit(
+                                "zeroclaw-chat-error",
+                                serde_json::json!({
+                                    "session_id": sid,
+                                    "error": data["message"],
+                                }),
+                            );
+                            return;
+                        }
+                        _ => {}
+                    }
+                }
+                Ok(tokio_tungstenite::tungstenite::Message::Close(_)) => {
+                    if !full_response.is_empty() {
+                        let _ = app_handle.emit(
+                            "zeroclaw-chat-done",
+                            serde_json::json!({
+                                "session_id": sid,
+                                "full_response": full_response,
+                            }),
+                        );
+                    }
+                    return;
+                }
+                Err(e) => {
+                    let _ = app_handle.emit(
+                        "zeroclaw-chat-error",
+                        serde_json::json!({
+                            "session_id": sid,
+                            "error": format!("WebSocket 错误: {e}"),
+                        }),
+                    );
+                    return;
+                }
+                _ => {}
+            }
+        }
+    });
+
+    Ok(serde_json::json!({ "ok": true, "session_id": session_id }))
 }

@@ -12,6 +12,7 @@ let _loadSeq = 0
 export async function render() {
   const page = document.createElement('div')
   page.className = 'page'
+  page.dataset.engine = 'zeroclaw'
   page.innerHTML = `
     <div class="page-header">
       <h1 class="page-title">ZeroClaw ${t('sidebar.services')}</h1>

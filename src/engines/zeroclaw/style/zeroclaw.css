@@ -1,448 +1,5790 @@
 /**
- * ZeroClaw Chat — 卡片化消息布局
+ * Hermes Agent — macOS Tahoe Glass UI
+ * ----------------------------------------------------------
+ * All design tokens map to the global Tahoe design system (variables.css).
+ * Hermes inherits the same glass-morphism aesthetic as OpenClaw.
+ *
+ * Scoped under `[data-engine="zeroclaw"]`.
  */
 
-.zc-chat-shell {
-  display: flex;
-  height: calc(100vh - 120px);
-  min-height: 500px;
+/* ==========================================================================
+ * 0 · Design tokens — mapped to global Tahoe variables
+ * ==========================================================================
+ */
+[data-engine="zeroclaw"] {
+  --zc-surface-0: var(--bg-primary);
+  --zc-surface-1: var(--bg-secondary);
+  --zc-surface-2: var(--bg-tertiary);
+  --zc-surface-3: var(--bg-tertiary);
+
+  --zc-border:        var(--border-primary);
+  --zc-border-subtle: var(--border-secondary);
+  --zc-border-strong: var(--border-primary);
+
+  --zc-text-primary:   var(--text-primary);
+  --zc-text-secondary: var(--text-secondary);
+  --zc-text-tertiary:  var(--text-tertiary);
+  --zc-text-muted:     var(--text-tertiary);
+  --zc-text-inverse:   var(--text-inverse);
+
+  --zc-accent:       var(--accent);
+  --zc-accent-hover: var(--accent-hover);
+  --zc-accent-soft:  var(--accent-muted);
+  --zc-accent-ring:  var(--border-focus);
+
+  --zc-success:      var(--success);
+  --zc-success-soft: var(--success-muted);
+  --zc-error:        var(--error);
+  --zc-error-soft:   var(--error-muted);
+  --zc-warn:         var(--warning);
+  --zc-warn-soft:    var(--warning-muted);
+  --zc-info:         var(--info);
+  --zc-info-soft:    var(--info-muted);
+
+  --zc-font-serif: var(--font-sans);
+  --zc-font-sans:  var(--font-sans);
+  --zc-font-mono:  var(--font-mono);
+
+  --zc-radius-sm: var(--radius-sm);
+  --zc-radius-md: var(--radius-md);
+  --zc-radius-lg: var(--radius-lg);
+  --zc-radius-xl: var(--radius-xl);
+
+  --zc-shadow-sm: var(--shadow-sm);
+  --zc-shadow-md: var(--shadow-md);
+  --zc-shadow-lg: var(--shadow-lg);
+  --zc-glow-gold: var(--shadow-glow);
+
+  --zc-ease:       var(--transition-normal);
+  --zc-dur-fast:   180ms;
+  --zc-dur-normal: 280ms;
+  --zc-dur-slow:   500ms;
 }
 
-.zc-chat-main {
+/* Dark — same mapping, global variables handle the dark values */
+[data-theme="dark"] [data-engine="zeroclaw"],
+[data-engine="zeroclaw"][data-theme="dark"] {
+  --zc-surface-0: var(--bg-primary);
+  --zc-surface-1: var(--bg-secondary);
+  --zc-surface-2: var(--bg-tertiary);
+  --zc-surface-3: var(--bg-tertiary);
+
+  --zc-border:        var(--border-primary);
+  --zc-border-subtle: var(--border-secondary);
+  --zc-border-strong: var(--border-primary);
+
+  --zc-text-primary:   var(--text-primary);
+  --zc-text-secondary: var(--text-secondary);
+  --zc-text-tertiary:  var(--text-tertiary);
+  --zc-text-muted:     var(--text-tertiary);
+  --zc-text-inverse:   var(--text-inverse);
+
+  --zc-accent:       var(--accent);
+  --zc-accent-hover: var(--accent-hover);
+  --zc-accent-soft:  var(--accent-muted);
+  --zc-accent-ring:  var(--border-focus);
+
+  --zc-success:      var(--success);
+  --zc-success-soft: var(--success-muted);
+  --zc-error:        var(--error);
+  --zc-error-soft:   var(--error-muted);
+  --zc-warn:         var(--warning);
+  --zc-warn-soft:    var(--warning-muted);
+  --zc-info:         var(--info);
+  --zc-info-soft:    var(--info-muted);
+
+  --zc-shadow-sm: var(--shadow-sm);
+  --zc-shadow-md: var(--shadow-md);
+  --zc-shadow-lg: var(--shadow-lg);
+  --zc-glow-gold: var(--shadow-glow);
+}
+
+/* ==========================================================================
+ * 1 · Page shell — editorial breathing room
+ * ==========================================================================
+ */
+[data-engine="zeroclaw"].page {
+  /* 移除 1280px 硬限，宽屏填满；水平 padding 自适应避免内容贴边 */
+  padding: 40px clamp(20px, 3.5vw, 64px) 64px;
+  width: 100%;
+  font-family: var(--zc-font-sans);
+  color: var(--zc-text-primary);
+  background: var(--zc-surface-0);
+  position: relative;
+  font-feature-settings: 'ss01', 'cv11';
+  font-size: 14px;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+}
+
+/* ==========================================================================
+ * 2 · Hero — editorial big serif title
+ * ==========================================================================
+ */
+[data-engine="zeroclaw"] .zc-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 32px 0 28px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--zc-border);
+  position: relative;
+}
+
+/* Very subtle gold shimmer behind the title */
+[data-engine="zeroclaw"] .zc-hero::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  left: -80px;
+  width: 400px;
+  height: 280px;
+  background: radial-gradient(
+    ellipse at top left,
+    var(--zc-accent-soft) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity var(--zc-dur-slow) var(--zc-ease);
+}
+[data-engine="zeroclaw"] .zc-hero[data-state="running"]::before { opacity: 1; }
+
+[data-engine="zeroclaw"] .zc-hero-title,
+[data-engine="zeroclaw"] .zc-hero-actions {
+  position: relative;
+  z-index: 1;
+}
+
+[data-engine="zeroclaw"] .zc-hero-title {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  border: 1px solid var(--border-primary);
+  min-width: 0;
 }
 
-/* Header */
-.zc-chat-header {
+[data-engine="zeroclaw"] .zc-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--zc-accent);
+  margin-bottom: 14px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+[data-engine="zeroclaw"] .zc-hero-eyebrow::after {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--zc-accent);
+  opacity: 0.4;
+  margin-left: 4px;
+}
+
+[data-engine="zeroclaw"] .zc-hero-icon-wrap {
+  margin-bottom: 6px;
+}
+[data-engine="zeroclaw"] .zc-hero-icon {
+  width: 48px;
+  height: 48px;
+  display: block;
+  object-fit: contain;
+}
+
+[data-engine="zeroclaw"] .zc-hero-h1 {
+  font-family: var(--zc-font-sans);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+  color: var(--zc-text-primary);
+  margin: 0 0 10px 0;
+}
+
+[data-engine="zeroclaw"] .zc-hero-sub {
+  font-family: var(--zc-font-mono);
+  font-size: 12px;
+  color: var(--zc-text-tertiary);
+  letter-spacing: 0.02em;
+}
+
+[data-engine="zeroclaw"] .zc-hero-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border-primary);
-  background: var(--bg-secondary);
+  gap: 8px;
   flex-shrink: 0;
 }
 
-.zc-chat-header-left {
+/* Live dot — pulsing gold when running, warm red when stopped */
+[data-engine="zeroclaw"] .zc-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  flex-shrink: 0;
+}
+[data-engine="zeroclaw"] .zc-dot.zc-dot--run {
+  background: var(--zc-accent);
+  box-shadow: 0 0 0 3px var(--zc-accent-soft);
+}
+[data-engine="zeroclaw"] .zc-dot.zc-dot--run::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: var(--zc-accent);
+  opacity: 0.3;
+  animation: hm-pulse 2.4s var(--zc-ease-serif) infinite;
+}
+[data-engine="zeroclaw"] .zc-dot.zc-dot--stop {
+  background: var(--zc-error);
+  box-shadow: 0 0 0 3px var(--zc-error-soft);
+}
+[data-engine="zeroclaw"] .zc-dot.zc-dot--idle {
+  background: var(--zc-text-muted);
+  box-shadow: 0 0 0 3px rgba(168, 162, 158, 0.15);
+}
+
+@keyframes hm-pulse {
+  0%   { transform: scale(1);   opacity: 0.5; }
+  70%  { transform: scale(3);   opacity: 0; }
+  100% { transform: scale(3);   opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-engine="zeroclaw"] .zc-dot::after { animation: none; }
+}
+
+/* ==========================================================================
+ * 3 · KPI grid — editorial data cards
+ * ==========================================================================
+ */
+[data-engine="zeroclaw"] .zc-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  /* Removed the gap+background "bleed" trick — it caused empty grid
+     cells (when card count ≠ columns × rows) to render as visible
+     placeholder rectangles. Instead, draw hairline dividers with
+     per-card inset box-shadows; empty cells stay blank. */
+  gap: 0;
+  background: var(--zc-surface-1);
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-md);
+  margin-bottom: 40px;
+  overflow: hidden;
+}
+
+[data-engine="zeroclaw"] .zc-kpi {
+  position: relative;
+  padding: 22px 24px 20px;
+  background: var(--zc-surface-1);
+  /* Hairline dividers using inset shadow so they only draw on cells
+     that actually contain a card, never on empty grid slots. */
+  box-shadow:
+    inset -1px 0 0 var(--zc-border),
+    inset 0 -1px 0 var(--zc-border);
+  transition: background var(--zc-dur-normal) var(--zc-ease);
+  overflow: hidden;
+}
+
+[data-engine="zeroclaw"] .zc-kpi:hover {
+  background: var(--zc-surface-2);
+}
+
+[data-engine="zeroclaw"] .zc-kpi.zc-kpi--link {
+  cursor: pointer;
+  border: none;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  width: 100%;
+}
+[data-engine="zeroclaw"] .zc-kpi.zc-kpi--link::after {
+  content: '→';
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  color: var(--zc-text-muted);
+  font-size: 14px;
+  transition: transform var(--zc-dur-normal) var(--zc-ease),
+              color var(--zc-dur-fast) var(--zc-ease);
+}
+[data-engine="zeroclaw"] .zc-kpi.zc-kpi--link:hover::after {
+  transform: translateX(4px);
+  color: var(--zc-accent);
+}
+
+/* Tone = tiny thin underline under the label, not a bar */
+[data-engine="zeroclaw"] .zc-kpi-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--zc-text-tertiary);
+  margin-bottom: 14px;
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+[data-engine="zeroclaw"] .zc-kpi[data-tone="success"] .zc-kpi-label { color: var(--zc-success); }
+[data-engine="zeroclaw"] .zc-kpi[data-tone="error"]   .zc-kpi-label { color: var(--zc-error); }
+[data-engine="zeroclaw"] .zc-kpi[data-tone="warn"]    .zc-kpi-label { color: var(--zc-warn); }
+[data-engine="zeroclaw"] .zc-kpi[data-tone="info"]    .zc-kpi-label { color: var(--zc-info); }
+[data-engine="zeroclaw"] .zc-kpi[data-tone="accent"]  .zc-kpi-label { color: var(--zc-accent); }
+
+[data-engine="zeroclaw"] .zc-kpi-label .zc-kpi-icon,
+[data-engine="zeroclaw"] .zc-kpi-label svg {
+  width: 12px;
+  height: 12px;
+  opacity: 0.65;
+}
+
+[data-engine="zeroclaw"] .zc-kpi-value {
+  font-family: var(--zc-font-serif);
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1.1;
+  color: var(--zc-text-primary);
+  letter-spacing: -0.015em;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  word-break: break-word;
+}
+
+[data-engine="zeroclaw"] .zc-kpi-value .zc-kpi-unit {
+  font-family: var(--zc-font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--zc-text-muted);
+  letter-spacing: 0.02em;
+}
+
+[data-engine="zeroclaw"] .zc-kpi-foot {
+  margin-top: 10px;
+  font-family: var(--zc-font-mono);
+  font-size: 11px;
+  color: var(--zc-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+}
+
+[data-engine="zeroclaw"] .zc-kpi-foot .zc-kpi-delta {
+  color: var(--zc-success);
+  font-weight: 500;
+}
+[data-engine="zeroclaw"] .zc-kpi-foot .zc-kpi-delta--down {
+  color: var(--zc-error);
+}
+
+[data-engine="zeroclaw"] .zc-native-dashboard-hint {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin: -8px 2px 20px;
+  color: var(--zc-text-muted);
+  font-family: var(--zc-font-mono);
+  font-size: 11px;
+}
+[data-engine="zeroclaw"] .zc-native-dashboard-link {
+  border: 0;
+  background: transparent;
+  color: var(--zc-text-secondary);
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
+  text-underline-offset: 3px;
+}
+[data-engine="zeroclaw"] .zc-native-dashboard-link:hover {
+  color: var(--zc-accent);
+}
+
+/* ==========================================================================
+ * 4 · Panel — clean section container
+ * ==========================================================================
+ */
+[data-engine="zeroclaw"] .zc-panel {
+  background: var(--zc-surface-1);
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-md);
+  margin-bottom: 24px;
+  overflow: hidden;
+  /* Soft paper-lift elevation on cream page — gives cards presence
+     without breaking the whisper-thin editorial aesthetic. */
+  box-shadow:
+    0 1px 2px rgba(28, 25, 23,0.03),
+    0 2px 6px rgba(28, 25, 23,0.035);
+  transition: border-color var(--zc-dur-normal) var(--zc-ease),
+              box-shadow  var(--zc-dur-normal) var(--zc-ease);
+}
+[data-theme="dark"] [data-engine="zeroclaw"] .zc-panel {
+  /* In dark mode the warm-black surfaces already read as elevated; drop
+     the drop-shadow so we don't muddy the depth. */
+  box-shadow: none;
+}
+
+[data-engine="zeroclaw"] .zc-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 28px 18px;
+  border-bottom: 1px solid var(--zc-border-subtle);
+}
+
+[data-engine="zeroclaw"] .zc-panel-header.zc-panel-header--toggle {
+  cursor: pointer;
+  transition: background var(--zc-dur-fast) var(--zc-ease);
+}
+[data-engine="zeroclaw"] .zc-panel-header.zc-panel-header--toggle:hover {
+  background: var(--zc-surface-2);
+}
+
+[data-engine="zeroclaw"] .zc-panel-title {
+  font-family: var(--zc-font-serif);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--zc-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-transform: none;
+}
+
+/* editorial italic style instead of uppercase ops */
+[data-engine="zeroclaw"] .zc-panel-title::before {
+  content: '';
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  color: var(--zc-accent);
+}
+
+[data-engine="zeroclaw"] .zc-panel-title .zc-panel-title-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--zc-accent);
+}
+
+[data-engine="zeroclaw"] .zc-panel-title .zc-panel-title-count {
+  padding: 2px 9px;
+  background: var(--zc-accent-soft);
+  border-radius: 999px;
+  font-family: var(--zc-font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--zc-accent);
+  letter-spacing: 0.02em;
+  font-style: normal;
+  margin-left: 4px;
+}
+
+[data-engine="zeroclaw"] .zc-panel-actions {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.zc-chat-logo {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #fff;
+[data-engine="zeroclaw"] .zc-panel-body {
+  padding: 24px 28px 26px;
+}
+[data-engine="zeroclaw"] .zc-panel-body--tight {
+  padding: 16px 24px 18px;
+}
+[data-engine="zeroclaw"] .zc-panel-body--none {
+  padding: 0;
+}
+
+[data-engine="zeroclaw"] .zc-panel-chevron {
+  width: 14px;
+  height: 14px;
+  color: var(--zc-text-tertiary);
+  transition: transform var(--zc-dur-normal) var(--zc-ease);
+}
+[data-engine="zeroclaw"] .zc-panel-header.is-open .zc-panel-chevron {
+  transform: rotate(180deg);
+}
+
+/* ==========================================================================
+ * 5 · Buttons — editorial restraint
+ * ==========================================================================
+ */
+[data-engine="zeroclaw"] .zc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 18px;
+  height: 38px;
+  border-radius: var(--zc-radius-sm);
+  border: 1px solid var(--zc-border-strong);
+  background: transparent;
+  color: var(--zc-text-primary);
+  font-family: var(--zc-font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  cursor: pointer;
+  transition: all var(--zc-dur-fast) var(--zc-ease);
+  white-space: nowrap;
+  user-select: none;
+}
+[data-engine="zeroclaw"] .zc-btn:hover:not(:disabled) {
+  border-color: var(--zc-text-primary);
+  background: var(--zc-surface-2);
+}
+[data-engine="zeroclaw"] .zc-btn:active:not(:disabled) { opacity: 0.85; }
+[data-engine="zeroclaw"] .zc-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+[data-engine="zeroclaw"] .zc-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--zc-accent-ring);
+  border-color: var(--zc-accent);
+}
+
+[data-engine="zeroclaw"] .zc-btn--sm {
+  height: 30px;
+  padding: 4px 12px;
+  font-size: 12px;
+}
+
+/* Primary = gold fill (the hero CTA) */
+[data-engine="zeroclaw"] .zc-btn--primary {
+  background: var(--zc-text-primary);
+  color: var(--zc-text-inverse);
+  border-color: var(--zc-text-primary);
+  font-weight: 500;
+}
+[data-engine="zeroclaw"] .zc-btn--primary:hover:not(:disabled) {
+  background: var(--zc-surface-2);
+  color: var(--zc-text-primary);
+  border-color: var(--zc-text-primary);
+}
+[data-theme="dark"] [data-engine="zeroclaw"] .zc-btn--primary {
+  background: var(--zc-text-primary);
+  color: var(--zc-text-inverse);
+}
+[data-theme="dark"] [data-engine="zeroclaw"] .zc-btn--primary:hover:not(:disabled) {
+  background: var(--zc-surface-3);
+  color: var(--zc-text-primary);
+}
+
+/* CTA = the main action, gold */
+[data-engine="zeroclaw"] .zc-btn--cta {
+  background: var(--zc-accent);
+  color: var(--zc-text-primary);
+  border-color: var(--zc-accent);
+  font-family: var(--zc-font-serif);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.005em;
+  padding: 9px 22px;
+}
+[data-engine="zeroclaw"] .zc-btn--cta:hover:not(:disabled) {
+  background: var(--zc-accent-hover);
+  border-color: var(--zc-accent-hover);
+  box-shadow: var(--zc-glow-gold);
+}
+[data-theme="dark"] [data-engine="zeroclaw"] .zc-btn--cta {
+  color: var(--zc-text-primary);
+}
+
+[data-engine="zeroclaw"] .zc-btn--danger {
+  color: var(--zc-error);
+  border-color: transparent;
+  background: var(--zc-error-soft);
+}
+[data-engine="zeroclaw"] .zc-btn--danger:hover:not(:disabled) {
+  background: var(--zc-error);
+  color: var(--zc-text-inverse);
+  border-color: var(--zc-error);
+}
+
+[data-engine="zeroclaw"] .zc-btn--ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--zc-text-tertiary);
+}
+[data-engine="zeroclaw"] .zc-btn--ghost:hover:not(:disabled) {
+  color: var(--zc-text-primary);
+  background: var(--zc-surface-2);
+  border-color: var(--zc-border);
+}
+
+[data-engine="zeroclaw"] .zc-btn--icon {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--zc-text-tertiary);
+}
+[data-engine="zeroclaw"] .zc-btn--icon:hover:not(:disabled) {
+  color: var(--zc-accent);
+  border-color: transparent;
+  background: var(--zc-accent-soft);
+}
+
+/* ==========================================================================
+ * 6 · Pills — minimal tag selectors
+ * ==========================================================================
+ */
+[data-engine="zeroclaw"] .zc-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+[data-engine="zeroclaw"] .zc-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: transparent;
+  border: 1px solid var(--zc-border);
+  border-radius: 999px;
+  font-family: var(--zc-font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--zc-text-secondary);
+  cursor: pointer;
+  transition: all var(--zc-dur-fast) var(--zc-ease);
+  user-select: none;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+[data-engine="zeroclaw"] .zc-pill:hover {
+  border-color: var(--zc-text-secondary);
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-pill.is-active {
+  background: var(--zc-text-primary);
+  border-color: var(--zc-text-primary);
+  color: var(--zc-text-inverse);
+  font-weight: 500;
+}
+[data-engine="zeroclaw"] .zc-pill.is-active::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--zc-accent);
+  box-shadow: 0 0 0 2px rgba(202, 138, 4, 0.25);
+}
+
+/* ==========================================================================
+ * 7 · Form controls — understated, print-inspired
+ * ==========================================================================
+ */
+[data-engine="zeroclaw"] .zc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+[data-engine="zeroclaw"] .zc-check-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--zc-text-secondary);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+[data-engine="zeroclaw"] .zc-field-label {
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--zc-text-tertiary);
+  letter-spacing: 0.01em;
+  text-transform: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+[data-engine="zeroclaw"] .zc-input {
+  font-family: var(--zc-font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 10px 14px;
+  height: 40px;
+  border: 1px solid var(--zc-border);
+  background: var(--zc-surface-0);
+  color: var(--zc-text-primary);
+  border-radius: var(--zc-radius-sm);
+  transition: border-color var(--zc-dur-fast) var(--zc-ease),
+              box-shadow var(--zc-dur-fast) var(--zc-ease),
+              background var(--zc-dur-fast) var(--zc-ease);
+  width: 100%;
+  outline: none;
+}
+[data-engine="zeroclaw"] .zc-input:focus {
+  border-color: var(--zc-accent);
+  box-shadow: 0 0 0 3px var(--zc-accent-ring);
+  background: var(--zc-surface-1);
+}
+[data-engine="zeroclaw"] .zc-input::placeholder {
+  color: var(--zc-text-muted);
+  opacity: 0.7;
+}
+
+[data-engine="zeroclaw"] .zc-field-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+/* ==========================================================================
+ * 8 · Code & terminal blocks
+ * ==========================================================================
+ */
+[data-engine="zeroclaw"] .zc-code {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--zc-surface-2);
+  border: 1px solid var(--zc-border-subtle);
+  border-radius: 3px;
+  font-family: var(--zc-font-mono);
+  font-size: 11.5px;
+  color: var(--zc-text-primary);
+  letter-spacing: 0;
+}
+
+[data-engine="zeroclaw"] .zc-term {
+  font-family: var(--zc-font-mono);
+  font-size: 12px;
+  line-height: 1.65;
+  padding: 18px 20px;
+  background: var(--zc-text-primary);
+  color: #E7E5E4;
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-sm);
+  overflow-x: auto;
+}
+[data-engine="zeroclaw"] .zc-term .zc-muted {
+  color: var(--zc-text-muted);
+}
+
+/* ==========================================================================
+ * 9 · Table
+ * ==========================================================================
+ */
+[data-engine="zeroclaw"] .zc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+[data-engine="zeroclaw"] .zc-table thead th {
+  text-align: left;
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--zc-text-tertiary);
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--zc-border);
+  background: var(--zc-surface-0);
+}
+[data-engine="zeroclaw"] .zc-table tbody td {
+  padding: 15px 24px;
+  border-bottom: 1px solid var(--zc-border-subtle);
+  color: var(--zc-text-secondary);
+  vertical-align: top;
+}
+[data-engine="zeroclaw"] .zc-table tbody tr {
+  transition: background var(--zc-dur-fast) var(--zc-ease);
+}
+[data-engine="zeroclaw"] .zc-table tbody tr:hover {
+  background: var(--zc-surface-2);
+}
+[data-engine="zeroclaw"] .zc-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ==========================================================================
+ * 10 · Utilities
+ * ==========================================================================
+ */
+[data-engine="zeroclaw"] .zc-hr {
+  height: 1px;
+  background: var(--zc-border);
+  margin: 24px 0;
+  border: none;
+}
+
+[data-engine="zeroclaw"] .zc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-family: var(--zc-font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  background: var(--zc-surface-2);
+  color: var(--zc-text-secondary);
+  border: 1px solid var(--zc-border);
+}
+[data-engine="zeroclaw"] .zc-badge--success {
+  color: var(--zc-success);
+  background: var(--zc-success-soft);
+  border-color: transparent;
+}
+[data-engine="zeroclaw"] .zc-badge--error {
+  color: var(--zc-error);
+  background: var(--zc-error-soft);
+  border-color: transparent;
+}
+[data-engine="zeroclaw"] .zc-badge--warn {
+  color: var(--zc-warn);
+  background: var(--zc-warn-soft);
+  border-color: transparent;
+}
+[data-engine="zeroclaw"] .zc-badge--accent {
+  color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+  border-color: transparent;
+}
+
+[data-engine="zeroclaw"] .zc-muted {
+  color: var(--zc-text-muted);
+  font-size: 11.5px;
+  font-family: var(--zc-font-mono);
+  letter-spacing: 0.01em;
+}
+
+[data-engine="zeroclaw"] .zc-stack {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+[data-engine="zeroclaw"] .zc-stack--v {
+  flex-direction: column;
+  align-items: stretch;
+}
+[data-engine="zeroclaw"] .zc-spacer { flex: 1; }
+
+/* Skeleton loader */
+[data-engine="zeroclaw"] .zc-skel {
+  background: linear-gradient(
+    90deg,
+    var(--zc-surface-2) 0%,
+    var(--zc-surface-3) 50%,
+    var(--zc-surface-2) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 3px;
+  animation: hm-skel 1.8s ease-in-out infinite;
+}
+@keyframes hm-skel {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ==========================================================================
+ * 11 · Dropdown
+ * ==========================================================================
+ */
+[data-engine="zeroclaw"] .zc-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--zc-surface-1);
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-sm);
+  box-shadow: var(--zc-shadow-lg);
+  z-index: 50;
+  font-family: var(--zc-font-mono);
+  padding: 4px;
+}
+
+[data-engine="zeroclaw"] .zc-dropdown-item {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--zc-text-secondary);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background var(--zc-dur-fast) var(--zc-ease),
+              color var(--zc-dur-fast) var(--zc-ease);
+}
+[data-engine="zeroclaw"] .zc-dropdown-item:hover {
+  background: var(--zc-accent-soft);
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-dropdown-item.is-selected {
+  background: var(--zc-accent-soft);
+  color: var(--zc-accent);
+  font-weight: 500;
+}
+
+/* Custom scrollbar */
+[data-engine="zeroclaw"] ::-webkit-scrollbar        { width: 10px; height: 10px; }
+[data-engine="zeroclaw"] ::-webkit-scrollbar-track  { background: transparent; }
+[data-engine="zeroclaw"] ::-webkit-scrollbar-thumb  {
+  background: var(--zc-border-strong);
+  border-radius: 999px;
+  border: 3px solid var(--zc-surface-0);
+}
+[data-engine="zeroclaw"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--zc-text-tertiary);
+}
+
+/* ==========================================================================
+ * 12 · Page shell — editorial gutter for pages that still use .page
+ *     (dashboard / cron / setup / env-editor / services / config / channels).
+ *     Custom hermes-*-page shells (memory/logs/skills/chat/usage) set their
+ *     own padding and opt out.
+ * ==========================================================================
+ */
+/* Same-element form (no space) because `.page` shares the host div with
+   `data-engine`. The descendant form silently misses every Hermes page
+   that uses the shared shell. */
+[data-engine="zeroclaw"].page {
+  /* Generous gutter via clamp() so dashboard / cron / services / memory feel
+     like one product on any width. No max-width — fill the viewport. */
+  padding: 40px clamp(20px, 3.5vw, 56px) 56px;
+}
+@media (max-width: 960px) {
+  [data-engine="zeroclaw"].page {
+    padding: 28px 24px 40px;
+  }
+}
+@media (max-width: 480px) {
+  [data-engine="zeroclaw"].page {
+    padding: 20px 16px 32px;
+  }
+}
+
+[data-engine="zeroclaw"] .page-header h1 {
+  font-family: var(--zc-font-serif);
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--zc-text-primary);
+  margin: 0;
+}
+[data-engine="zeroclaw"] .page-header {
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--zc-border);
+}
+
+/* Re-style .card on non-refreshed Hermes pages for consistency */
+[data-engine="zeroclaw"] .card {
+  background: var(--zc-surface-1);
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-md);
+  box-shadow: none;
+}
+[data-engine="zeroclaw"] .card-body { padding: 22px 26px; }
+
+/* ==========================================================================
+ * 13 · Global sidebar + content when Hermes engine is active
+ * ==========================================================================
+ * Inherits macOS Tahoe glass-morphism from global CSS. Minimal overrides only.
+ */
+body[data-active-engine="hermes"] {
+  background: var(--bg-primary);
+}
+body[data-active-engine="hermes"] #content {
+  background: var(--bg-primary);
+}
+
+/* Engine switcher — Tahoe blue accent */
+body[data-active-engine="hermes"] .engine-current {
+  border-color: var(--border-primary);
+  background: var(--bg-card);
+}
+body[data-active-engine="hermes"] .engine-current:hover {
+  border-color: var(--accent);
+}
+body[data-active-engine="hermes"] .engine-icon { color: var(--accent); }
+body[data-active-engine="hermes"] .engine-dropdown {
+  background: var(--bg-glass-heavy);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-lg);
+}
+body[data-active-engine="hermes"] .engine-option:hover {
+  background: var(--accent-muted);
+}
+body[data-active-engine="hermes"] .engine-option.active,
+body[data-active-engine="hermes"] .engine-active-check {
+  color: var(--accent);
+}
+
+/* Nav items — let global Tahoe CSS handle everything */
+body[data-active-engine="hermes"] .nav-section-title {
+  font-style: normal;
+}
+/* Remove gold accent line */
+body[data-active-engine="hermes"] .nav-item.active::before {
+  display: none;
+}
+
+/* Dark — inherit global dark variables */
+[data-theme="dark"] body[data-active-engine="hermes"],
+body[data-active-engine="hermes"][data-theme="dark"] {
+  background: var(--bg-primary);
+}
+[data-theme="dark"] body[data-active-engine="hermes"] #content {
+  background: var(--bg-primary);
+}
+/* Dark — inherit global Tahoe dark variables, no gold overrides */
+[data-theme="dark"] body[data-active-engine="hermes"] .sidebar-meta,
+[data-theme="dark"] body[data-active-engine="hermes"] .sidebar-link,
+[data-theme="dark"] body[data-active-engine="hermes"] .sidebar-version {
+  color: var(--zc-text-tertiary);
+}
+[data-theme="dark"] body[data-active-engine="hermes"] .sidebar-link:hover {
+  color: var(--accent);
+}
+
+/* ==========================================================================
+ * 14 · Legacy .hermes-* class overrides (setup/logs/skills/memory pages)
+ * ==========================================================================
+ * Existing pages (setup.js, chat.js, logs.js, etc.) use `.hermes-*` class
+ * names defined in src/style/pages.css. Since the JS bind()s them by class
+ * name we can't just delete them — instead we re-skin them while still
+ * scoped to [data-engine="zeroclaw"].
+ */
+
+/* ---- Phase indicator (setup wizard steps) ---- */
+[data-engine="zeroclaw"] .zeroclaw-phases {
+  display: flex;
+  align-items: center;
+  margin: 4px 0 36px;
+  padding: 20px 24px;
+  background: var(--zc-surface-1);
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-md);
+}
+[data-engine="zeroclaw"] .zeroclaw-phase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+[data-engine="zeroclaw"] .zeroclaw-phase-dot {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 13px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--zc-surface-0);
+  border: 1px solid var(--zc-border-strong);
+  font-family: var(--zc-font-serif);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--zc-text-tertiary);
+  transition: all var(--zc-dur-normal) var(--zc-ease);
+}
+[data-engine="zeroclaw"] .zeroclaw-phase.active .zeroclaw-phase-dot {
+  background: var(--zc-accent);
+  color: var(--zc-text-primary);
+  border-color: var(--zc-accent);
+  box-shadow: var(--zc-glow-gold);
+}
+[data-engine="zeroclaw"] .zeroclaw-phase.done .zeroclaw-phase-dot {
+  background: transparent;
+  border-color: var(--zc-accent);
+  color: var(--zc-accent);
+}
+[data-engine="zeroclaw"] .zeroclaw-phase.done .zeroclaw-phase-dot svg {
+  stroke: var(--zc-accent);
+}
+[data-engine="zeroclaw"] .zeroclaw-phase-label {
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--zc-text-tertiary);
+  white-space: nowrap;
+}
+[data-engine="zeroclaw"] .zeroclaw-phase.active .zeroclaw-phase-label {
+  color: var(--zc-accent);
+  font-weight: 500;
+  font-style: normal;
+}
+[data-engine="zeroclaw"] .zeroclaw-phase.done .zeroclaw-phase-label {
+  color: var(--zc-text-secondary);
+  font-style: normal;
+}
+[data-engine="zeroclaw"] .zeroclaw-phase-line {
+  flex: 1;
+  height: 1px;
+  background: var(--zc-border-strong);
+  margin: 0 6px;
+  opacity: 0.5;
+}
+[data-engine="zeroclaw"] .zeroclaw-phase.done + .zeroclaw-phase-line,
+[data-engine="zeroclaw"] .zeroclaw-phase-line:has(+ .zeroclaw-phase.active),
+[data-engine="zeroclaw"] .zeroclaw-phase.done ~ .zeroclaw-phase-line {
+  background: var(--zc-accent);
+  opacity: 1;
+}
+
+/* ---- Detection rows ---- */
+[data-engine="zeroclaw"] .zeroclaw-detect-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+[data-engine="zeroclaw"] .zeroclaw-detect-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--zc-border-subtle);
+  border-radius: var(--zc-radius-sm);
+  background: var(--zc-surface-0);
+  font-family: var(--zc-font-mono);
+  font-size: 12.5px;
+  color: var(--zc-text-secondary);
+  transition: background var(--zc-dur-fast) var(--zc-ease);
+}
+[data-engine="zeroclaw"] .zeroclaw-detect-row.ok {
+  color: var(--zc-text-primary);
+  border-color: var(--zc-success-soft);
+  background: var(--zc-success-soft);
+}
+[data-engine="zeroclaw"] .zeroclaw-detect-row.warn {
+  color: var(--zc-warn);
+  border-color: var(--zc-warn-soft);
+  background: var(--zc-warn-soft);
+}
+[data-engine="zeroclaw"] .zeroclaw-detect-row svg {
   flex-shrink: 0;
 }
 
-.zc-chat-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.3;
+/* ---- Form fields ---- */
+[data-engine="zeroclaw"] .hermes-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+[data-engine="zeroclaw"] .hermes-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+[data-engine="zeroclaw"] .hermes-field > span {
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--zc-text-tertiary);
+  letter-spacing: 0;
+}
+[data-engine="zeroclaw"] .hermes-field .input,
+[data-engine="zeroclaw"] input.input,
+[data-engine="zeroclaw"] textarea.input,
+[data-engine="zeroclaw"] select.input {
+  font-family: var(--zc-font-mono);
+  font-size: 13px;
+  padding: 10px 14px;
+  height: 40px;
+  border: 1px solid var(--zc-border);
+  background: var(--zc-surface-0);
+  color: var(--zc-text-primary);
+  border-radius: var(--zc-radius-sm);
+  transition: border-color var(--zc-dur-fast) var(--zc-ease),
+              box-shadow var(--zc-dur-fast) var(--zc-ease);
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+[data-engine="zeroclaw"] .hermes-field .input:focus,
+[data-engine="zeroclaw"] input.input:focus,
+[data-engine="zeroclaw"] textarea.input:focus,
+[data-engine="zeroclaw"] select.input:focus {
+  border-color: var(--zc-accent);
+  box-shadow: 0 0 0 3px var(--zc-accent-ring);
+  background: var(--zc-surface-1);
+}
+[data-engine="zeroclaw"] .hermes-field .input::placeholder,
+[data-engine="zeroclaw"] input.input::placeholder {
+  color: var(--zc-text-muted);
 }
 
-.zc-chat-status {
+/* ---- Progress bar ---- */
+[data-engine="zeroclaw"] .hermes-progress {
+  height: 4px;
+  background: var(--zc-surface-3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+[data-engine="zeroclaw"] .hermes-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--zc-accent), color-mix(in srgb, var(--zc-accent) 60%, white));
+  border-radius: 2px;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-engine="zeroclaw"] .hermes-progress-bar.error {
+  background: linear-gradient(90deg, var(--zc-error), #DC2626);
+}
+[data-engine="zeroclaw"] .hermes-install-status {
+  padding: 14px 16px;
+  background: var(--zc-surface-0);
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-sm);
+  margin-bottom: 14px;
+}
+[data-engine="zeroclaw"] .hermes-progress-text {
+  font-family: var(--zc-font-mono) !important;
+  letter-spacing: 0.02em;
+}
+
+/* ---- Log panel ---- */
+[data-engine="zeroclaw"] .hermes-log-panel {
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-sm);
+  overflow: hidden;
+  background: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .hermes-log-content {
+  max-height: 260px;
+  min-height: 80px;
+  overflow-y: auto;
+  padding: 14px 16px;
+  font-family: var(--zc-font-mono);
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--zc-text-secondary);
+  background: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .hermes-log-content div {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+[data-engine="zeroclaw"] .hermes-log-content:empty::before {
+  content: '// waiting for stream…';
+  color: var(--zc-text-tertiary);
+  font-style: italic;
+}
+
+/* ---- Install-info checklist ---- */
+[data-engine="zeroclaw"] .hermes-install-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 4px;
+}
+
+/* ---- Mode switch buttons ---- */
+[data-engine="zeroclaw"] .hermes-mode-btn.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  height: 36px;
+  border-radius: var(--zc-radius-sm);
+  border: 1px solid var(--zc-border-strong);
+  background: transparent;
+  color: var(--zc-text-primary);
+  font-family: var(--zc-font-sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--zc-dur-fast) var(--zc-ease);
+}
+[data-engine="zeroclaw"] .hermes-mode-btn.btn-primary {
+  background: var(--zc-text-primary);
+  color: var(--zc-text-inverse);
+  border-color: var(--zc-text-primary);
+}
+[data-theme="dark"] [data-engine="zeroclaw"] .hermes-mode-btn.btn-primary {
+  background: var(--zc-accent);
+  color: var(--zc-text-primary);
+  border-color: var(--zc-accent);
+}
+[data-engine="zeroclaw"] .hermes-mode-btn.btn-secondary:hover {
+  border-color: var(--zc-text-primary);
+  background: var(--zc-surface-2);
+}
+
+/* ---- Preset provider buttons (in configure phase) ---- */
+[data-engine="zeroclaw"] .hermes-preset-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  background: transparent;
+  border: 1px solid var(--zc-border);
+  border-radius: 999px;
+  font-family: var(--zc-font-sans);
   font-size: 12px;
-  color: var(--text-tertiary);
+  font-weight: 500;
+  color: var(--zc-text-secondary);
+  cursor: pointer;
+  transition: all var(--zc-dur-fast) var(--zc-ease);
+  white-space: nowrap;
+}
+[data-engine="zeroclaw"] .hermes-preset-btn:hover {
+  border-color: var(--zc-text-secondary);
+  color: var(--zc-text-primary);
 }
 
-.zc-chat-model-badge {
+/* ---- Config form / fetch models button ---- */
+[data-engine="zeroclaw"] .hermes-fetch-models,
+[data-engine="zeroclaw"] .hermes-config-save,
+[data-engine="zeroclaw"] .hermes-config-skip,
+[data-engine="zeroclaw"] .hermes-gw-start,
+[data-engine="zeroclaw"] .hermes-gw-next,
+[data-engine="zeroclaw"] .hermes-go-dashboard,
+[data-engine="zeroclaw"] .hermes-install-btn,
+[data-engine="zeroclaw"] .hermes-custom-connect {
+  font-family: var(--zc-font-sans) !important;
+}
+
+/* ---- Model dropdown ---- */
+[data-engine="zeroclaw"] .hermes-model-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  background: var(--zc-surface-1);
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-sm);
+  box-shadow: var(--zc-shadow-lg);
+  z-index: 50;
+  padding: 4px;
+}
+[data-engine="zeroclaw"] .hermes-model-option {
+  padding: 8px 12px;
+  font-family: var(--zc-font-mono);
+  font-size: 12px;
+  color: var(--zc-text-secondary);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all var(--zc-dur-fast) var(--zc-ease);
+}
+[data-engine="zeroclaw"] .hermes-model-option:hover {
+  background: var(--zc-accent-soft);
+  color: var(--zc-text-primary);
+}
+
+/* ---- Global .btn overrides (since setup uses generic .btn classes) ---- */
+[data-engine="zeroclaw"] .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 18px;
+  height: 38px;
+  border-radius: var(--zc-radius-sm);
+  border: 1px solid var(--zc-border-strong);
+  background: transparent;
+  color: var(--zc-text-primary);
+  font-family: var(--zc-font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--zc-dur-fast) var(--zc-ease);
+  white-space: nowrap;
+}
+[data-engine="zeroclaw"] .btn:hover:not(:disabled) {
+  border-color: var(--zc-text-primary);
+  background: var(--zc-surface-2);
+}
+[data-engine="zeroclaw"] .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+[data-engine="zeroclaw"] .btn-primary {
+  background: var(--zc-accent);
+  color: var(--zc-text-primary);
+  border-color: var(--zc-accent);
+  font-family: var(--zc-font-serif);
+  font-weight: 500;
+}
+[data-engine="zeroclaw"] .btn-primary:hover:not(:disabled) {
+  background: var(--zc-accent-hover);
+  border-color: var(--zc-accent-hover);
+  color: var(--zc-text-primary);
+  box-shadow: var(--zc-glow-gold);
+}
+[data-theme="dark"] [data-engine="zeroclaw"] .btn-primary {
+  color: var(--zc-text-primary);
+}
+[data-theme="dark"] [data-engine="zeroclaw"] .btn-primary:hover:not(:disabled) {
+  color: var(--zc-text-primary);
+}
+/* .btn-secondary intentionally inherits default .btn appearance */
+
+[data-engine="zeroclaw"] .btn-sm {
+  height: 30px;
+  padding: 4px 12px;
+  font-size: 12px;
+}
+[data-engine="zeroclaw"] .btn-text {
+  background: transparent;
+  border: none;
+  color: var(--zc-text-tertiary);
+  font-size: 13px;
+  padding: 6px 10px;
+  transition: color var(--zc-dur-fast) var(--zc-ease);
+}
+[data-engine="zeroclaw"] .btn-text:hover {
+  color: var(--zc-accent);
+  background: transparent;
+}
+[data-engine="zeroclaw"] .btn-icon {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--zc-text-tertiary);
+  border-radius: var(--zc-radius-sm);
+  cursor: pointer;
+  transition: all var(--zc-dur-fast) var(--zc-ease);
+}
+[data-engine="zeroclaw"] .btn-icon:hover {
+  color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+}
+
+/* ---- Generic .input override (used by setup phase forms) ---- */
+[data-engine="zeroclaw"] .input {
+  font-family: var(--zc-font-mono);
+  font-size: 13px;
+  padding: 10px 14px;
+  height: 40px;
+  border: 1px solid var(--zc-border);
+  background: var(--zc-surface-0);
+  color: var(--zc-text-primary);
+  border-radius: var(--zc-radius-sm);
+  transition: border-color var(--zc-dur-fast) var(--zc-ease),
+              box-shadow var(--zc-dur-fast) var(--zc-ease);
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+[data-engine="zeroclaw"] .input:focus {
+  border-color: var(--zc-accent);
+  box-shadow: 0 0 0 3px var(--zc-accent-ring);
+  background: var(--zc-surface-1);
+}
+
+/* ---- Chat page (chat.js uses .hermes-chat-*) ---- */
+[data-engine="zeroclaw"] .hermes-chat-header {
+  background: var(--zc-surface-1);
+  border-bottom: 1px solid var(--zc-border);
+  padding: 18px 28px;
+}
+[data-engine="zeroclaw"] .hermes-chat-messages {
+  background: var(--zc-surface-0);
+  padding: 28px 36px;
+}
+[data-engine="zeroclaw"] .hermes-chat-bubble {
+  max-width: 75%;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-family: var(--zc-font-sans);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+[data-engine="zeroclaw"] .hermes-chat-bubble.user {
+  background: var(--zc-text-primary);
+  color: var(--zc-text-inverse);
+  border-bottom-right-radius: 4px;
+  box-shadow: none;
+}
+[data-theme="dark"] [data-engine="zeroclaw"] .hermes-chat-bubble.user {
+  background: var(--zc-accent);
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .hermes-chat-bubble.assistant {
+  background: var(--zc-surface-1);
+  color: var(--zc-text-primary);
+  border: 1px solid var(--zc-border);
+  border-bottom-left-radius: 4px;
+  box-shadow: none;
+}
+[data-engine="zeroclaw"] .hermes-chat-input-area {
+  background: var(--zc-surface-1);
+  border-top: 1px solid var(--zc-border);
+  padding: 14px 28px 22px;
+}
+[data-engine="zeroclaw"] .hermes-chat-empty::before {
+  background: var(--zc-accent-soft);
+}
+
+/* ---- Logs page ---- */
+[data-engine="zeroclaw"] .zc-logs-header {
+  background: var(--zc-surface-1);
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--zc-border);
+}
+[data-engine="zeroclaw"] .zc-log-entry {
+  font-family: var(--zc-font-mono);
+}
+
+/* ---- Skills page containers ---- */
+[data-engine="zeroclaw"] .zc-skills-header {
+  background: var(--zc-surface-1);
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--zc-border);
+}
+
+/* ==========================================================================
+ * 15 · Memory page (three-section editorial layout)
+ * ==========================================================================
+ */
+/* NB: page shell uses same-element selector (no space) because logs.js etc.
+   put both `data-engine` and `.hermes-X-page` on the SAME div, not on a
+   parent/child pair. The descendant-combinator form silently failed and
+   left every page shell padding-less, hugging the viewport edges. */
+[data-engine="zeroclaw"].zeroclaw-memory-page {
+  padding: 40px clamp(20px, 3.5vw, 64px) 64px;
+  width: 100%;
+  font-family: var(--zc-font-sans);
+  color: var(--zc-text-primary);
+  background: var(--zc-surface-0);
+  position: relative;
+}
+
+[data-engine="zeroclaw"].zeroclaw-memory-page::before {
+  content: '';
+  position: fixed;
+  top: 64px;
+  right: 0;
+  width: min(42vw, 520px);
+  height: min(42vw, 520px);
+  background: radial-gradient(circle, var(--zc-accent-soft), transparent 68%);
+  pointer-events: none;
+  opacity: 0.8;
+  z-index: -1;
+}
+
+[data-engine="zeroclaw"] .zc-mem-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+  gap: 24px;
+  align-items: stretch;
+  margin: -10px 0 28px;
+  padding: 28px;
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-lg);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--zc-accent) 10%, transparent), transparent 36%),
+    var(--zc-surface-1);
+  box-shadow: var(--zc-shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-engine="zeroclaw"] .zc-mem-overview::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--zc-border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--zc-border-subtle) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(90deg, transparent, #000 18%, transparent 78%);
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+[data-engine="zeroclaw"] .zc-mem-overview-copy,
+[data-engine="zeroclaw"] .zc-mem-overview-stats {
+  position: relative;
+  z-index: 1;
+}
+
+[data-engine="zeroclaw"] .zc-mem-kicker {
+  font-family: var(--zc-font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--zc-accent);
+  margin-bottom: 12px;
+}
+
+[data-engine="zeroclaw"] .zc-mem-overview-title {
+  font-family: var(--zc-font-serif);
+  font-size: clamp(24px, 3vw, 36px);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  max-width: 620px;
+  margin-bottom: 12px;
+}
+
+[data-engine="zeroclaw"] .zc-mem-overview-desc {
+  color: var(--zc-text-secondary);
+  line-height: 1.85;
+  max-width: 660px;
+}
+
+[data-engine="zeroclaw"] .zc-mem-overview-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-md);
+  overflow: hidden;
+  background: var(--zc-border);
+}
+
+[data-engine="zeroclaw"] .zc-mem-stat {
+  padding: 18px;
+  background: color-mix(in srgb, var(--zc-surface-1) 88%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+[data-engine="zeroclaw"] .zc-mem-stat-label {
+  display: block;
+  font-family: var(--zc-font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--zc-text-muted);
+  margin-bottom: 8px;
+}
+
+[data-engine="zeroclaw"] .zc-mem-stat strong {
+  font-family: var(--zc-font-serif);
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--zc-text-primary);
+}
+
+[data-engine="zeroclaw"] .zc-mem-stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--zc-font-mono);
   font-size: 11px;
-  font-family: var(--font-mono);
-  color: var(--text-tertiary);
-  background: var(--bg-tertiary);
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
+  color: var(--zc-text-tertiary);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+[data-engine="zeroclaw"] .zc-mem-sep { opacity: 0.5; }
+
+[data-engine="zeroclaw"] .zc-mem-desc {
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--zc-text-tertiary);
+  line-height: 1.65;
+  margin-bottom: 14px;
 }
 
-.zc-dot {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  margin-right: 4px;
-  vertical-align: middle;
+[data-engine="zeroclaw"] .zc-mem-panel {
+  position: relative;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--zc-surface-1) 96%, var(--zc-accent-soft)), var(--zc-surface-1));
 }
 
-.zc-dot--on { background: var(--success); }
-.zc-dot--off { background: var(--text-tertiary); }
+[data-engine="zeroclaw"] .zc-mem-panel::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, var(--zc-accent), transparent);
+  opacity: 0.55;
+}
 
-/* Messages area */
-.zc-chat-messages {
+[data-engine="zeroclaw"] .zc-mem-panel:hover {
+  border-color: color-mix(in srgb, var(--zc-accent) 38%, var(--zc-border));
+  box-shadow: var(--zc-shadow-lg);
+}
+
+[data-engine="zeroclaw"] .zc-mem-panel .zc-panel-header {
+  background: linear-gradient(90deg, var(--zc-surface-1), transparent);
+}
+
+[data-engine="zeroclaw"] .zc-mem-card-topline {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+[data-engine="zeroclaw"] .zc-mem-card-index {
+  font-family: var(--zc-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--zc-accent);
+}
+
+[data-engine="zeroclaw"] .zc-mem-card-meter {
+  flex: 1;
+  height: 1px;
+  background: var(--zc-border);
+  overflow: hidden;
+}
+
+[data-engine="zeroclaw"] .zc-mem-card-meter span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--zc-accent), transparent);
+}
+
+/* Memory edit button — promote the ghost CTA to a visible outline chip
+   so users recognise it as an action, not inline meta-text. */
+[data-engine="zeroclaw"] .zc-mem-edit {
+  border-color: var(--zc-border-strong, rgba(28, 25, 23,0.18));
+  color: var(--zc-text-secondary);
+  background: var(--zc-surface-1);
+}
+[data-engine="zeroclaw"] .zc-mem-edit:hover:not(:disabled) {
+  color: var(--zc-accent);
+  border-color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+}
+[data-theme="dark"] [data-engine="zeroclaw"] .zc-mem-edit {
+  background: transparent;
+  border-color: rgba(250, 250, 249, 0.14);
+}
+
+/* Memory textarea — use tag+class selector to outrank `.zc-input`'s
+   `height: 40px` (same class-count as .zc-mem-editor, so the bare-class form
+   was a coin-flip). Make it markedly tall so users get a real writing
+   surface, and let it fill any extra card height through min-height: 50vh. */
+[data-engine="zeroclaw"] textarea.zc-mem-editor {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: clamp(320px, 50vh, 560px);
+  max-height: 70vh;
+  resize: vertical;
+  box-sizing: border-box;
+  line-height: 1.65;
+  padding: 16px 18px;
+  font-size: 13.5px;
+  font-family: var(--zc-font-mono);
+  background: var(--zc-surface-0);
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-sm);
+  color: var(--zc-text-primary);
+  transition: border-color var(--zc-dur-fast) var(--zc-ease),
+              box-shadow var(--zc-dur-fast) var(--zc-ease);
+}
+[data-engine="zeroclaw"] textarea.zc-mem-editor:focus {
+  outline: none;
+  border-color: var(--zc-accent);
+  box-shadow: 0 0 0 3px var(--zc-accent-ring);
+  background: var(--zc-surface-1);
+}
+[data-engine="zeroclaw"] textarea.zc-mem-editor::placeholder {
+  color: var(--zc-text-muted);
+  opacity: 0.6;
+  font-style: italic;
+}
+
+[data-engine="zeroclaw"].zc-mem-modal-overlay .modal {
+  width: min(920px, calc(100vw - 32px));
+}
+
+[data-engine="zeroclaw"] .zc-mem-modal-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+[data-engine="zeroclaw"] textarea.zc-mem-modal-editor {
+  min-height: min(62vh, 620px);
+  max-height: 70vh;
+}
+
+[data-engine="zeroclaw"] .zc-mem-modal-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+[data-engine="zeroclaw"] .zc-mem-empty {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px dashed var(--zc-border-strong);
+  border-radius: var(--zc-radius-md);
+  background: color-mix(in srgb, var(--zc-surface-2) 72%, transparent);
+}
+[data-engine="zeroclaw"] .zc-mem-empty-title {
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  color: var(--zc-text-tertiary);
+  font-size: 14px;
+}
+
+[data-engine="zeroclaw"] .zc-mem-empty-cta {
+  width: fit-content;
+  margin-top: 8px;
+}
+
+[data-engine="zeroclaw"] .zc-mem-rendered {
+  font-family: var(--zc-font-sans);
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--zc-text-primary);
+  padding: 16px 18px;
+  border: 1px solid var(--zc-border-subtle);
+  border-radius: var(--zc-radius-md);
+  background: color-mix(in srgb, var(--zc-surface-0) 74%, transparent);
+  max-height: 280px;
+  overflow: auto;
+}
+[data-engine="zeroclaw"] .zc-mem-rendered h2,
+[data-engine="zeroclaw"] .zc-mem-rendered h3,
+[data-engine="zeroclaw"] .zc-mem-rendered h4 {
+  font-family: var(--zc-font-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+[data-engine="zeroclaw"] .zc-mem-rendered h2 { font-size: 22px; margin: 18px 0 8px; }
+[data-engine="zeroclaw"] .zc-mem-rendered h3 { font-size: 18px; margin: 14px 0 6px; }
+[data-engine="zeroclaw"] .zc-mem-rendered h4 {
+  font-size: 15px;
+  font-style: italic;
+  margin: 12px 0 4px;
+  color: var(--zc-accent);
+}
+[data-engine="zeroclaw"] .zc-mem-rendered pre {
+  background: var(--zc-surface-2);
+  border: 1px solid var(--zc-border-subtle);
+  border-radius: var(--zc-radius-sm);
+  padding: 12px 14px;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: var(--zc-font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+}
+[data-engine="zeroclaw"] .zc-mem-rendered code {
+  font-family: var(--zc-font-mono);
+  font-size: 12.5px;
+  background: var(--zc-surface-2);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+[data-engine="zeroclaw"] .zc-mem-rendered pre code {
+  background: transparent;
+  padding: 0;
+}
+[data-engine="zeroclaw"] .zc-mem-rendered a {
+  color: var(--zc-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* 注意：viewport 宽度并不等于实际内容区宽度——Agent Planet 有 ~280px 侧栏。
+   在 1100px viewport 下内容区只有 ~820px，2 列布局（copy + 320~420px stats）
+   会把 copy 压到 230px，标题被迫 4 行。所以 1100px 就该切到单列。 */
+@media (max-width: 1100px) {
+  [data-engine="zeroclaw"] .zc-mem-overview {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 920px) {
+  [data-engine="zeroclaw"].zeroclaw-memory-page {
+    padding: 28px 24px 44px;
+  }
+}
+
+@media (max-width: 620px) {
+  [data-engine="zeroclaw"].zeroclaw-memory-page {
+    padding: 22px 16px 36px;
+  }
+
+  [data-engine="zeroclaw"] .zc-mem-overview {
+    padding: 20px;
+    border-radius: var(--zc-radius-md);
+  }
+
+  [data-engine="zeroclaw"] .zc-mem-overview-stats {
+    grid-template-columns: 1fr;
+  }
+
+  [data-engine="zeroclaw"] .zc-mem-panel .zc-panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  [data-engine="zeroclaw"] .zc-mem-panel .zc-panel-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* ==========================================================================
+ * 16 · Logs page (editorial layout with sidebar + live entries)
+ * ==========================================================================
+ */
+[data-engine="zeroclaw"].hermes-logs-page {
+  padding: 40px clamp(20px, 3.5vw, 64px) 48px;
+  max-width: none;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--zc-surface-0);
+  font-family: var(--zc-font-sans);
+  color: var(--zc-text-primary);
+  box-sizing: border-box;
+}
+[data-engine="zeroclaw"].hermes-logs-page .zc-hero {
+  margin-bottom: 24px;
+  flex-shrink: 0;
+}
+
+[data-engine="zeroclaw"] .zc-logs-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 18px;
+  flex: 1;
+  min-height: 0;
+}
+
+[data-engine="zeroclaw"] .zc-logs-sidebar {
+  background: var(--zc-surface-1);
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 1px 2px rgba(28, 25, 23,0.03),
+    0 2px 6px rgba(28, 25, 23,0.035);
+}
+[data-theme="dark"] [data-engine="zeroclaw"] .zc-logs-sidebar { box-shadow: none; }
+[data-engine="zeroclaw"] .zc-logs-sidebar-title {
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--zc-border-subtle);
+  background: var(--zc-surface-0);
+}
+
+[data-engine="zeroclaw"] .zc-logs-file-list {
+  overflow-y: auto;
+  padding: 6px;
+  flex: 1;
+}
+
+[data-engine="zeroclaw"] .zc-logs-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 9px 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--zc-radius-sm);
+  color: var(--zc-text-secondary);
+  cursor: pointer;
+  font-family: var(--zc-font-mono);
+  font-size: 12px;
+  text-align: left;
+  transition: all var(--zc-dur-fast) var(--zc-ease);
+}
+[data-engine="zeroclaw"] .zc-logs-file-item:hover {
+  background: var(--zc-surface-2);
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-logs-file-item.is-active {
+  background: var(--zc-accent-soft);
+  color: var(--zc-accent);
+  font-weight: 500;
+}
+[data-engine="zeroclaw"] .zc-logs-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+[data-engine="zeroclaw"] .zc-logs-file-size {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  color: var(--zc-text-muted);
+  margin-left: 8px;
+}
+
+[data-engine="zeroclaw"] .zc-logs-main {
+  background: var(--zc-surface-1);
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  box-shadow:
+    0 1px 2px rgba(28, 25, 23,0.03),
+    0 2px 6px rgba(28, 25, 23,0.035);
+}
+
+[data-engine="zeroclaw"] .zc-logs-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--zc-border-subtle);
+  background: var(--zc-surface-0);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+[data-engine="zeroclaw"] .zc-logs-toolbar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 110px;
+}
+[data-engine="zeroclaw"] .zc-logs-toolbar-item--grow {
+  flex: 1;
+  min-width: 200px;
+}
+[data-engine="zeroclaw"] .zc-logs-toolbar-actions {
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+[data-engine="zeroclaw"] .zc-logs-count {
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--zc-border-subtle);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+[data-engine="zeroclaw"] .zc-logs-content {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  font-family: var(--zc-font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  padding: 6px 0;
+  background: var(--zc-surface-0);
+  min-height: 0;
+}
+[data-engine="zeroclaw"] .zc-logs-loading,
+[data-engine="zeroclaw"] .zc-logs-empty-content {
+  padding: 40px 24px;
+  text-align: center;
+}
+
+/* --- Log entry row --- */
+[data-engine="zeroclaw"] .zc-log-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 20px;
+  border-left: 2px solid transparent;
+  transition: background var(--zc-dur-fast) var(--zc-ease);
+  min-width: 0;
+}
+[data-engine="zeroclaw"] .zc-log-entry:hover {
+  background: var(--zc-surface-2);
+}
+[data-engine="zeroclaw"] .zc-log-entry[data-tone="error"]    { border-left-color: var(--zc-error); }
+[data-engine="zeroclaw"] .zc-log-entry[data-tone="warn"]     { border-left-color: var(--zc-warn); }
+[data-engine="zeroclaw"] .zc-log-entry[data-tone="info"]     { border-left-color: var(--zc-info); }
+[data-engine="zeroclaw"] .zc-log-entry[data-tone="debug"]    { border-left-color: var(--zc-text-muted); }
+[data-engine="zeroclaw"] .zc-log-entry--raw {
+  padding-left: 22px;
+  color: var(--zc-text-tertiary);
+}
+
+[data-engine="zeroclaw"] .zc-log-time {
+  flex-shrink: 0;
+  color: var(--zc-text-muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 64px;
+}
+
+[data-engine="zeroclaw"] .zc-log-level {
+  flex-shrink: 0;
+  display: inline-block;
+  min-width: 48px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  background: var(--zc-surface-3);
+  color: var(--zc-text-secondary);
+}
+[data-engine="zeroclaw"] .zc-log-level[data-tone="error"] {
+  background: var(--zc-error-soft); color: var(--zc-error);
+}
+[data-engine="zeroclaw"] .zc-log-level[data-tone="warn"] {
+  background: var(--zc-warn-soft); color: var(--zc-warn);
+}
+[data-engine="zeroclaw"] .zc-log-level[data-tone="info"] {
+  background: var(--zc-info-soft); color: var(--zc-info);
+}
+[data-engine="zeroclaw"] .zc-log-level[data-tone="debug"] {
+  background: transparent; color: var(--zc-text-muted);
+}
+
+[data-engine="zeroclaw"] .zc-log-logger {
+  flex-shrink: 0;
+  color: var(--zc-text-tertiary);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[data-engine="zeroclaw"] .zc-log-msg {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  color: var(--zc-text-secondary);
+  flex: 1;
+}
+[data-engine="zeroclaw"] .zc-log-entry[data-tone="error"] .zc-log-msg { color: var(--zc-error); }
+[data-engine="zeroclaw"] .zc-log-entry[data-tone="warn"] .zc-log-msg  { color: var(--zc-warn); }
+
+/* --- Access log decoration --- */
+[data-engine="zeroclaw"] .zc-log-access {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  flex: 1;
+}
+[data-engine="zeroclaw"] .zc-log-method {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--zc-text-primary);
+  padding: 0 6px;
+  background: var(--zc-surface-2);
+  border-radius: 3px;
+  font-size: 11px;
+}
+[data-engine="zeroclaw"] .zc-log-path {
+  color: var(--zc-accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+[data-engine="zeroclaw"] .zc-log-status {
+  flex-shrink: 0;
+  font-weight: 600;
+  font-size: 11px;
+  padding: 0 6px;
+  border-radius: 3px;
+}
+[data-engine="zeroclaw"] .zc-log-status--2xx {
+  color: var(--zc-success); background: var(--zc-success-soft);
+}
+[data-engine="zeroclaw"] .zc-log-status--3xx {
+  color: var(--zc-warn); background: var(--zc-warn-soft);
+}
+[data-engine="zeroclaw"] .zc-log-status--4xx,
+[data-engine="zeroclaw"] .zc-log-status--5xx {
+  color: var(--zc-error); background: var(--zc-error-soft);
+}
+
+/* --- Search highlight mark --- */
+[data-engine="zeroclaw"] mark.zc-log-hl {
+  background: var(--zc-accent-soft);
+  color: var(--zc-accent);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* Active tail button state */
+[data-engine="zeroclaw"] .zc-logs-tail.is-active {
+  color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+  border-color: transparent;
+}
+
+/* ==========================================================================
+ * 17 · Cron / Jobs page
+ * ==========================================================================
+ */
+[data-engine="zeroclaw"] .zc-cron-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+[data-engine="zeroclaw"] .zc-cron-item {
+  margin-bottom: 0;
+  transition: border-color var(--zc-dur-fast) var(--zc-ease),
+              box-shadow var(--zc-dur-normal) var(--zc-ease);
+}
+[data-engine="zeroclaw"] .zc-cron-item:hover {
+  border-color: var(--zc-border-strong);
+  box-shadow: var(--zc-shadow-md);
+}
+[data-engine="zeroclaw"] .zc-cron-item[data-state="paused"]   { opacity: 0.75; }
+[data-engine="zeroclaw"] .zc-cron-item[data-state="disabled"] { opacity: 0.55; }
+
+/* --- Card head (title + actions) --- */
+[data-engine="zeroclaw"] .zc-cron-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--zc-border-subtle);
+}
+[data-engine="zeroclaw"] .zc-cron-head-left {
+  flex: 1;
+  min-width: 0;
+}
+[data-engine="zeroclaw"] .zc-cron-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+[data-engine="zeroclaw"] .zc-cron-name {
+  font-family: var(--zc-font-serif);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--zc-text-primary);
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 360px;
+}
+[data-engine="zeroclaw"] .zc-cron-prompt {
+  font-family: var(--zc-font-sans);
+  font-size: 12.5px;
+  color: var(--zc-text-tertiary);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+[data-engine="zeroclaw"] .zc-cron-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* --- Meta grid --- */
+[data-engine="zeroclaw"] .zc-cron-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px 24px;
+  padding: 14px 22px 18px;
+}
+[data-engine="zeroclaw"] .zc-cron-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+[data-engine="zeroclaw"] .zc-cron-meta-label {
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--zc-text-tertiary);
+}
+[data-engine="zeroclaw"] .zc-cron-meta-value {
+  font-family: var(--zc-font-mono);
+  font-size: 12px;
+  color: var(--zc-text-primary);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+[data-engine="zeroclaw"] .zc-cron-rel {
+  color: var(--zc-text-muted);
+  font-size: 11px;
+}
+[data-engine="zeroclaw"] .zc-cron-last-ok {
+  color: var(--zc-success);
+  font-weight: 500;
+}
+[data-engine="zeroclaw"] .zc-cron-last-err {
+  color: var(--zc-error);
+  font-weight: 500;
+  cursor: help;
+}
+
+[data-engine="zeroclaw"] .zc-cron-schedule-desc {
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-cron-schedule-expr {
+  font-size: 11px;
+}
+
+/* Skills tags row inside cron card */
+[data-engine="zeroclaw"] .zc-cron-meta-item--skills { grid-column: 1 / -1; }
+[data-engine="zeroclaw"] .zc-cron-skill-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  margin-right: 4px;
+  border: 1px solid var(--zc-border);
+  border-radius: 999px;
+  font-family: var(--zc-font-mono);
+  font-size: 10.5px;
+  color: var(--zc-text-secondary);
+  background: var(--zc-surface-2);
+}
+
+/* --- Error row (last_error) --- */
+[data-engine="zeroclaw"] .zc-cron-err {
+  border-top: 1px solid var(--zc-border-subtle);
+  padding: 12px 22px;
+  background: var(--zc-error-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+[data-engine="zeroclaw"] .zc-cron-err-label {
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--zc-error);
+}
+[data-engine="zeroclaw"] .zc-cron-err-msg {
+  font-family: var(--zc-font-mono);
+  font-size: 11.5px;
+  color: var(--zc-error);
+  background: transparent;
+  border: none;
+  padding: 0;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* ==========================================================================
+ * 18 · Skills page (sidebar + detail + file browser)
+ * ==========================================================================
+ *
+ * Matches the memory/logs/cron editorial family: warm off-white surfaces,
+ * hairline borders, serif display + sans body + mono code.
+ */
+
+/* ---- Pill variants reused elsewhere (status tags) ---- */
+[data-engine="zeroclaw"] .zc-pill--ok {
+  color: var(--zc-success);
+  border-color: color-mix(in srgb, var(--zc-success) 35%, transparent);
+  background: color-mix(in srgb, var(--zc-success) 8%, transparent);
+}
+[data-engine="zeroclaw"] .zc-pill--muted {
+  color: var(--zc-text-tertiary);
+  border-color: var(--zc-border);
+  background: var(--zc-surface-2);
+}
+
+/* ---- Page shell ---- */
+[data-engine="zeroclaw"].hermes-skills-page {
+  /* Bottom padding restored so the two-column card doesn't kiss the viewport
+     edge — matches the logs page gutter. */
+  padding: 40px clamp(20px, 3.5vw, 64px) 48px;
+  max-width: none;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--zc-surface-0);
+  font-family: var(--zc-font-sans);
+  color: var(--zc-text-primary);
+  box-sizing: border-box;
+}
+
+[data-engine="zeroclaw"] .zc-skills-count-inline {
+  color: var(--zc-text-tertiary);
+  font-family: var(--zc-font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.01em;
+}
+
+/* ---- Two-column layout ---- */
+[data-engine="zeroclaw"] .zc-skills-layout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 0;
+  /* Full frame so the two-column skills workspace reads as one card on
+     the cream page, not as floating search + empty state. */
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-md);
+  margin-top: 24px;
+  margin-bottom: 24px;
+  background: var(--zc-surface-1);
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px rgba(28, 25, 23,0.03),
+    0 2px 6px rgba(28, 25, 23,0.035);
+}
+[data-theme="dark"] [data-engine="zeroclaw"] .zc-skills-layout { box-shadow: none; }
+
+/* ---- Sidebar ---- */
+[data-engine="zeroclaw"] .zc-skills-sidebar {
+  border-right: 1px solid var(--zc-border);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--zc-surface-1);
+}
+
+[data-engine="zeroclaw"] .zc-skills-sidebar-search {
+  position: relative;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--zc-border-subtle);
+  background: var(--zc-surface-1);
+  flex-shrink: 0;
+}
+[data-engine="zeroclaw"] .zc-skills-search-icon {
+  position: absolute;
+  left: 26px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--zc-text-tertiary);
+  pointer-events: none;
+  display: inline-flex;
+}
+[data-engine="zeroclaw"] .zc-skills-search-input {
+  width: 100%;
+  padding: 7px 10px 7px 30px;
+  background: var(--zc-surface-0);
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-sm);
+  color: var(--zc-text-primary);
+  font-size: 13px;
+  font-family: var(--zc-font-sans);
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+[data-engine="zeroclaw"] .zc-skills-search-input:focus {
+  outline: none;
+  border-color: var(--zc-accent);
+  box-shadow: 0 0 0 2px rgba(202, 138, 4, 0.12);
+}
+[data-engine="zeroclaw"] .zc-skills-search-input::placeholder {
+  color: var(--zc-text-tertiary);
+}
+
+[data-engine="zeroclaw"] .zc-skills-sidebar-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 0 14px;
+}
+[data-engine="zeroclaw"] .zc-skills-loading {
+  padding: 18px 18px;
+}
+[data-engine="zeroclaw"] .zc-skills-empty {
+  padding: 42px 20px;
+  text-align: center;
+  color: var(--zc-text-tertiary);
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  font-size: 13.5px;
+}
+
+/* ---- Categories ---- */
+[data-engine="zeroclaw"] .zc-skill-category {
+  margin: 4px 0 8px;
+}
+
+[data-engine="zeroclaw"] .zc-skill-cat-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--zc-text-secondary);
+  font-family: var(--zc-font-sans);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-skill-cat-header:hover {
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-skill-cat-arrow {
+  color: var(--zc-text-tertiary);
+  transition: transform 0.18s ease;
+  display: inline-flex;
+  width: 14px;
+  justify-content: center;
+}
+[data-engine="zeroclaw"] .zc-skill-cat-header.is-collapsed .zc-skill-cat-arrow {
+  transform: rotate(-90deg);
+}
+[data-engine="zeroclaw"] .zc-skill-cat-name {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-engine="zeroclaw"] .zc-skill-cat-count {
+  font-family: var(--zc-font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--zc-surface-2);
+  color: var(--zc-text-tertiary);
+  border: 1px solid var(--zc-border-subtle);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+[data-engine="zeroclaw"] .zc-skill-cat-desc {
+  padding: 0 16px 6px 38px;
+  color: var(--zc-text-tertiary);
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+[data-engine="zeroclaw"] .zc-skill-cat-items {
+  padding: 2px 0 4px;
+}
+
+/* ---- Skill item button ---- */
+[data-engine="zeroclaw"] .zc-skill-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 16px 7px 32px;
+  border: none;
+  background: transparent;
+  color: var(--zc-text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+  border-left: 2px solid transparent;
+  box-sizing: border-box;
+}
+[data-engine="zeroclaw"] .zc-skill-item:hover {
+  background: var(--zc-surface-2);
+}
+[data-engine="zeroclaw"] .zc-skill-item.is-active {
+  background: var(--zc-accent-soft);
+  border-left-color: var(--zc-accent);
+}
+[data-engine="zeroclaw"] .zc-skill-item.is-disabled .zc-skill-name,
+[data-engine="zeroclaw"] .zc-skill-item.is-disabled .zc-skill-desc {
+  color: var(--zc-text-tertiary);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--zc-text-tertiary) 40%, transparent);
+  text-decoration-thickness: 1px;
+}
+
+[data-engine="zeroclaw"] .zc-skill-info {
+  flex: 1;
+  min-width: 0;
+}
+[data-engine="zeroclaw"] .zc-skill-name {
+  font-size: 13px;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-skill-desc {
+  font-size: 11px;
+  color: var(--zc-text-tertiary);
+  line-height: 1.4;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* ---- Toggle switch ---- */
+[data-engine="zeroclaw"] .zc-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 30px;
+  height: 16px;
+  cursor: pointer;
+  display: inline-block;
+}
+[data-engine="zeroclaw"] .zc-switch-track {
+  position: absolute;
+  inset: 0;
+  background: var(--zc-border);
+  border-radius: 999px;
+  transition: background 0.18s ease;
+}
+[data-engine="zeroclaw"] .zc-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  background: var(--zc-surface-0);
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+[data-engine="zeroclaw"] .zc-switch.is-on .zc-switch-track {
+  background: var(--zc-accent);
+}
+[data-engine="zeroclaw"] .zc-switch.is-on .zc-switch-thumb {
+  transform: translateX(14px);
+  background: var(--zc-surface-1);
+}
+[data-engine="zeroclaw"] .zc-switch.is-busy {
+  opacity: 0.55;
+  cursor: progress;
+}
+[data-engine="zeroclaw"] .zc-switch.is-busy .zc-switch-thumb {
+  animation: hm-switch-pulse 0.9s ease-in-out infinite;
+}
+@keyframes hm-switch-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+/* ---- Main detail pane ---- */
+[data-engine="zeroclaw"] .zc-skills-main {
+  overflow-y: auto;
+  padding: 28px 36px 40px;
+  min-width: 0;
+  background: var(--zc-surface-0);
+}
+
+[data-engine="zeroclaw"] .zc-skills-detail-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 320px;
+  gap: 10px;
+  color: var(--zc-text-tertiary);
+  text-align: center;
+}
+[data-engine="zeroclaw"] .zc-skills-detail-empty-title {
+  font-family: var(--zc-font-serif);
+  font-size: 18px;
+  color: var(--zc-text-secondary);
+  letter-spacing: -0.005em;
+  margin-top: 14px;
+}
+[data-engine="zeroclaw"] .zc-skills-detail-empty-sub {
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--zc-text-tertiary);
+}
+
+/* ---- Detail head ---- */
+[data-engine="zeroclaw"] .zc-skills-detail-head {
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--zc-border);
+}
+[data-engine="zeroclaw"] .zc-skills-detail-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-family: var(--zc-font-serif);
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-skills-title-cat {
+  color: var(--zc-text-tertiary);
+  font-size: 16px;
+}
+[data-engine="zeroclaw"] .zc-skills-title-sep {
+  color: var(--zc-text-tertiary);
+  font-size: 16px;
+}
+[data-engine="zeroclaw"] .zc-skills-title-name {
+  font-weight: 500;
+}
+[data-engine="zeroclaw"] .zc-skills-status {
+  align-self: center;
+  margin-left: 4px;
+  font-family: var(--zc-font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+[data-engine="zeroclaw"] .zc-skills-detail-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-family: var(--zc-font-mono);
+  font-size: 11.5px;
+  color: var(--zc-text-tertiary);
+  letter-spacing: 0.01em;
+}
+
+/* ---- Detail body / markdown ---- */
+[data-engine="zeroclaw"] .zc-skills-detail-body {
+  padding-bottom: 20px;
+}
+[data-engine="zeroclaw"] .zc-skills-markdown {
+  font-family: var(--zc-font-sans);
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-skills-markdown p { margin: 0 0 10px; }
+[data-engine="zeroclaw"] .zc-skills-markdown h2,
+[data-engine="zeroclaw"] .zc-skills-markdown h3,
+[data-engine="zeroclaw"] .zc-skills-markdown h4,
+[data-engine="zeroclaw"] .zc-skills-markdown h5 {
+  font-family: var(--zc-font-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-skills-markdown h2 { font-size: 20px; margin: 20px 0 8px; }
+[data-engine="zeroclaw"] .zc-skills-markdown h3 { font-size: 17px; margin: 16px 0 6px; }
+[data-engine="zeroclaw"] .zc-skills-markdown h4 {
+  font-size: 14.5px;
+  font-style: italic;
+  color: var(--zc-accent);
+  margin: 14px 0 4px;
+}
+[data-engine="zeroclaw"] .zc-skills-markdown h5 {
+  font-size: 13px;
+  color: var(--zc-text-secondary);
+  margin: 12px 0 4px;
+}
+[data-engine="zeroclaw"] .zc-skills-markdown ul {
+  margin: 4px 0 10px;
+  padding-left: 22px;
+}
+[data-engine="zeroclaw"] .zc-skills-markdown li {
+  margin: 2px 0;
+  line-height: 1.7;
+}
+[data-engine="zeroclaw"] .zc-skills-markdown pre {
+  background: var(--zc-surface-2);
+  border: 1px solid var(--zc-border-subtle);
+  border-radius: var(--zc-radius-sm);
+  padding: 12px 14px;
+  margin: 10px 0;
+  overflow-x: auto;
+  font-family: var(--zc-font-mono);
+  font-size: 12px;
+  line-height: 1.65;
+}
+[data-engine="zeroclaw"] .zc-skills-markdown code {
+  font-family: var(--zc-font-mono);
+  font-size: 12.5px;
+  background: var(--zc-surface-2);
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-skills-markdown pre code {
+  background: transparent;
+  padding: 0;
+}
+[data-engine="zeroclaw"] .zc-skills-markdown a {
+  color: var(--zc-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+[data-engine="zeroclaw"] .zc-skills-markdown strong { font-weight: 600; }
+[data-engine="zeroclaw"] .zc-skills-markdown em { font-style: italic; }
+
+/* ---- Attached files section ---- */
+[data-engine="zeroclaw"] .zc-skills-files {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--zc-border);
+}
+[data-engine="zeroclaw"] .zc-skills-files-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+[data-engine="zeroclaw"] .zc-skills-files-label {
+  font-family: var(--zc-font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--zc-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+[data-engine="zeroclaw"] .zc-skills-files-count {
+  font-family: var(--zc-font-mono);
+  font-size: 10.5px;
+  color: var(--zc-text-tertiary);
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--zc-surface-2);
+  border: 1px solid var(--zc-border-subtle);
+}
+[data-engine="zeroclaw"] .zc-skills-files-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+[data-engine="zeroclaw"] .zc-skills-file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-sm);
+  background: var(--zc-surface-1);
+  color: var(--zc-text-secondary);
+  font-family: var(--zc-font-mono);
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-engine="zeroclaw"] .zc-skills-file-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-engine="zeroclaw"] .zc-skills-file-chip:hover {
+  border-color: var(--zc-accent);
+  color: var(--zc-accent);
+  background: var(--zc-surface-0);
+}
+
+/* ---- Breadcrumb for file view ---- */
+[data-engine="zeroclaw"] .zc-skills-detail-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--zc-border);
+  flex-wrap: wrap;
+}
+[data-engine="zeroclaw"] .zc-skills-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-sm);
+  background: var(--zc-surface-1);
+  color: var(--zc-text-secondary);
+  font-family: var(--zc-font-sans);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-skills-back-btn:hover {
+  color: var(--zc-accent);
+  border-color: var(--zc-accent);
+}
+[data-engine="zeroclaw"] .zc-skills-breadcrumb-sep {
+  color: var(--zc-text-tertiary);
+}
+[data-engine="zeroclaw"] .zc-skills-breadcrumb-path {
+  font-family: var(--zc-font-mono);
+  font-size: 11.5px;
+  color: var(--zc-text-tertiary);
+  word-break: break-all;
+}
+
+/* Responsive: collapse sidebar on narrow viewports */
+@media (max-width: 960px) {
+  [data-engine="zeroclaw"] .zc-skills-layout {
+    grid-template-columns: 260px 1fr;
+  }
+  [data-engine="zeroclaw"].hermes-skills-page {
+    padding: 28px 24px 40px;
+  }
+  [data-engine="zeroclaw"] .zc-skills-main {
+    padding: 22px 24px 36px;
+  }
+}
+@media (max-width: 720px) {
+  [data-engine="zeroclaw"] .zc-skills-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  [data-engine="zeroclaw"] .zc-skills-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--zc-border);
+    max-height: 40vh;
+  }
+}
+
+/* ---- Skills page · prevent hero + toolsets from being squashed ---------
+   .hermes-skills-page is `display:flex;flex-direction:column;height:100%`
+   (defined in pages.css) so .zc-skills-layout (flex:1) can fill the viewport
+   and let the two-column sidebar scroll independently. Without these
+   shrink-locks, the flex distribution squeezes hero (240→165px) and toolsets
+   when they share viewport with the layout. */
+[data-engine="zeroclaw"].hermes-skills-page > .zc-hero,
+[data-engine="zeroclaw"].hermes-skills-page > .zc-toolsets {
+  flex-shrink: 0;
+}
+
+/* ---- Skills · Toolsets section ---------------------------------------- */
+[data-engine="zeroclaw"] .zc-toolsets {
+  margin: 24px 0 0;
+  padding: 18px 22px 14px;
+  background: var(--zc-surface-1);
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-md);
+  box-shadow: 0 1px 2px rgba(28, 25, 23,0.03), 0 2px 6px rgba(28, 25, 23,0.035);
+}
+[data-theme="dark"] [data-engine="zeroclaw"] .zc-toolsets { box-shadow: none; }
+
+[data-engine="zeroclaw"] .zc-toolsets-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+[data-engine="zeroclaw"] .zc-toolsets-title-block {
+  min-width: 0;
+}
+[data-engine="zeroclaw"] .zc-toolsets-title {
+  font-family: var(--zc-font-serif);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--zc-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+[data-engine="zeroclaw"] .zc-toolsets-count {
+  font-family: var(--zc-font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--zc-text-tertiary);
+  background: var(--zc-surface-2);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+[data-engine="zeroclaw"] .zc-toolsets-sub {
+  font-size: 11.5px;
+  color: var(--zc-text-tertiary);
+  margin-top: 4px;
+  font-family: var(--zc-font-mono);
+}
+
+[data-engine="zeroclaw"] .zc-toolsets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+[data-engine="zeroclaw"] .zc-toolset-card {
+  padding: 12px 14px;
+  background: var(--zc-surface-0);
+  border: 1px solid var(--zc-border-subtle);
+  border-radius: var(--zc-radius-sm);
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+[data-engine="zeroclaw"] .zc-toolset-card.is-on {
+  border-color: var(--zc-border);
+}
+[data-engine="zeroclaw"] .zc-toolset-card.is-off {
+  background: transparent;
+  opacity: 0.55;
+}
+[data-engine="zeroclaw"] .zc-toolset-card:hover {
+  border-color: var(--zc-accent, var(--zc-text-primary));
+  background: var(--zc-surface-1);
+}
+[data-engine="zeroclaw"] .zc-toolset-card--skel {
+  pointer-events: none;
+  border-color: var(--zc-border-subtle);
+}
+
+[data-engine="zeroclaw"] .zc-toolset-card-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+[data-engine="zeroclaw"] .zc-toolset-status {
+  font-size: 13px;
+  font-weight: 700;
+  width: 14px;
+  display: inline-block;
+  text-align: center;
+}
+[data-engine="zeroclaw"] .zc-toolset-status.is-on { color: var(--zc-success, #2d7d4f); }
+[data-engine="zeroclaw"] .zc-toolset-status.is-off { color: var(--zc-text-tertiary); }
+
+[data-engine="zeroclaw"] .zc-toolset-name {
+  font-family: var(--zc-font-mono);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--zc-text-primary);
+  letter-spacing: -0.01em;
+}
+
+[data-engine="zeroclaw"] .zc-toolset-desc {
+  font-size: 11.5px;
+  color: var(--zc-text-secondary);
+  line-height: 1.5;
+  /* 限两行 + 截断，emoji + 文字混排时避免一个 toolset 的描述把卡片撑得很高 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+[data-engine="zeroclaw"] .zc-toolsets-empty,
+[data-engine="zeroclaw"] .zc-toolsets-fallback-hint {
+  padding: 12px 0 4px;
+  font-style: italic;
+  font-family: var(--zc-font-serif);
+  color: var(--zc-text-tertiary);
+  font-size: 13px;
+}
+[data-engine="zeroclaw"] .zc-toolsets-fallback-pre {
+  margin: 8px 0 0;
+  padding: 12px 14px;
+  background: var(--zc-surface-0);
+  border: 1px solid var(--zc-border-subtle);
+  border-radius: var(--zc-radius-sm);
+  font-family: var(--zc-font-mono);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--zc-text-secondary);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 320px;
+  overflow: auto;
+}
+
+[data-engine="zeroclaw"] .zc-toolsets-hint {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--zc-border-subtle);
+  font-size: 11px;
+  color: var(--zc-text-tertiary);
+  line-height: 1.6;
+  font-family: var(--zc-font-mono);
+}
+
+@media (max-width: 720px) {
+  [data-engine="zeroclaw"] .zc-toolsets {
+    padding: 14px 16px 12px;
+  }
+  [data-engine="zeroclaw"] .zc-toolsets-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
+
+/* ==========================================================================
+ * 19 · Chat page (editorial luxury re-write)
+ * ==========================================================================
+ *
+ * Mirrors the official Hermes web UI's ChatPanel but styled with the warm
+ * off-white / serif-display / gold-accent system shared across dashboard,
+ * memory, skills, logs and cron.
+ */
+
+/* ---- Page shell ---- */
+[data-engine="zeroclaw"].zeroclaw-chat-page {
+  height: 100vh;
+  width: 100%;
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  background: var(--zc-surface-0);
+  color: var(--zc-text-primary);
+  font-family: var(--zc-font-sans);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Switched from grid (`280px 1fr`) to flex so collapsing the sidebar
+   releases its width back to the chat area. The grid version pinned the
+   first track at 280px regardless of the inner element's width:0 — the
+   sidebar shrank inside its track but the empty 280px slot stayed. */
+[data-engine="zeroclaw"] .zc-chat-shell {
+  flex: 1;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  display: flex;
+  position: relative;
+}
+
+[data-engine="zeroclaw"] .zc-chat-sidebar-backdrop {
+  display: none;
+}
+
+/* ---- Sidebar ---- */
+[data-engine="zeroclaw"] .zc-chat-sidebar {
+  width: 280px;
+  min-width: 0;
+  flex: 0 0 280px;
+  border-right: 1px solid var(--zc-border);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--zc-surface-1);
+  overflow: hidden;
+  transition: width 0.22s ease, opacity 0.22s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-sidebar.is-collapsed {
+  width: 0;
+  flex-basis: 0;
+  border-right-color: transparent;
+  pointer-events: none;
+  opacity: 0;
+}
+[data-engine="zeroclaw"] .zc-chat-shell.is-sidebar-collapsed .zc-chat-sidebar {
+  display: none;
+}
+
+/* Main column — absorbs leftover horizontal space when sidebar collapses. */
+[data-engine="zeroclaw"] .zc-chat-main {
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+[data-engine="zeroclaw"] .zc-chat-shell.is-sidebar-collapsed .zc-chat-main {
+  width: 100%;
+  flex-basis: 100%;
+}
+
+[data-engine="zeroclaw"] .zc-chat-sidebar-profile {
+  position: relative;
+  padding: 12px 14px 4px;
+}
+[data-engine="zeroclaw"] .zc-chat-profile-toggle {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--zc-border);
+  border-radius: 999px;
+  background: var(--zc-surface-0);
+  color: var(--zc-text-primary);
+  font-family: var(--zc-font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-profile-toggle:hover:not(:disabled) {
+  color: var(--zc-accent);
+  border-color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+}
+[data-engine="zeroclaw"] .zc-chat-profile-toggle:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+[data-engine="zeroclaw"] .zc-chat-profile-toggle.is-open {
+  border-color: var(--zc-accent);
+  color: var(--zc-accent);
+}
+[data-engine="zeroclaw"] .zc-chat-profile-name {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-engine="zeroclaw"] .zc-chat-profile-caret {
+  display: inline-flex;
+  transform: rotate(90deg);
+  opacity: 0.7;
+}
+[data-engine="zeroclaw"] .zc-chat-profile-toggle.is-open .zc-chat-profile-caret {
+  transform: rotate(-90deg);
+}
+[data-engine="zeroclaw"] .zc-chat-profile-menu {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 100%;
+  margin-top: 4px;
+  z-index: 30;
+  background: var(--zc-surface-1);
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-sm);
+  box-shadow: var(--zc-shadow-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+}
+[data-engine="zeroclaw"] .zc-chat-profile-menu-head,
+[data-engine="zeroclaw"] .zc-chat-profile-menu-foot {
+  padding: 8px 14px;
+  font-family: var(--zc-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--zc-text-tertiary);
+  background: var(--zc-surface-0);
+  border-bottom: 1px solid var(--zc-border-subtle);
+}
+[data-engine="zeroclaw"] .zc-chat-profile-menu-foot {
+  border-bottom: none;
+  border-top: 1px solid var(--zc-border-subtle);
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-size: 10.5px;
+}
+[data-engine="zeroclaw"] .zc-chat-profile-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--zc-border-subtle);
+  color: var(--zc-text-primary);
+  font-family: var(--zc-font-mono);
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-profile-item:last-of-type {
+  border-bottom: none;
+}
+[data-engine="zeroclaw"] .zc-chat-profile-item:hover:not(:disabled) {
+  background: var(--zc-accent-soft);
+  color: var(--zc-accent);
+}
+[data-engine="zeroclaw"] .zc-chat-profile-item.is-active {
+  color: var(--zc-accent);
+  background: color-mix(in srgb, var(--zc-accent) 6%, transparent);
+}
+[data-engine="zeroclaw"] .zc-chat-profile-item:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+[data-engine="zeroclaw"] .zc-chat-profile-item-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-engine="zeroclaw"] .zc-chat-profile-item-badge {
+  font-size: 9.5px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--zc-success) 16%, transparent);
+  color: var(--zc-success);
+}
+[data-engine="zeroclaw"] .zc-chat-profile-item-active {
+  display: inline-flex;
+}
+
+[data-engine="zeroclaw"] .zc-chat-sidebar-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+[data-engine="zeroclaw"] .zc-chat-select-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--zc-border);
+  border-radius: 50%;
+  background: var(--zc-surface-0);
+  color: var(--zc-text-secondary);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-select-toggle:hover {
+  color: var(--zc-accent);
+  border-color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+}
+[data-engine="zeroclaw"] .zc-chat-select-toggle.is-active {
+  color: var(--zc-accent);
+  border-color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+}
+
+[data-engine="zeroclaw"] .zc-chat-bulkbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 10px;
+  border-bottom: 1px solid var(--zc-border-subtle);
+  font-family: var(--zc-font-mono);
+  font-size: 11px;
+  color: var(--zc-text-secondary);
+}
+[data-engine="zeroclaw"] .zc-chat-bulkbar-select-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--zc-border-subtle);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--zc-text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+}
+[data-engine="zeroclaw"] .zc-chat-bulkbar-select-all:hover {
+  color: var(--zc-accent);
+  border-color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+}
+[data-engine="zeroclaw"] .zc-chat-bulkbar-count {
+  flex: 1;
+  text-align: right;
+  letter-spacing: 0.02em;
+}
+[data-engine="zeroclaw"] .zc-chat-bulkbar-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid color-mix(in srgb, var(--zc-error) 30%, transparent);
+  border-radius: 999px;
+  background: var(--zc-error-soft);
+  color: var(--zc-error);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+}
+[data-engine="zeroclaw"] .zc-chat-bulkbar-delete:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+[data-engine="zeroclaw"] .zc-chat-bulkbar-delete:not(:disabled):hover {
+  background: color-mix(in srgb, var(--zc-error) 18%, transparent);
+}
+
+[data-engine="zeroclaw"] .zc-chat-session-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-right: 6px;
+  border: none;
+  background: transparent;
+  color: var(--zc-text-tertiary);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-session-check:hover,
+[data-engine="zeroclaw"] .zc-chat-session-check.is-on {
+  color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+}
+[data-engine="zeroclaw"] .zc-chat-session-item.is-selected {
+  border-color: color-mix(in srgb, var(--zc-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--zc-accent) 8%, transparent);
+}
+[data-engine="zeroclaw"] .zc-chat-sidebar.is-select-mode .zc-chat-session-actions {
+  display: none;
+}
+
+[data-engine="zeroclaw"].zc-sessions-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+[data-engine="zeroclaw"] .zc-sessions-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-lg);
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--zc-accent) 15%, transparent), transparent 34%),
+    var(--zc-surface-1);
+  box-shadow: var(--zc-shadow-sm);
+}
+[data-engine="zeroclaw"] .zc-sessions-eyebrow {
+  font-family: var(--zc-font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  color: var(--zc-accent);
+  margin-bottom: 8px;
+}
+[data-engine="zeroclaw"] .zc-sessions-hero h1 {
+  margin: 0 0 8px;
+  font-size: clamp(24px, 3vw, 34px);
+  letter-spacing: -0.04em;
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-sessions-hero p {
+  margin: 0;
+  max-width: 620px;
+  color: var(--zc-text-secondary);
+}
+[data-engine="zeroclaw"] .zc-sessions-hero-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+[data-engine="zeroclaw"] .zc-sessions-btn,
+[data-engine="zeroclaw"] .zc-sessions-bulkbar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--zc-border);
+  border-radius: 999px;
+  background: var(--zc-surface-0);
+  color: var(--zc-text-primary);
+  padding: 8px 13px;
+  font-size: 12px;
+  font-family: var(--zc-font-mono);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-sessions-btn:hover:not(:disabled),
+[data-engine="zeroclaw"] .zc-sessions-bulkbar button:hover:not(:disabled) {
+  color: var(--zc-accent);
+  border-color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+  transform: translateY(-1px);
+}
+[data-engine="zeroclaw"] .zc-sessions-btn:disabled,
+[data-engine="zeroclaw"] .zc-sessions-bulkbar button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+[data-engine="zeroclaw"] .zc-sessions-btn.is-danger,
+[data-engine="zeroclaw"] .zc-sessions-bulkbar button.is-danger {
+  color: var(--zc-error);
+  border-color: color-mix(in srgb, var(--zc-error) 32%, transparent);
+  background: var(--zc-error-soft);
+}
+[data-engine="zeroclaw"] .zc-sessions-btn.is-ghost {
+  background: transparent;
+}
+[data-engine="zeroclaw"] .zc-sessions-profile-select,
+[data-engine="zeroclaw"] .zc-sessions-toolbar select {
+  border: 1px solid var(--zc-border);
+  border-radius: 999px;
+  background: var(--zc-surface-0);
+  color: var(--zc-text-primary);
+  padding: 8px 12px;
+  font-family: var(--zc-font-mono);
+  font-size: 12px;
+  outline: none;
+}
+[data-engine="zeroclaw"] .zc-sessions-profile-static {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--zc-border);
+  border-radius: 999px;
+  color: var(--zc-text-secondary);
+  font-family: var(--zc-font-mono);
+  font-size: 12px;
+}
+[data-engine="zeroclaw"] .zc-sessions-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+[data-engine="zeroclaw"] .zc-sessions-stats > div,
+[data-engine="zeroclaw"] .zc-session-stat-grid > div {
+  padding: 14px;
+  border: 1px solid var(--zc-border-subtle);
+  border-radius: var(--zc-radius-sm);
+  background: var(--zc-surface-1);
+}
+[data-engine="zeroclaw"] .zc-sessions-stats span,
+[data-engine="zeroclaw"] .zc-session-stat-grid span {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--zc-text-tertiary);
+  font-size: 10.5px;
+  font-family: var(--zc-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+[data-engine="zeroclaw"] .zc-sessions-stats strong,
+[data-engine="zeroclaw"] .zc-session-stat-grid strong {
+  color: var(--zc-text-primary);
+  font-size: 20px;
+  word-break: break-word;
+}
+[data-engine="zeroclaw"] .zc-sessions-shell {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+  gap: 16px;
+  min-height: 560px;
+}
+[data-engine="zeroclaw"] .zc-sessions-list-panel,
+[data-engine="zeroclaw"] .zc-session-detail {
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-lg);
+  background: var(--zc-surface-1);
+  overflow: hidden;
+  min-height: 0;
+}
+[data-engine="zeroclaw"] .zc-sessions-list-panel {
+  display: flex;
+  flex-direction: column;
+}
+[data-engine="zeroclaw"] .zc-sessions-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 14px;
+  border-bottom: 1px solid var(--zc-border-subtle);
+}
+[data-engine="zeroclaw"] .zc-sessions-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid var(--zc-border);
+  border-radius: 999px;
+  background: var(--zc-surface-0);
+  padding: 0 11px;
+  color: var(--zc-text-tertiary);
+}
+[data-engine="zeroclaw"] .zc-sessions-search input {
+  width: 100%;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--zc-text-primary);
+  padding: 9px 0;
+  font-size: 12px;
+}
+[data-engine="zeroclaw"] .zc-sessions-bulkbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--zc-border-subtle);
+  background: color-mix(in srgb, var(--zc-surface-0) 70%, transparent);
+}
+[data-engine="zeroclaw"] .zc-sessions-bulkbar button {
+  padding: 6px 10px;
+  font-size: 11px;
+}
+[data-engine="zeroclaw"] .zc-sessions-list {
+  overflow: auto;
+  padding: 10px;
+}
+[data-engine="zeroclaw"] .zc-session-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 11px;
+  margin-bottom: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--zc-radius-sm);
+  background: transparent;
+  color: var(--zc-text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-session-row:hover,
+[data-engine="zeroclaw"] .zc-session-row.is-active {
+  border-color: color-mix(in srgb, var(--zc-accent) 28%, transparent);
+  background: var(--zc-accent-soft);
+}
+[data-engine="zeroclaw"] .zc-session-row.is-selected {
+  border-color: color-mix(in srgb, var(--zc-accent) 42%, transparent);
+  background: color-mix(in srgb, var(--zc-accent) 10%, transparent);
+}
+[data-engine="zeroclaw"] .zc-session-row-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--zc-accent);
+}
+[data-engine="zeroclaw"] .zc-session-row-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+[data-engine="zeroclaw"] .zc-session-row-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-engine="zeroclaw"] .zc-session-row-preview {
+  color: var(--zc-text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-engine="zeroclaw"] .zc-session-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+[data-engine="zeroclaw"] .zc-session-row-meta span {
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--zc-surface-0);
+  color: var(--zc-text-tertiary);
+  font-family: var(--zc-font-mono);
+  font-size: 10px;
+}
+[data-engine="zeroclaw"] .zc-session-row-time {
+  color: var(--zc-text-tertiary);
+  font-family: var(--zc-font-mono);
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+[data-engine="zeroclaw"] .zc-sessions-loading,
+[data-engine="zeroclaw"] .zc-sessions-empty,
+[data-engine="zeroclaw"] .zc-session-empty-messages {
+  padding: 28px 14px;
+  color: var(--zc-text-tertiary);
+  text-align: center;
+  font-family: var(--zc-font-mono);
+  font-size: 12px;
+}
+[data-engine="zeroclaw"] .zc-session-detail {
+  display: flex;
+  flex-direction: column;
+}
+[data-engine="zeroclaw"] .zc-session-detail.is-empty {
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  color: var(--zc-text-tertiary);
+  padding: 34px;
+}
+[data-engine="zeroclaw"] .zc-session-detail.is-empty h3 {
+  margin: 0;
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-session-detail.is-empty p {
+  margin: 0;
+  max-width: 380px;
+}
+[data-engine="zeroclaw"] .zc-session-detail-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px;
+  border-bottom: 1px solid var(--zc-border-subtle);
+}
+[data-engine="zeroclaw"] .zc-session-detail-kicker {
+  margin-bottom: 8px;
+  color: var(--zc-accent);
+  font-family: var(--zc-font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+[data-engine="zeroclaw"] .zc-session-detail h2 {
+  margin: 0 0 8px;
+  color: var(--zc-text-primary);
+  font-size: 24px;
+  letter-spacing: -0.03em;
+}
+[data-engine="zeroclaw"] .zc-session-detail-id {
+  color: var(--zc-text-tertiary);
+  font-family: var(--zc-font-mono);
+  font-size: 11px;
+  word-break: break-all;
+}
+[data-engine="zeroclaw"] .zc-session-detail-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  justify-content: flex-end;
+}
+[data-engine="zeroclaw"] .zc-session-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px 20px;
+}
+[data-engine="zeroclaw"] .zc-session-stat-grid strong {
+  font-size: 15px;
+}
+[data-engine="zeroclaw"] .zc-session-message-list {
+  flex: 1;
+  overflow: auto;
+  padding: 18px 20px 22px;
+}
+[data-engine="zeroclaw"] .zc-session-msg {
+  margin-bottom: 12px;
+  padding: 13px;
+  border: 1px solid var(--zc-border-subtle);
+  border-radius: var(--zc-radius-sm);
+  background: var(--zc-surface-0);
+}
+[data-engine="zeroclaw"] .zc-session-msg-role {
+  margin-bottom: 7px;
+  color: var(--zc-accent);
+  font-family: var(--zc-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+[data-engine="zeroclaw"] .zc-session-msg-body {
+  white-space: pre-wrap;
+  color: var(--zc-text-primary);
+  line-height: 1.58;
+  font-size: 13px;
+}
+@media (max-width: 980px) {
+  [data-engine="zeroclaw"] .zc-sessions-hero,
+  [data-engine="zeroclaw"] .zc-session-detail-head {
+    flex-direction: column;
+  }
+  [data-engine="zeroclaw"] .zc-sessions-shell {
+    grid-template-columns: 1fr;
+  }
+  [data-engine="zeroclaw"] .zc-sessions-stats,
+  [data-engine="zeroclaw"] .zc-session-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  [data-engine="zeroclaw"] .zc-sessions-stats,
+  [data-engine="zeroclaw"] .zc-session-stat-grid {
+    grid-template-columns: 1fr;
+  }
+  [data-engine="zeroclaw"] .zc-sessions-toolbar,
+  [data-engine="zeroclaw"] .zc-sessions-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  [data-engine="zeroclaw"] .zc-session-row {
+    grid-template-columns: 24px minmax(0, 1fr);
+  }
+  [data-engine="zeroclaw"] .zc-session-row-time {
+    grid-column: 2;
+  }
+}
+
+[data-engine="zeroclaw"] .zc-chat-sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 10px;
+  flex-shrink: 0;
+}
+[data-engine="zeroclaw"] .zc-chat-sidebar-title {
+  font-family: var(--zc-font-sans);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--zc-text-tertiary);
+}
+[data-engine="zeroclaw"] .zc-chat-new-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--zc-border);
+  border-radius: 50%;
+  background: var(--zc-surface-0);
+  color: var(--zc-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-new-btn:hover {
+  color: var(--zc-accent);
+  border-color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+}
+
+[data-engine="zeroclaw"] .zc-chat-sidebar-tip {
+  padding: 0 18px 12px;
+  border-bottom: 1px solid var(--zc-border-subtle);
+  font-family: var(--zc-font-mono);
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--zc-text-tertiary);
+}
+
+[data-engine="zeroclaw"] .zc-chat-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 8px 18px;
+}
+
+[data-engine="zeroclaw"] .zc-chat-sidebar-loading,
+[data-engine="zeroclaw"] .zc-chat-sidebar-empty {
+  padding: 30px 12px;
+  text-align: center;
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  color: var(--zc-text-tertiary);
+  font-size: 13px;
+}
+
+[data-engine="zeroclaw"] .zc-chat-group {
+  margin: 2px 0 4px;
+}
+[data-engine="zeroclaw"] .zc-chat-group-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px 12px 6px;
+  border: none;
+  background: transparent;
+  color: var(--zc-text-tertiary);
+  cursor: pointer;
+  font-family: var(--zc-font-sans);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: color 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-group-head:hover {
+  color: var(--zc-text-secondary);
+}
+[data-engine="zeroclaw"] .zc-chat-group-head--static {
+  cursor: default;
+  color: var(--zc-accent);
+}
+[data-engine="zeroclaw"] .zc-chat-group-head--static:hover {
+  color: var(--zc-accent);
+}
+[data-engine="zeroclaw"] .zc-chat-group-arrow {
+  display: inline-flex;
+  transition: transform 0.15s ease;
+  transform: rotate(90deg);
+  color: var(--zc-text-tertiary);
+}
+[data-engine="zeroclaw"] .zc-chat-group-head.is-collapsed .zc-chat-group-arrow {
+  transform: rotate(0deg);
+}
+[data-engine="zeroclaw"] .zc-chat-group-label {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-engine="zeroclaw"] .zc-chat-group-count {
+  font-family: var(--zc-font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--zc-text-tertiary);
+  background: var(--zc-surface-2);
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--zc-border-subtle);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ---- Session item ---- */
+[data-engine="zeroclaw"] .zc-chat-session-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px 8px 14px;
+  border: none;
+  background: transparent;
+  color: var(--zc-text-primary);
+  cursor: pointer;
+  text-align: left;
+  border-left: 2px solid transparent;
+  border-radius: 0 var(--zc-radius-sm) var(--zc-radius-sm) 0;
+  transition: background 0.12s ease;
+  position: relative;
+}
+[data-engine="zeroclaw"] .zc-chat-session-item:hover {
+  background: var(--zc-surface-2);
+}
+[data-engine="zeroclaw"] .zc-chat-session-item:hover .zc-chat-session-del {
+  opacity: 1;
+}
+[data-engine="zeroclaw"] .zc-chat-session-item.is-active {
+  background: var(--zc-accent-soft);
+  border-left-color: var(--zc-accent);
+}
+[data-engine="zeroclaw"] .zc-chat-session-item.is-active .zc-chat-session-title {
+  color: var(--zc-accent);
+  font-weight: 500;
+}
+[data-engine="zeroclaw"] .zc-chat-session-item.is-live .zc-chat-session-title {
+  color: var(--zc-accent);
+}
+
+[data-engine="zeroclaw"] .zc-chat-session-main {
+  flex: 1;
+  min-width: 0;
+}
+[data-engine="zeroclaw"] .zc-chat-session-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+[data-engine="zeroclaw"] .zc-chat-session-title {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-chat-session-spinner {
+  flex-shrink: 0;
+  color: var(--zc-accent);
+  animation: hm-chat-spin 1.1s linear infinite;
+}
+[data-engine="zeroclaw"] .zc-chat-session-pin {
+  flex-shrink: 0;
+  color: var(--zc-accent);
+  opacity: 0.85;
+}
+[data-engine="zeroclaw"] .zc-chat-session-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-family: var(--zc-font-sans);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+}
+[data-engine="zeroclaw"] .zc-chat-live-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--zc-accent);
+  animation: hm-chat-live-pulse 2s ease-in-out infinite;
+}
+@keyframes hm-chat-live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.7); }
+}
+@keyframes hm-chat-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+[data-engine="zeroclaw"] .zc-chat-session-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+[data-engine="zeroclaw"] .zc-chat-session-model {
+  font-family: var(--zc-font-mono);
+  font-size: 10px;
+  color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+  padding: 0 5px;
+  line-height: 15px;
+  border-radius: 3px;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-engine="zeroclaw"] .zc-chat-session-time {
+  font-family: var(--zc-font-mono);
+  font-size: 10.5px;
+  color: var(--zc-text-tertiary);
+  letter-spacing: 0.01em;
+}
+
+/* Always show the delete button at low opacity so users know it's there;
+   bump to full opacity on row hover. Pure-on-hover discoverability bug
+   was making people think "sessions can't be deleted". */
+[data-engine="zeroclaw"] .zc-chat-session-del {
+  flex-shrink: 0;
+  opacity: 0.45;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  color: var(--zc-text-tertiary);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+[data-engine="zeroclaw"] .zc-chat-session-del:hover {
+  color: var(--zc-error);
+  background: var(--zc-error-soft);
+}
+[data-engine="zeroclaw"] .zc-chat-session-actions {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+[data-engine="zeroclaw"] .zc-chat-session-action {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 7px;
+  border: 1px solid var(--zc-border-subtle);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--zc-surface-0) 76%, transparent);
+  color: var(--zc-text-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-session-action:hover {
+  color: var(--zc-text-primary);
+  background: var(--zc-surface-0);
+  border-color: var(--zc-border);
+}
+[data-engine="zeroclaw"] .zc-chat-session-del {
+  opacity: 1;
+}
+[data-engine="zeroclaw"] .zc-chat-session-del span {
+  font-size: 11px;
+  line-height: 1;
+}
+[data-engine="zeroclaw"] .zc-chat-session-del:hover {
+  color: var(--zc-error);
+  background: var(--zc-error-soft);
+  border-color: color-mix(in srgb, var(--zc-error) 30%, transparent);
+}
+[data-engine="zeroclaw"] .zc-chat-session-menu {
+  padding: 0;
+}
+
+/* ---- Main area ---- */
+[data-engine="zeroclaw"] .zc-chat-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--zc-surface-0);
+}
+
+[data-engine="zeroclaw"] .zc-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--zc-border);
+  flex-shrink: 0;
+  background: var(--zc-surface-0);
+  gap: 16px;
+}
+[data-engine="zeroclaw"] .zc-chat-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+[data-engine="zeroclaw"] .zc-chat-toggle-sidebar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 5px 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--zc-text-tertiary);
+  cursor: pointer;
+  border-radius: 999px;
+  transition: all 0.15s ease;
+  font-family: var(--zc-font-sans);
+  font-size: 12px;
+}
+[data-engine="zeroclaw"] .zc-chat-toggle-sidebar span {
+  display: none;
+}
+[data-engine="zeroclaw"] .zc-chat-toggle-sidebar:hover {
+  color: var(--zc-text-primary);
+  background: var(--zc-surface-2);
+}
+[data-engine="zeroclaw"] .zc-chat-toggle-sidebar.is-collapsed {
+  border-color: var(--zc-border-subtle);
+  background: var(--zc-surface-1);
+  color: var(--zc-text-secondary);
+}
+[data-engine="zeroclaw"] .zc-chat-toggle-sidebar.is-collapsed span {
+  display: inline;
+}
+[data-engine="zeroclaw"] .zc-chat-header-title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+}
+[data-engine="zeroclaw"] .zc-chat-header-title {
+  font-family: var(--zc-font-serif);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--zc-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-engine="zeroclaw"] .zc-chat-source-badge {
+  flex-shrink: 0;
+  font-family: var(--zc-font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--zc-text-tertiary);
+  background: var(--zc-surface-2);
+  border: 1px solid var(--zc-border-subtle);
+  padding: 1px 7px;
+  border-radius: 999px;
+  line-height: 16px;
+}
+
+[data-engine="zeroclaw"] .zc-chat-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+[data-engine="zeroclaw"] .zc-chat-gw-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--zc-border);
+  border-radius: 999px;
+  background: var(--zc-surface-1);
+  font-family: var(--zc-font-mono);
+  font-size: 10.5px;
+  color: var(--zc-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+[data-engine="zeroclaw"] .zc-chat-gw-status.is-online {
+  color: var(--zc-success);
+  border-color: color-mix(in srgb, var(--zc-success) 30%, transparent);
+  background: color-mix(in srgb, var(--zc-success) 6%, transparent);
+}
+[data-engine="zeroclaw"] .zc-chat-gw-status.is-offline {
+  color: var(--zc-warn, #CA8A04);
+  border-color: color-mix(in srgb, var(--zc-warn, #CA8A04) 30%, transparent);
+  background: color-mix(in srgb, var(--zc-warn, #CA8A04) 6%, transparent);
+}
+/* "GATEWAY" label — muted prefix, always grey regardless of state tint */
+[data-engine="zeroclaw"] .zc-chat-gw-label {
+  color: var(--zc-text-tertiary);
+  font-family: var(--zc-font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+[data-engine="zeroclaw"] .zc-chat-gw-status .zc-chat-gw-text {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+[data-engine="zeroclaw"] .zc-chat-gw-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--zc-text-tertiary);
+}
+[data-engine="zeroclaw"] .zc-chat-gw-status.is-online .zc-chat-gw-dot {
+  background: var(--zc-success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--zc-success) 20%, transparent);
+}
+[data-engine="zeroclaw"] .zc-chat-gw-model {
+  color: var(--zc-text-secondary);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 10.5px;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  padding-left: 4px;
+  border-left: 1px solid var(--zc-border);
+  margin-left: 2px;
+}
+
+/* ---- Messages area ---- */
+[data-engine="zeroclaw"] .zc-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--zc-surface-0);
+}
+[data-engine="zeroclaw"] .zc-chat-jump-bottom {
+  position: absolute;
+  right: 32px;
+  bottom: 112px;
+  z-index: 8;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--zc-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--zc-surface-0) 88%, transparent);
+  color: var(--zc-text-secondary);
+  box-shadow: var(--zc-shadow-sm);
+  font-family: var(--zc-font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.18s ease, transform 0.18s ease, color 0.15s ease, background 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-jump-bottom.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+[data-engine="zeroclaw"] .zc-chat-jump-bottom:hover {
+  color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+}
+[data-engine="zeroclaw"] .zc-chat-messages-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--zc-text-tertiary);
+  text-align: center;
+  min-height: 320px;
+}
+[data-engine="zeroclaw"] .zc-chat-empty-title {
+  font-family: var(--zc-font-serif);
+  font-size: 18px;
+  color: var(--zc-text-secondary);
+  letter-spacing: -0.005em;
+}
+[data-engine="zeroclaw"] .zc-chat-empty-sub {
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--zc-text-tertiary);
+}
+
+/* ---- Message bubbles ---- */
+[data-engine="zeroclaw"] .zc-chat-msg { display: flex; flex-direction: column; }
+[data-engine="zeroclaw"] .zc-chat-msg--user { align-items: flex-end; }
+[data-engine="zeroclaw"] .zc-chat-msg--assistant { align-items: flex-start; }
+[data-engine="zeroclaw"] .zc-chat-msg--system { align-items: center; }
+
+[data-engine="zeroclaw"] .zc-chat-msg-body {
+  display: flex;
+  gap: 10px;
+  max-width: min(78%, 760px);
+  align-items: flex-start;
+}
+[data-engine="zeroclaw"] .zc-chat-shell.is-sidebar-collapsed .zc-chat-msg-body {
+  max-width: min(82%, 820px);
+}
+[data-engine="zeroclaw"] .zc-chat-msg--user .zc-chat-msg-body { flex-direction: row-reverse; }
+
+[data-engine="zeroclaw"] .zc-chat-msg-avatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--zc-font-serif);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+  border: 1px solid color-mix(in srgb, var(--zc-accent) 25%, transparent);
+  margin-top: 2px;
+}
+
+[data-engine="zeroclaw"] .zc-chat-msg-content-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+[data-engine="zeroclaw"] .zc-chat-msg-bubble {
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.7;
+  border-radius: var(--zc-radius-md);
+  word-break: break-word;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+[data-engine="zeroclaw"] .zc-chat-msg--user .zc-chat-msg-bubble {
+  background: var(--zc-accent-soft);
+  color: var(--zc-text-primary);
+  border: 1px solid color-mix(in srgb, var(--zc-accent) 16%, transparent);
+  font-family: var(--zc-font-serif);
+  font-size: 14.5px;
+  line-height: 1.7;
+}
+[data-engine="zeroclaw"] .zc-chat-msg--assistant .zc-chat-msg-bubble {
+  background: var(--zc-surface-1);
+  color: var(--zc-text-primary);
+  border: 1px solid var(--zc-border-subtle);
+}
+[data-engine="zeroclaw"] .zc-chat-msg--system .zc-chat-msg-bubble {
+  background: var(--zc-error-soft);
+  color: var(--zc-error);
+  border: 1px solid color-mix(in srgb, var(--zc-error) 25%, transparent);
+  font-family: var(--zc-font-mono);
+  font-size: 12.5px;
+  max-width: 90%;
+}
+
+[data-engine="zeroclaw"] .zc-chat-msg-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 0 4px;
+}
+[data-engine="zeroclaw"] .zc-chat-msg--user .zc-chat-msg-footer {
+  justify-content: flex-end;
+}
+[data-engine="zeroclaw"] .zc-chat-msg-time {
+  font-family: var(--zc-font-mono);
+  font-size: 10.5px;
+  color: var(--zc-text-tertiary);
+  letter-spacing: 0.01em;
+}
+[data-engine="zeroclaw"] .zc-chat-msg-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border: 1px solid var(--zc-border-subtle);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--zc-text-tertiary);
+  font-family: var(--zc-font-mono);
+  font-size: 10px;
+  line-height: 1.2;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(1px);
+  transition: opacity 0.15s ease, color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-msg:hover .zc-chat-msg-copy,
+[data-engine="zeroclaw"] .zc-chat-msg-copy:focus-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+[data-engine="zeroclaw"] .zc-chat-msg-copy:hover {
+  color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+  border-color: color-mix(in srgb, var(--zc-accent) 24%, transparent);
+}
+
+/* Markdown inside message content */
+[data-engine="zeroclaw"] .zc-chat-msg-content p { margin: 0 0 8px; }
+[data-engine="zeroclaw"] .zc-chat-msg-content p:last-child { margin-bottom: 0; }
+[data-engine="zeroclaw"] .zc-chat-msg-content h2,
+[data-engine="zeroclaw"] .zc-chat-msg-content h3,
+[data-engine="zeroclaw"] .zc-chat-msg-content h4,
+[data-engine="zeroclaw"] .zc-chat-msg-content h5 {
+  font-family: var(--zc-font-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-chat-msg-content h2 { font-size: 18px; margin: 14px 0 6px; }
+[data-engine="zeroclaw"] .zc-chat-msg-content h3 { font-size: 16px; margin: 12px 0 5px; }
+[data-engine="zeroclaw"] .zc-chat-msg-content h4 {
+  font-size: 14px;
+  font-style: italic;
+  color: var(--zc-accent);
+  margin: 10px 0 4px;
+}
+[data-engine="zeroclaw"] .zc-chat-msg-content h5 {
+  font-size: 13px;
+  color: var(--zc-text-secondary);
+  margin: 10px 0 4px;
+}
+[data-engine="zeroclaw"] .zc-chat-msg-content ul {
+  margin: 4px 0 8px;
+  padding-left: 22px;
+}
+[data-engine="zeroclaw"] .zc-chat-msg-content li { margin: 2px 0; line-height: 1.65; }
+[data-engine="zeroclaw"] .zc-chat-msg-content code {
+  font-family: var(--zc-font-mono);
+  font-size: 12.5px;
+  background: var(--zc-surface-2);
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: var(--zc-accent);
+}
+[data-engine="zeroclaw"] .zc-chat-msg-content pre {
+  background: var(--zc-surface-2);
+  border: 1px solid var(--zc-border-subtle);
+  border-radius: var(--zc-radius-sm);
+  padding: 10px 12px;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-family: var(--zc-font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+}
+[data-engine="zeroclaw"] .zc-chat-msg-content pre.zc-chat-code-block {
+  position: relative;
+  padding-top: 34px;
+}
+[data-engine="zeroclaw"] .zc-chat-code-copy {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--zc-border-subtle);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--zc-surface-0) 82%, transparent);
+  color: var(--zc-text-tertiary);
+  font-family: var(--zc-font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-code-block:hover .zc-chat-code-copy,
+[data-engine="zeroclaw"] .zc-chat-code-copy:focus-visible {
+  opacity: 1;
+}
+[data-engine="zeroclaw"] .zc-chat-code-copy:hover {
+  color: var(--zc-accent);
+  background: var(--zc-accent-soft);
+}
+[data-engine="zeroclaw"] .zc-chat-msg-content pre code {
+  background: transparent;
+  padding: 0;
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-chat-msg-content a {
+  color: var(--zc-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+[data-engine="zeroclaw"] .zc-chat-msg-content strong { font-weight: 600; }
+[data-engine="zeroclaw"] .zc-chat-msg-content em { font-style: italic; }
+
+/* Streaming dots pulse (shown while first delta hasn't arrived) */
+[data-engine="zeroclaw"] .zc-chat-streaming-dots {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px 0;
+}
+[data-engine="zeroclaw"] .zc-chat-streaming-dots span {
+  width: 6px;
+  height: 6px;
+  background: var(--zc-text-tertiary);
+  border-radius: 50%;
+  animation: hm-chat-dots 1.4s infinite ease-in-out;
+}
+[data-engine="zeroclaw"] .zc-chat-streaming-dots span:nth-child(2) { animation-delay: 0.2s; }
+[data-engine="zeroclaw"] .zc-chat-streaming-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes hm-chat-dots {
+  0%, 80%, 100% { opacity: 0.25; transform: scale(0.7); }
+  40%           { opacity: 1; transform: scale(1); }
+}
+
+/* ---- Tool messages ---- */
+[data-engine="zeroclaw"] .zc-chat-msg--tool {
+  align-items: flex-start;
+  padding-left: 42px;  /* align with assistant content, not avatar */
+}
+[data-engine="zeroclaw"] .zc-chat-tool-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: var(--zc-radius-sm);
+  font-family: var(--zc-font-sans);
+  font-size: 11px;
+  color: var(--zc-text-tertiary);
+  max-width: 100%;
+}
+[data-engine="zeroclaw"] .zc-chat-tool-line.is-expandable {
+  cursor: pointer;
+  background: var(--zc-surface-1);
+  border: 1px solid var(--zc-border-subtle);
+  transition: all 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-tool-line.is-expandable:hover {
+  border-color: var(--zc-accent);
+  color: var(--zc-text-secondary);
+}
+[data-engine="zeroclaw"] .zc-chat-tool-chevron {
+  display: inline-flex;
+  transition: transform 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-tool-chevron.is-open {
+  transform: rotate(90deg);
+}
+[data-engine="zeroclaw"] .zc-chat-tool-icon {
+  display: inline-flex;
+  color: var(--zc-text-tertiary);
+}
+[data-engine="zeroclaw"] .zc-chat-tool-name {
+  font-family: var(--zc-font-mono);
+  font-size: 11px;
+  color: var(--zc-text-primary);
+  font-weight: 500;
+}
+[data-engine="zeroclaw"] .zc-chat-tool-preview {
+  color: var(--zc-text-tertiary);
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-engine="zeroclaw"] .zc-chat-tool-err {
+  font-size: 9.5px;
+  color: var(--zc-error);
+  background: var(--zc-error-soft);
+  padding: 1px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+[data-engine="zeroclaw"] .zc-chat-tool-spinner {
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--zc-text-tertiary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: hm-chat-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+[data-engine="zeroclaw"] .zc-chat-tool-details {
+  margin-top: 4px;
+  margin-left: 10px;
+  border-left: 2px solid var(--zc-border);
+  padding-left: 12px;
+}
+[data-engine="zeroclaw"] .zc-chat-tool-section {
+  margin-bottom: 6px;
+}
+[data-engine="zeroclaw"] .zc-chat-tool-label {
+  font-family: var(--zc-font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--zc-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 3px;
+}
+[data-engine="zeroclaw"] .zc-chat-tool-code {
+  background: var(--zc-surface-2);
+  border: 1px solid var(--zc-border-subtle);
+  border-radius: var(--zc-radius-sm);
+  padding: 8px 10px;
+  font-family: var(--zc-font-mono);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--zc-text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 280px;
+  overflow-y: auto;
+  margin: 0;
+}
+
+/* ---- Streaming indicator (thinking + live tool calls) ---- */
+[data-engine="zeroclaw"] .zc-chat-streaming {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 42px;
+}
+[data-engine="zeroclaw"] .zc-chat-streaming-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--zc-font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--zc-text-tertiary);
+}
+[data-engine="zeroclaw"] .zc-chat-streaming-pulse {
+  width: 8px;
+  height: 8px;
+  background: var(--zc-accent);
+  border-radius: 50%;
+  animation: hm-chat-live-pulse 1.6s ease-in-out infinite;
+}
+[data-engine="zeroclaw"] .zc-chat-live-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+[data-engine="zeroclaw"] .zc-chat-live-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: var(--zc-radius-sm);
+  background: var(--zc-surface-1);
+  border: 1px solid var(--zc-border-subtle);
+  font-size: 11px;
+  color: var(--zc-text-secondary);
+  max-width: fit-content;
+}
+[data-engine="zeroclaw"] .zc-chat-live-tool-icon {
+  display: inline-flex;
+  color: var(--zc-text-tertiary);
+}
+[data-engine="zeroclaw"] .zc-chat-live-tool-name {
+  font-family: var(--zc-font-mono);
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-chat-live-tool-preview {
+  color: var(--zc-text-tertiary);
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Input area ---- */
+[data-engine="zeroclaw"] .zc-chat-input-area {
+  flex-shrink: 0;
+  padding: 16px 48px 18px;
+  border-top: 1px solid var(--zc-border);
+  background: var(--zc-surface-0);
+  position: relative;
+}
+
+[data-engine="zeroclaw"] .zc-chat-input-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  background: var(--zc-surface-1);
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-md);
+  padding: 10px 12px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-input-wrap:focus-within {
+  border-color: var(--zc-accent);
+  box-shadow: 0 0 0 2px rgba(202, 138, 4, 0.12);
+}
+
+[data-engine="zeroclaw"] .zc-chat-input {
+  flex: 1;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--zc-text-primary);
+  font-family: var(--zc-font-serif);
+  font-size: 14.5px;
+  line-height: 1.6;
+  max-height: 160px;
+  min-height: 22px;
+  overflow-y: auto;
+  padding: 2px 2px;
+}
+[data-engine="zeroclaw"] .zc-chat-input::placeholder {
+  color: var(--zc-text-tertiary);
+  font-style: italic;
+}
+[data-engine="zeroclaw"] .zc-chat-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+[data-engine="zeroclaw"] .zc-chat-input-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+[data-engine="zeroclaw"] .zc-chat-send-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: var(--zc-accent);
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-send-btn:hover:not(:disabled) {
+  background: var(--zc-accent-hover, var(--zc-accent));
+  transform: translateX(1px);
+}
+[data-engine="zeroclaw"] .zc-chat-send-btn:disabled {
+  background: var(--zc-surface-2);
+  color: var(--zc-text-tertiary);
+  cursor: not-allowed;
+}
+
+/* ---- Token usage strip (above textarea) ----
+   Sits between the slash menu and the input wrap. Pills are minimal,
+   monospace, and use accent tint for cost so it draws the eye without
+   being shouty. The whole bar can be hidden by `display:none` on the
+   element itself; we just don't render it when usage is zero. */
+[data-engine="zeroclaw"] .zc-chat-usage-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 2px;
+  flex-wrap: wrap;
+}
+[data-engine="zeroclaw"] .zc-chat-shell.is-sidebar-collapsed .zc-chat-input-wrap,
+[data-engine="zeroclaw"] .zc-chat-shell.is-sidebar-collapsed .zc-chat-usage-bar {
+  max-width: 820px;
+}
+[data-engine="zeroclaw"] .zc-chat-usage-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--zc-surface-1);
+  border: 1px solid var(--zc-border-subtle);
+  font-family: var(--zc-font-mono);
+  font-size: 10.5px;
+  color: var(--zc-text-secondary);
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+[data-engine="zeroclaw"] .zc-chat-usage-pill[data-kind="cost"] {
+  background: var(--zc-accent-soft);
+  border-color: transparent;
+  color: var(--zc-accent);
+  font-weight: 600;
+}
+[data-engine="zeroclaw"] .zc-chat-usage-pill[data-kind="cache"] {
+  color: var(--zc-text-tertiary);
+}
+[data-engine="zeroclaw"] .zc-chat-usage-label {
+  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: var(--zc-text-tertiary);
+  font-weight: 500;
+}
+[data-engine="zeroclaw"] .zc-chat-usage-value {
+  color: var(--zc-text-primary);
+  font-weight: 600;
+}
+[data-engine="zeroclaw"] .zc-chat-usage-pill[data-kind="cost"] .zc-chat-usage-value {
+  color: var(--zc-accent);
+}
+
+/* ---- Slash menu ---- */
+[data-engine="zeroclaw"] .zc-chat-slash-menu {
+  position: absolute;
+  left: 48px;
+  right: 48px;
+  bottom: calc(100% + 4px);
+  background: var(--zc-surface-0);
+  border: 1px solid var(--zc-border);
+  border-radius: var(--zc-radius-md);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+  padding: 4px;
+  max-height: 260px;
+  overflow-y: auto;
+  z-index: 5;
+  bottom: auto;
+  top: auto;
+  transform: translateY(-100%);
+  /* The slash menu is anchored INSIDE the input area (bottom: 100%). */
+}
+[data-engine="zeroclaw"] .zc-chat-input-area .zc-chat-slash-menu {
+  position: absolute;
+  left: 48px;
+  right: 48px;
+  bottom: calc(100% - 4px);
+  top: auto;
+  transform: translateY(-6px);
+}
+[data-engine="zeroclaw"] .zc-chat-slash-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--zc-text-primary);
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--zc-radius-sm);
+  transition: background 0.12s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-slash-item:hover {
+  background: var(--zc-accent-soft);
+}
+[data-engine="zeroclaw"] .zc-chat-slash-cmd {
+  font-family: var(--zc-font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--zc-accent);
+  min-width: 72px;
+}
+[data-engine="zeroclaw"] .zc-chat-slash-desc {
+  font-family: var(--zc-font-sans);
+  font-size: 12px;
+  color: var(--zc-text-tertiary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Context menu ---- */
+.zc-chat-ctxmenu {
+  position: fixed;
+  z-index: 10000;
+  background: var(--zc-surface-0, #FFFCF5);
+  border: 1px solid var(--zc-border, #E5E0D0);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 4px;
+  min-width: 180px;
+  font-family: var(--zc-font-sans, sans-serif);
+}
+.zc-chat-ctxmenu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  background: transparent;
+  color: var(--zc-text-primary, #1C1917);
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.12s ease;
+}
+.zc-chat-ctxmenu-item:hover {
+  background: var(--zc-accent-soft, rgba(202, 138, 4, 0.06));
+}
+.zc-chat-ctxmenu-item.is-danger {
+  color: var(--zc-error, #B91C1C);
+}
+.zc-chat-ctxmenu-item.is-danger:hover {
+  background: var(--zc-error-soft, rgba(185, 28, 28, 0.06));
+}
+
+/* ---- Rename modal input (reuses .modal-overlay/.modal from modal.js) ---- */
+[data-engine="zeroclaw"] .zc-chat-rename-input,
+.zc-chat-rename-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--zc-border, #E5E0D0);
+  border-radius: 6px;
+  background: var(--zc-surface-0, #FFFCF5);
+  color: var(--zc-text-primary, #1C1917);
+  font-family: var(--zc-font-serif, serif);
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.zc-chat-rename-input:focus {
+  border-color: var(--zc-accent, #CA8A04);
+  box-shadow: 0 0 0 2px rgba(202, 138, 4, 0.15);
+}
+
+/* ---- Stop button (replaces Send during streaming) ---- */
+[data-engine="zeroclaw"] .zc-chat-stop-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid color-mix(in srgb, var(--zc-error) 40%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--zc-error) 10%, transparent);
+  color: var(--zc-error);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+[data-engine="zeroclaw"] .zc-chat-stop-btn:hover {
+  background: color-mix(in srgb, var(--zc-error) 18%, transparent);
+  border-color: var(--zc-error);
+}
+[data-engine="zeroclaw"] .zc-chat-input-wrap.is-streaming {
+  border-color: color-mix(in srgb, var(--zc-accent) 30%, transparent);
+  background: color-mix(in srgb, var(--zc-accent) 3%, var(--zc-surface-1));
+}
+
+/* ---- Session Search modal (Ctrl+K) ---- */
+.zc-chat-search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10500;
+  background: rgba(28, 25, 23,0.35);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 12vh 16px 16px;
+  animation: hm-chat-search-fade 0.15s ease;
+}
+@keyframes hm-chat-search-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+[data-engine="zeroclaw"] .zc-chat-search-panel,
+.zc-chat-search-panel[data-engine="zeroclaw"] {
+  width: 100%;
+  max-width: 560px;
+  max-height: 70vh;
+  background: var(--zc-surface-0, #FFFCF5);
+  border: 1px solid var(--zc-border, #E5E0D0);
+  border-radius: 10px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: hm-chat-search-slide 0.2s ease;
+  font-family: var(--zc-font-sans, sans-serif);
+  color: var(--zc-text-primary, #1C1917);
+}
+@keyframes hm-chat-search-slide {
+  from { transform: translateY(-8px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.zc-chat-search-panel .zc-chat-search-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--zc-border-subtle, #EDE8D9);
+  background: var(--zc-surface-1, #FAF7EE);
+}
+.zc-chat-search-panel .zc-chat-search-icon {
+  color: var(--zc-text-tertiary);
+  flex-shrink: 0;
+}
+.zc-chat-search-panel .zc-chat-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--zc-text-primary, #1C1917);
+  font-family: var(--zc-font-serif, serif);
+  font-size: 16px;
+  line-height: 1.4;
+  padding: 2px 0;
+}
+.zc-chat-search-panel .zc-chat-search-input::placeholder {
+  color: var(--zc-text-tertiary);
+  font-style: italic;
+}
+.zc-chat-search-panel .zc-chat-search-kbd {
+  font-family: var(--zc-font-mono, monospace);
+  font-size: 10px;
+  color: var(--zc-text-tertiary);
+  padding: 2px 6px;
+  border: 1px solid var(--zc-border);
+  border-radius: 4px;
+  background: var(--zc-surface-0);
+  letter-spacing: 0.03em;
+}
+
+.zc-chat-search-panel .zc-chat-search-results {
+  overflow-y: auto;
+  flex: 1;
+  padding: 6px 0 8px;
+}
+.zc-chat-search-panel .zc-chat-search-empty {
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--zc-text-tertiary);
+  font-family: var(--zc-font-serif, serif);
+  font-style: italic;
+  font-size: 13.5px;
+}
+
+.zc-chat-search-panel .zc-chat-search-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 18px;
+  border: none;
+  background: transparent;
+  color: var(--zc-text-primary, #1C1917);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  border-left: 2px solid transparent;
+}
+.zc-chat-search-panel .zc-chat-search-item:hover,
+.zc-chat-search-panel .zc-chat-search-item.is-active {
+  background: var(--zc-accent-soft, rgba(202, 138, 4, 0.08));
+  border-left-color: var(--zc-accent, #CA8A04);
+}
+.zc-chat-search-panel .zc-chat-search-item-main {
+  flex: 1;
+  min-width: 0;
+}
+.zc-chat-search-panel .zc-chat-search-item-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--zc-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.zc-chat-search-panel .zc-chat-search-item-src {
+  font-family: var(--zc-font-mono, monospace);
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--zc-text-tertiary);
+  background: var(--zc-surface-2, #F1ECDC);
+  border: 1px solid var(--zc-border-subtle);
+  padding: 1px 5px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.zc-chat-search-panel .zc-chat-search-item-snippet {
+  margin-top: 3px;
+  font-family: var(--zc-font-serif, serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--zc-text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.zc-chat-search-panel .zc-chat-search-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.zc-chat-search-panel .zc-chat-search-item-model {
+  font-family: var(--zc-font-mono, monospace);
+  font-size: 10px;
+  color: var(--zc-accent, #CA8A04);
+  background: var(--zc-accent-soft);
+  padding: 0 5px;
+  border-radius: 3px;
+  line-height: 15px;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.zc-chat-search-panel .zc-chat-search-item-time {
+  font-family: var(--zc-font-mono, monospace);
+  font-size: 10.5px;
+  color: var(--zc-text-tertiary);
+}
+
+.zc-chat-search-panel .zc-chat-search-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 18px;
+  border-top: 1px solid var(--zc-border-subtle);
+  background: var(--zc-surface-1);
+  font-family: var(--zc-font-mono, monospace);
+  font-size: 10.5px;
+  color: var(--zc-text-tertiary);
+}
+.zc-chat-search-panel .zc-chat-search-foot kbd {
+  font-family: var(--zc-font-mono, monospace);
+  font-size: 10px;
+  padding: 1px 5px;
+  border: 1px solid var(--zc-border);
+  border-radius: 3px;
+  background: var(--zc-surface-0);
+  color: var(--zc-text-secondary);
+  margin: 0 1px;
+}
+
+[data-engine="zeroclaw"].zc-usage-page {
+  width: 100%;
+  padding: 28px clamp(16px, 3vw, 56px) 40px;
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-usage-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+[data-engine="zeroclaw"] .zc-usage-hero-copy {
+  min-width: 0;
+}
+[data-engine="zeroclaw"] .zc-usage-eyebrow {
+  font-family: var(--zc-font-mono, monospace);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--zc-text-tertiary);
+  margin-bottom: 10px;
+}
+[data-engine="zeroclaw"] .zc-usage-title {
+  margin: 0;
+  font-family: var(--zc-font-serif, serif);
+  font-size: clamp(32px, 4vw, 44px);
+  line-height: 1.02;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-usage-desc {
+  margin: 10px 0 0;
+  max-width: 720px;
+  color: var(--zc-text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+}
+[data-engine="zeroclaw"] .zc-usage-refresh {
+  flex-shrink: 0;
+}
+[data-engine="zeroclaw"] .zc-usage-body {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
-
-.zc-chat-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  gap: 10px;
-  color: var(--text-tertiary);
+[data-engine="zeroclaw"] .zc-usage-loading,
+[data-engine="zeroclaw"] .zc-usage-empty,
+[data-engine="zeroclaw"] .zc-usage-error-card {
+  border: 1px solid var(--zc-border);
+  border-radius: 18px;
+  background: var(--zc-surface-0);
+  box-shadow: 0 16px 36px rgba(28, 25, 23,0.05);
 }
-
-.zc-chat-empty-icon {
-  opacity: 0.3;
-  margin-bottom: 4px;
-}
-
-.zc-chat-empty-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.zc-chat-empty-sub {
-  font-size: 13px;
-  max-width: 320px;
+[data-engine="zeroclaw"] .zc-usage-loading,
+[data-engine="zeroclaw"] .zc-usage-empty {
+  padding: 56px 24px;
   text-align: center;
+  color: var(--zc-text-tertiary);
+  font-family: var(--zc-font-serif, serif);
+  font-style: italic;
+  font-size: 15px;
 }
-
-/* Message item */
-.zc-chat-msg {
-  display: flex;
-  gap: 10px;
-  max-width: 85%;
-  animation: zcMsgIn 0.2s ease;
+[data-engine="zeroclaw"] .zc-usage-error-card {
+  padding: 24px;
 }
-
-@keyframes zcMsgIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+[data-engine="zeroclaw"] .zc-usage-error-title {
+  font-family: var(--zc-font-serif, serif);
+  font-size: 24px;
+  color: var(--zc-text-primary);
+  margin-bottom: 8px;
 }
-
-.zc-chat-msg--user {
-  align-self: flex-end;
-  flex-direction: row-reverse;
+[data-engine="zeroclaw"] .zc-usage-error-text {
+  color: var(--zc-error);
+  font-size: 13px;
+  margin-bottom: 14px;
 }
-
-.zc-chat-msg--assistant {
-  align-self: flex-start;
+[data-engine="zeroclaw"] .zc-usage-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
 }
-
-/* Avatar */
-.zc-msg-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: var(--text-tertiary);
-}
-
-.zc-msg-avatar--assistant {
-  background: var(--bg-tertiary);
-}
-
-.zc-msg-avatar--user {
-  background: var(--accent-muted);
-  color: var(--accent);
-}
-
-/* Body */
-.zc-msg-body {
+[data-engine="zeroclaw"] .zc-usage-stat-card {
+  min-height: 132px;
+  padding: 18px 18px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--zc-border);
+  background: var(--zc-surface-0);
+  box-shadow: 0 16px 36px rgba(28, 25, 23,0.05);
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 0;
+  justify-content: space-between;
 }
-
-/* Sender line */
-.zc-msg-sender {
+[data-engine="zeroclaw"] .zc-usage-stat-card.is-accent {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--zc-accent) 9%, var(--zc-surface-0)) 0%, var(--zc-surface-0) 100%);
+}
+[data-engine="zeroclaw"] .zc-usage-stat-card.is-muted {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--zc-text-primary) 3%, var(--zc-surface-0)) 0%, var(--zc-surface-0) 100%);
+}
+[data-engine="zeroclaw"] .zc-usage-stat-label {
+  font-family: var(--zc-font-mono, monospace);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--zc-text-tertiary);
+}
+[data-engine="zeroclaw"] .zc-usage-stat-value {
+  margin-top: 10px;
+  font-family: var(--zc-font-serif, serif);
+  font-size: clamp(28px, 3vw, 36px);
+  line-height: 1.04;
+  color: var(--zc-text-primary);
+  letter-spacing: -0.03em;
+}
+[data-engine="zeroclaw"] .zc-usage-stat-sub {
+  margin-top: 10px;
+  color: var(--zc-text-secondary);
+  font-size: 12px;
+  line-height: 1.55;
+}
+[data-engine="zeroclaw"] .zc-usage-card {
+  border: 1px solid var(--zc-border);
+  border-radius: 20px;
+  background: var(--zc-surface-0);
+  box-shadow: 0 16px 36px rgba(28, 25, 23,0.05);
+  padding: 18px 20px 20px;
+}
+[data-engine="zeroclaw"] .zc-usage-card-head {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding-left: 4px;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
 }
-
-.zc-msg-agent-name {
+[data-engine="zeroclaw"] .zc-usage-card-title {
+  margin: 0;
+  font-family: var(--zc-font-serif, serif);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--zc-text-primary);
+}
+[data-engine="zeroclaw"] .zc-usage-model-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+[data-engine="zeroclaw"] .zc-usage-model-row {
+  display: grid;
+  grid-template-columns: minmax(0, 180px) 1fr 72px;
+  align-items: center;
+  gap: 12px;
+}
+[data-engine="zeroclaw"] .zc-usage-model-name,
+[data-engine="zeroclaw"] .zc-usage-model-meta {
+  font-family: var(--zc-font-mono, monospace);
   font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
+}
+[data-engine="zeroclaw"] .zc-usage-model-name {
+  color: var(--zc-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-engine="zeroclaw"] .zc-usage-model-meta {
+  color: var(--zc-text-tertiary);
+  text-align: right;
+}
+[data-engine="zeroclaw"] .zc-usage-model-track {
+  position: relative;
+  height: 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--zc-text-primary) 6%, var(--zc-surface-2));
+  overflow: hidden;
+}
+[data-engine="zeroclaw"] .zc-usage-model-bar {
+  height: 100%;
+  min-width: 2px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--zc-accent) 0%, color-mix(in srgb, var(--zc-accent) 72%, #f6c453) 100%);
+}
+[data-engine="zeroclaw"] .zc-usage-empty-inline {
+  padding: 12px 0 4px;
+  color: var(--zc-text-tertiary);
+  font-size: 13px;
+}
+[data-engine="zeroclaw"] .zc-usage-card--trend {
+  padding-bottom: 16px;
+}
+[data-engine="zeroclaw"] .zc-usage-trend-wrap {
+  position: relative;
+  height: 232px;
+  margin-bottom: 8px;
+}
+[data-engine="zeroclaw"] .zc-usage-trend-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+[data-engine="zeroclaw"] .zc-usage-trend-grid {
+  stroke: color-mix(in srgb, var(--zc-border) 88%, transparent);
+  stroke-width: 1;
+  stroke-dasharray: 4 6;
+}
+[data-engine="zeroclaw"] .zc-usage-trend-area {
+  fill: url(#hm-usage-trend-fill);
+}
+[data-engine="zeroclaw"] .zc-usage-trend-bar {
+  fill: color-mix(in srgb, var(--zc-accent) 30%, transparent);
+}
+[data-engine="zeroclaw"] .zc-usage-trend-line {
+  fill: none;
+  stroke: var(--zc-accent);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+[data-engine="zeroclaw"] .zc-usage-trend-dot {
+  fill: var(--zc-accent);
+  stroke: var(--zc-surface-0);
+  stroke-width: 1.5;
+}
+[data-engine="zeroclaw"] .zc-usage-trend-range {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  color: var(--zc-text-tertiary);
+  font-family: var(--zc-font-mono, monospace);
+  font-size: 10.5px;
+}
+[data-engine="zeroclaw"] .zc-usage-table-wrap {
+  overflow-x: auto;
+}
+[data-engine="zeroclaw"] .zc-usage-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+[data-engine="zeroclaw"] .zc-usage-table th {
+  text-align: left;
+  padding: 9px 8px;
+  border-bottom: 1px solid var(--zc-border);
+  color: var(--zc-text-tertiary);
+  font-family: var(--zc-font-mono, monospace);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+[data-engine="zeroclaw"] .zc-usage-table td {
+  padding: 9px 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--zc-border) 82%, transparent);
+  color: var(--zc-text-secondary);
+  font-family: var(--zc-font-mono, monospace);
+  font-size: 12px;
+}
+[data-engine="zeroclaw"] .zc-usage-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
-.zc-msg-model {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  color: var(--text-tertiary);
-  background: var(--bg-tertiary);
-  padding: 1px 6px;
-  border-radius: var(--radius-sm);
+[data-engine="zeroclaw"].zc-services-page {
+  width: 100%;
+  padding: 28px clamp(16px, 3vw, 56px) 40px;
+  color: var(--zc-text-primary);
 }
-
-/* Bubble */
-.zc-msg-bubble {
-  padding: 10px 14px;
-  border-radius: var(--radius-lg);
-  line-height: 1.6;
+[data-engine="zeroclaw"] .zc-services-desc {
+  margin: 0 0 18px;
+  max-width: 760px;
+  color: var(--zc-text-secondary);
   font-size: 14px;
+  line-height: 1.7;
+}
+[data-engine="zeroclaw"] .zc-services-msg {
+  margin: 14px 0 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--zc-border);
+  border-radius: 14px;
+  background: var(--zc-surface-1);
+  font-family: var(--zc-font-mono, monospace);
+  font-size: 12px;
+  line-height: 1.6;
+}
+[data-engine="zeroclaw"] .zc-services-msg[data-tone="success"] {
+  color: var(--zc-success);
+  border-color: color-mix(in srgb, var(--zc-success) 24%, var(--zc-border));
+  background: color-mix(in srgb, var(--zc-success) 7%, var(--zc-surface-1));
+}
+[data-engine="zeroclaw"] .zc-services-msg[data-tone="error"] {
+  color: var(--zc-error);
+  border-color: color-mix(in srgb, var(--zc-error) 24%, var(--zc-border));
+  background: color-mix(in srgb, var(--zc-error) 8%, var(--zc-surface-1));
+}
+[data-engine="zeroclaw"] .zc-services-msg[data-tone="warn"] {
+  color: var(--zc-warn);
+  border-color: color-mix(in srgb, var(--zc-warn) 28%, var(--zc-border));
+  background: color-mix(in srgb, var(--zc-warn) 10%, var(--zc-surface-1));
+}
+[data-engine="zeroclaw"] .zc-services-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+[data-engine="zeroclaw"] .zc-services-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+[data-engine="zeroclaw"] .zc-services-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+[data-engine="zeroclaw"] .zc-services-row-label {
+  color: var(--zc-text-tertiary);
+  font-family: var(--zc-font-serif, serif);
+  font-style: italic;
+  font-size: 12px;
+  line-height: 1.5;
+}
+[data-engine="zeroclaw"] .zc-services-row-value {
+  color: var(--zc-text-primary);
+  font-size: 13px;
+  line-height: 1.7;
   word-break: break-word;
 }
-
-.zc-msg-bubble--user {
-  background: var(--accent);
-  color: #fff;
-  border-bottom-right-radius: var(--radius-sm);
-}
-
-.zc-msg-bubble--assistant {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-primary);
-  border-bottom-left-radius: var(--radius-sm);
-}
-
-.zc-msg-content p { margin: 0 0 6px; }
-.zc-msg-content p:last-child { margin-bottom: 0; }
-.zc-msg-content code {
-  background: var(--bg-tertiary);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-family: var(--font-mono);
-  font-size: 0.9em;
-}
-.zc-msg-content pre {
-  background: var(--bg-tertiary);
-  padding: 10px 12px;
-  border-radius: var(--radius-md);
-  overflow-x: auto;
-  margin: 6px 0;
-  font-family: var(--font-mono);
+[data-engine="zeroclaw"] .zc-services-row-value.is-mono {
+  font-family: var(--zc-font-mono, monospace);
   font-size: 12px;
-  line-height: 1.5;
+  color: var(--zc-text-secondary);
 }
-.zc-msg-content pre code { background: none; padding: 0; }
-.zc-msg-content a {
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+[data-engine="zeroclaw"] .zc-services-note {
+  color: var(--zc-text-secondary);
+  font-size: 13px;
+  line-height: 1.65;
 }
-.zc-msg-content strong { font-weight: 600; }
-.zc-msg-content em { font-style: italic; }
-.zc-msg-content ul, .zc-msg-content ol { margin: 4px 0; padding-left: 20px; }
-
-/* Meta footer */
-.zc-msg-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 4px;
+[data-engine="zeroclaw"] .zc-services-env-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
 }
-
-.zc-msg-meta--user {
-  justify-content: flex-end;
+[data-engine="zeroclaw"] .zc-services-env-card {
+  border: 1px solid var(--zc-border);
+  border-radius: 16px;
+  background: var(--zc-surface-1);
+  padding: 14px 16px;
 }
-
-.zc-msg-meta--assistant {
-  justify-content: flex-start;
+[data-engine="zeroclaw"] .zc-services-env-title {
+  font-family: var(--zc-font-serif, serif);
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--zc-text-primary);
+  margin-bottom: 8px;
 }
-
-.zc-msg-time {
-  font-size: 11px;
-  color: var(--text-tertiary);
+[data-engine="zeroclaw"] .zc-services-env-meta {
+  color: var(--zc-text-secondary);
+  font-family: var(--zc-font-mono, monospace);
+  font-size: 11.5px;
+  line-height: 1.7;
+  word-break: break-word;
 }
-
-.zc-msg-tokens {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  color: var(--text-tertiary);
-  background: var(--bg-tertiary);
-  padding: 1px 5px;
-  border-radius: var(--radius-sm);
+[data-engine="zeroclaw"] .zc-services-inline-msg {
+  font-family: var(--zc-font-mono, monospace);
+  font-size: 11.5px;
+  line-height: 1.6;
 }
-
-.zc-msg-copy {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  border-radius: var(--radius-sm);
+[data-engine="zeroclaw"] .zc-services-inline-msg[data-tone="success"] {
+  color: var(--zc-success);
+}
+[data-engine="zeroclaw"] .zc-services-inline-msg[data-tone="error"] {
+  color: var(--zc-error);
+}
+[data-engine="zeroclaw"] .zc-services-inline-msg[data-tone="warn"] {
+  color: var(--zc-warn);
+}
+[data-engine="zeroclaw"] .zc-services-health-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+[data-engine="zeroclaw"] .zc-services-health-card {
+  border: 1px solid var(--zc-border);
+  border-radius: 16px;
+  background: var(--zc-surface-1);
+  padding: 14px 16px;
+  min-height: 88px;
+}
+[data-engine="zeroclaw"] .zc-services-health-key {
+  font-family: var(--zc-font-mono, monospace);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--zc-text-tertiary);
+}
+[data-engine="zeroclaw"] .zc-services-health-value {
+  margin-top: 10px;
+  font-family: var(--zc-font-serif, serif);
+  font-size: 22px;
+  line-height: 1.2;
+  color: var(--zc-text-primary);
+  word-break: break-word;
+}
+[data-engine="zeroclaw"] .zc-services-json-wrap {
+  margin-top: 16px;
+}
+[data-engine="zeroclaw"] .zc-services-json-wrap summary {
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s, color 0.15s;
+  color: var(--zc-text-secondary);
+  font-size: 12px;
+  font-family: var(--zc-font-mono, monospace);
 }
-
-.zc-chat-msg:hover .zc-msg-copy {
-  opacity: 1;
+[data-engine="zeroclaw"] .zc-services-json {
+  margin-top: 10px;
+  max-height: 260px;
 }
-
-.zc-msg-copy:hover {
-  color: var(--accent);
-  background: var(--bg-tertiary);
-}
-
-/* Streaming dots */
-.zc-streaming-dots span {
-  display: inline-block;
-  animation: zcDotPulse 1.4s infinite;
-  font-weight: 700;
-  font-size: 20px;
-  line-height: 1;
-  color: var(--text-tertiary);
-}
-
-.zc-streaming-dots span:nth-child(2) { animation-delay: 0.2s; }
-.zc-streaming-dots span:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes zcDotPulse {
-  0%, 80%, 100% { opacity: 0.2; }
-  40% { opacity: 1; }
-}
-
-/* Input area */
-.zc-chat-input-area {
-  padding: 10px 16px 14px;
-  border-top: 1px solid var(--border-primary);
-  flex-shrink: 0;
-}
-
-.zc-chat-input-wrap {
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-}
-
-.zc-chat-input {
-  flex: 1;
-  resize: none;
-  padding: 10px 14px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-primary);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-size: 14px;
-  font-family: inherit;
-  line-height: 1.5;
-  transition: border-color 0.2s;
-  min-height: 42px;
-  max-height: 120px;
-}
-
-.zc-chat-input:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-muted);
-}
-
-.zc-chat-input::placeholder {
-  color: var(--text-tertiary);
-}
-
-.zc-chat-send-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: none;
-  border-radius: var(--radius-lg);
-  background: var(--accent);
-  color: #fff;
-  cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
-  flex-shrink: 0;
-}
-
-.zc-chat-send-btn:hover:not(:disabled) {
-  background: var(--accent-hover);
-}
-
-.zc-chat-send-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* ============================================================
- *  Model Config Page
- * ============================================================ */
-
-.zc-models-page .config-section {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  margin-bottom: 12px;
-}
-
-.zc-models-provider-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.zc-models-provider-name {
+[data-engine="zeroclaw"] .zc-services-empty {
+  padding: 18px 0 4px;
+  color: var(--zc-text-tertiary);
+  font-family: var(--zc-font-serif, serif);
+  font-style: italic;
   font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
+}
+[data-engine="zeroclaw"] .zc-services-action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+[data-engine="zeroclaw"] .zc-services-mode {
+  appearance: none;
 }
 
-.zc-models-provider-type {
-  font-size: 11px;
-  font-family: var(--font-mono);
-  color: var(--text-tertiary);
-  background: var(--bg-tertiary);
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
+@media (max-width: 960px) {
+  [data-engine="zeroclaw"].zc-usage-page {
+    padding: 24px 22px 34px;
+  }
+  [data-engine="zeroclaw"] .zc-usage-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  [data-engine="zeroclaw"].zc-services-page {
+    padding: 24px 22px 34px;
+  }
+  [data-engine="zeroclaw"] .zc-services-grid {
+    grid-template-columns: 1fr;
+  }
+  [data-engine="zeroclaw"] .zc-services-action-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.zc-models-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+@media (max-width: 720px) {
+  [data-engine="zeroclaw"] .zc-usage-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  [data-engine="zeroclaw"] .zc-usage-refresh {
+    width: 100%;
+  }
+  [data-engine="zeroclaw"] .zc-usage-stat-grid {
+    grid-template-columns: 1fr;
+  }
+  [data-engine="zeroclaw"] .zc-usage-model-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  [data-engine="zeroclaw"] .zc-usage-model-meta {
+    text-align: left;
+  }
+  [data-engine="zeroclaw"] .zc-usage-table th,
+  [data-engine="zeroclaw"] .zc-usage-table td {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+  [data-engine="zeroclaw"] .zc-services-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  [data-engine="zeroclaw"] .zc-services-env-grid,
+  [data-engine="zeroclaw"] .zc-services-health-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.zc-model-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 10px;
-  border-radius: var(--radius-md);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-secondary);
+/* ---- Responsive breakpoints ---- */
+@media (max-width: 960px) {
+  [data-engine="zeroclaw"] .zc-chat-sidebar {
+    width: 240px;
+    flex-basis: 240px;
+  }
+  [data-engine="zeroclaw"] .zc-chat-messages {
+    padding: 24px 28px;
+  }
+  [data-engine="zeroclaw"] .zc-chat-input-area {
+    padding: 14px 28px 16px;
+  }
+  [data-engine="zeroclaw"] .zc-chat-header {
+    padding: 14px 20px;
+  }
+}
+@media (max-width: 720px) {
+  [data-engine="zeroclaw"] .zc-chat-sidebar-backdrop {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 19;
+    opacity: 1;
+    pointer-events: auto;
+    background: rgba(28, 25, 23,0.28);
+    backdrop-filter: blur(2px);
+    transition: opacity 0.18s ease;
+  }
+  [data-engine="zeroclaw"] .zc-chat-shell.is-sidebar-collapsed .zc-chat-sidebar-backdrop {
+    opacity: 0;
+    pointer-events: none;
+  }
+  [data-engine="zeroclaw"] .zc-chat-shell.is-sidebar-collapsed .zc-chat-sidebar {
+    display: flex;
+  }
+  [data-engine="zeroclaw"] .zc-chat-sidebar {
+    /* Below 720px the sidebar floats over the main column instead of
+       sharing the row, so the chat surface gets the full viewport. */
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 280px;
+    flex-basis: 280px;
+    z-index: 20;
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.08);
+  }
+  [data-engine="zeroclaw"] .zc-chat-sidebar.is-collapsed {
+    transform: translateX(-100%);
+  }
+  [data-engine="zeroclaw"] .zc-chat-messages {
+    padding: 20px 18px;
+  }
+  [data-engine="zeroclaw"] .zc-chat-jump-bottom {
+    right: 18px;
+    bottom: 106px;
+  }
+  [data-engine="zeroclaw"] .zc-chat-input-area {
+    padding: 12px 18px 14px;
+  }
+  [data-engine="zeroclaw"] .zc-chat-msg-body {
+    max-width: 92%;
+  }
+  [data-engine="zeroclaw"] .zc-chat-input-area .zc-chat-slash-menu {
+    left: 18px;
+    right: 18px;
+  }
 }
 
-.zc-model-item-name {
-  font-size: 13px;
-  font-family: var(--font-mono);
-  color: var(--text-primary);
+@media (max-width: 860px) {
+  [data-engine="zeroclaw"].zc-extensions-page .zc-grid--2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  [data-engine="zeroclaw"].zc-extensions-page .zc-kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
-.zc-model-item-actions {
-  display: flex;
-  gap: 6px;
-}
-
-.zc-model-empty {
-  text-align: center;
-  padding: 24px;
-  color: var(--text-tertiary);
-  font-size: 13px;
-}

@@ -26,6 +26,13 @@ export default {
   hermesFound: _('Hermes Agent {version} 已安装', 'Hermes Agent {version} installed', 'Hermes Agent {version} 已安裝'),
   hermesNotFound: _('Hermes Agent 未安装', 'Hermes Agent not installed', 'Hermes Agent 未安裝'),
   hermesReady: _('Hermes Agent 已就绪，Gateway 运行中', 'Hermes Agent ready, Gateway running', 'Hermes Agent 已就緒，Gateway 運行中'),
+  // ZeroClaw
+  zeroclawSetupDesc: _('安装并配置 ZeroClaw', 'Install and configure ZeroClaw', '安裝並配置 ZeroClaw'),
+  zeroclawPhaseClickHint: _('点击可返回此步骤', 'Click to go back to this step', '點擊可返回此步驟'),
+  zeroclawSetupIntro: _('ZeroClaw 是一个轻量级 AI Agent 引擎。点击下方按钮一键安装，无需终端操作。', 'ZeroClaw is a lightweight AI Agent engine. Click the button below to install — no terminal needed.', 'ZeroClaw 是一個輕量級 AI Agent 引擎。點擊下方按鈕一鍵安裝，無需終端操作。'),
+  zeroclawFound: _('ZeroClaw {version} 已安装', 'ZeroClaw {version} installed', 'ZeroClaw {version} 已安裝'),
+  zeroclawNotFound: _('ZeroClaw 未安装', 'ZeroClaw not installed', 'ZeroClaw 未安裝'),
+  zeroclawReady: _('ZeroClaw 已就绪，Gateway 运行中', 'ZeroClaw ready, Gateway running', 'ZeroClaw 已就緒，Gateway 運行中'),
   // 安装阶段
   installTitle: _('安装 Hermes Agent', 'Install Hermes Agent', '安裝 Hermes Agent'),
   installDesc: _('通过 uv 自动安装（含 Python 环境），无需手动操作', 'Auto-install via uv (includes Python), no manual steps', '透過 uv 自動安裝（含 Python 環境），無需手動操作'),
