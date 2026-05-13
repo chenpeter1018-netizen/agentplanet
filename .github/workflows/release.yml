@@ -33,10 +33,6 @@ jobs:
             os: macos-latest
             args: --target x86_64-apple-darwin
             rust_target: x86_64-apple-darwin
-          - name: Linux (x64)
-            os: ubuntu-latest
-            args: ""
-            rust_target: ""
           - name: Windows (x64)
             os: windows-latest
             args: ""
@@ -87,18 +83,6 @@ jobs:
         with:
           workspaces: src-tauri -> target
           key: ${{ matrix.platform.name }}
-
-      - name: 安装 Linux 系统依赖
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            librsvg2-dev \
-            patchelf \
-            libssl-dev \
-            libgtk-3-dev \
-            libayatana-appindicator3-dev
 
       - name: 构建 Tauri 应用
         if: matrix.platform.name != 'Windows (x64) 完整包'
@@ -332,13 +316,6 @@ jobs:
             echo "| MSI 完整包 | [Agent-Planet_${VERSION}_x64-full_en-US.msi](${DL}/Agent-Planet_${VERSION}_x64-full_en-US.msi) | 含 WebView2 ~200 MB |"
             echo ""
             echo "> **💡 轻量版 vs 完整包**：Win10 1803+ 和 Win11 已预装 WebView2，推荐下载轻量版。如果是内网/断网环境，选择完整包。"
-            echo ""
-            echo "### Linux"
-            echo "| 格式 | 安装包 |"
-            echo "|------|--------|"
-            echo "| AppImage（免安装） | [Agent-Planet_${VERSION}_amd64.AppImage](${DL}/Agent-Planet_${VERSION}_amd64.AppImage) |"
-            echo "| DEB（Debian/Ubuntu） | [Agent-Planet_${VERSION}_amd64.deb](${DL}/Agent-Planet_${VERSION}_amd64.deb) |"
-            echo "| RPM（Fedora/RHEL） | [Agent-Planet-${VERSION}-1.x86_64.rpm](${DL}/Agent-Planet-${VERSION}-1.x86_64.rpm) |"
             echo ""
             echo "---"
             echo ""
