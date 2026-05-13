@@ -41,7 +41,7 @@ async function generateOne(priRaw, index) {
     licensee: `Agent Planet User ${String(index + 1).padStart(3, '0')}`,
     product: 'agent-planet-pro',
     issued_at: Math.floor(Date.now() / 1000),
-    expires_at: Math.floor(Date.now() / 1000) + 365 * 86400,
+    expires_at: 0,  // 永久有效
     max_machines: 3,
     key_id: randomBytes(6).toString('hex'),
   }
