@@ -99,7 +99,7 @@ async function generateLicense(opts) {
 
   const payload = {
     licensee: opts.licensee || '未命名用户',
-    product: 'agent-planet-pro',
+    product: 'ap',
     issued_at: Math.floor(Date.now() / 1000),
     expires_at: opts.days
       ? Math.floor(Date.now() / 1000) + opts.days * 86400

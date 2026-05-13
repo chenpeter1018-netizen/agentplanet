@@ -38,10 +38,10 @@ function base32Encode(bytes) {
 
 async function generateOne(priRaw, index) {
   const payload = {
-    licensee: `Agent Planet User ${String(index + 1).padStart(3, '0')}`,
-    product: 'agent-planet-pro',
+    licensee: `${index + 1}`,
+    product: 'ap',
     issued_at: Math.floor(Date.now() / 1000),
-    expires_at: 0,  // 永久有效
+    expires_at: 0,
     max_machines: 3,
     key_id: randomBytes(6).toString('hex'),
   }
