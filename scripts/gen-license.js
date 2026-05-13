@@ -12,8 +12,20 @@ import { fileURLToPath } from 'url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const KEY_FILE = join(__dirname, '..', '.license-key.json')
 const B32 = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+const ACTIVATION_SERVER = 'https://1344713238-grdts5pifw.ap-shanghai.tencentscf.com'
 
 // ═══════ Crypto ═══════
+
+async function deriveShortHmacKey(pubRaw) {
+  const prefix = new TextEncoder().encode('agent-planet-short-license-v1')
+  const combined = new Uint8Array([...prefix, ...pubRaw])
+  const hash = await crypto.subtle.digest('SHA-256', combined)
+  return crypto.subtle.importKey(
+    'raw', hash,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false, ['sign']
+  )
+}
 
 async function generateKeypair() {
   const { publicKey, privateKey } = await crypto.subtle.generateKey(
@@ -93,6 +105,39 @@ async function loadOrCreateKeypair() {
   return { pubRaw, priRaw }
 }
 
+// ═══════ Cloud Sync ═══════
+
+async function syncToCloud(keyId, maxMachines, expiresAt) {
+  try {
+    // 兼容新旧云函数：旧版要求 fingerprint 字段，新版支持 action:register
+    const resp = await fetch(ACTIVATION_SERVER, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'register',
+        key_id: keyId,
+        fingerprint: '__register__',
+        max_machines: maxMachines,
+        expires_at: expiresAt,
+      }),
+      signal: AbortSignal.timeout(10000),
+    })
+    const data = await resp.json()
+    if (data.success) {
+      console.log(`☁️  已同步到激活服务器 (key_id: ${keyId}, max: ${maxMachines})`)
+    } else {
+      console.error(`⚠️  云函数同步失败: ${data.error || JSON.stringify(data)}`)
+      if (data.error === 'max activations reached (3)') {
+        console.error('   (旧版云函数仍在使用，请部署 activation-server/tencent-scf.js 新版本)')
+      }
+    }
+    return data
+  } catch (e) {
+    console.error(`⚠️  无法连接激活服务器: ${e.message}`)
+    console.error('   注册码已本地生成，但未同步到云端。请手动同步或重试。')
+  }
+}
+
 // ═══════ Generate ═══════
 
 async function generateLicense(opts) {
@@ -134,6 +179,58 @@ async function generateLicense(opts) {
   console.log(`  注册码 ID: ${payload.key_id}`)
   console.log()
 
+  // 同步到腾讯云激活服务器
+  await syncToCloud(payload.key_id, payload.max_machines, payload.expires_at)
+
+  return key
+}
+
+async function generateShortLicense(opts) {
+  const { pubRaw } = await loadOrCreateKeypair()
+  const hmacKey = await deriveShortHmacKey(pubRaw)
+
+  const maxMachines = Math.min(opts.max || 3, 16)
+  const days = opts.days || 0
+
+  // 12 bytes total → 20 base32 chars → 5 groups → 6 segments with AGPT
+  const payload = new Uint8Array(5)
+  // Byte 0: version(4bit) | max_machines-1(4bit)
+  payload[0] = (0x01 << 4) | ((maxMachines - 1) & 0x0f)
+  // Bytes 1-2: expires_days (u16 LE)
+  payload[1] = days & 0xff
+  payload[2] = (days >> 8) & 0xff
+  // Bytes 3-4: key_id (2 random bytes)
+  const keyId = randomBytes(2)
+  payload[3] = keyId[0]
+  payload[4] = keyId[1]
+
+  const hmacSig = new Uint8Array(
+    await crypto.subtle.sign({ name: 'HMAC', hash: 'SHA-256' }, hmacKey, payload)
+  )
+
+  const raw = new Uint8Array([...payload, ...hmacSig.slice(0, 7)])
+  const encoded = base32Encode(raw)
+
+  const groups = []
+  for (let i = 0; i < encoded.length; i += 4) {
+    groups.push(encoded.slice(i, i + 4))
+  }
+  const key = 'AGPT-' + groups.join('-')
+
+  const keyIdHex = Buffer.from(keyId).toString('hex')
+  console.log('\n📜 短码注册码:')
+  console.log(`\n  ${key}\n`)
+  console.log('  ────────────────')
+  console.log(`  格式: 短码 v1 (HMAC-SHA256)`)
+  console.log(`  最大机器数: ${maxMachines}`)
+  console.log(`  到期: ${days ? `${days} 天后` : '永久有效'}`)
+  console.log(`  注册码 ID: ${keyIdHex}`)
+  console.log()
+
+  // 同步到腾讯云激活服务器
+  const expiresAt = days ? Math.floor(Date.now() / 1000) + days * 86400 : 0
+  await syncToCloud(keyIdHex, maxMachines, expiresAt)
+
   return key
 }
 
@@ -151,16 +248,22 @@ function getArg(name, fallback) {
   return idx === -1 ? fallback : (args[idx + 1] || fallback)
 }
 
+const useShort = args.includes('--short')
+
 const opts = {
   licensee: getArg('--licensee'),
   max: parseInt(getArg('--max', '3')),
   days: getArg('--days') ? parseInt(getArg('--days')) : undefined,
 }
 
-if (!opts.licensee) {
-  console.log('用法: node scripts/gen-license.js --licensee "客户名" [--max 3] [--days 365]')
-  console.log('      node scripts/gen-license.js --keypair  查看/生成密钥对')
-  process.exit(1)
+if (useShort) {
+  await generateShortLicense(opts)
+} else {
+  if (!opts.licensee) {
+    console.log('用法: node scripts/gen-license.js --licensee "客户名" [--max 3] [--days 365]')
+    console.log('      node scripts/gen-license.js --short [--max 3] [--days 365]')
+    console.log('      node scripts/gen-license.js --keypair  查看/生成密钥对')
+    process.exit(1)
+  }
+  await generateLicense(opts)
 }
-
-await generateLicense(opts)

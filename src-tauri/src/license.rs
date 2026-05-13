@@ -2,6 +2,7 @@
 /// Ed25519 数字签名验证 + 机器指纹绑定 + 3天离线试用
 
 use ed25519_dalek::{Signature, SigningKey, Verifier, VerifyingKey};
+use hmac::{Hmac, Mac};
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -114,13 +115,70 @@ fn verify_key(key: &str) -> Result<LicensePayload, String> {
         .collect::<String>()
         .to_ascii_uppercase();
     let encoded = cleaned.strip_prefix("AGPT").unwrap_or(&cleaned);
-    if encoded.len() < 64 { return Err("注册码格式不正确".into()); }
     let decoded = base32_decode(encoded).map_err(|e| format!("注册码解码失败: {e}"))?;
-    if decoded.len() < 64 { return Err("注册码内容不完整".into()); }
+
+    // 短码 v1: 12 bytes = 5B payload + 7B HMAC-SHA256 → 20 base32 chars → 6 segments
+    if decoded.len() == 12 && decoded.first().map(|b| b >> 4) == Some(0x01) {
+        return verify_short(&decoded);
+    }
+
+    // 长码: Ed25519 签名
+    if decoded.len() < 64 { return Err("注册码格式不正确".into()); }
     let (sig_bytes, body) = decoded.split_at(64);
     let sig = Signature::from_slice(sig_bytes).map_err(|e| format!("签名错误: {e}"))?;
     public_key()?.verify(body, &sig).map_err(|_| "注册码无效：签名验证不通过".to_string())?;
     serde_json::from_slice(body).map_err(|e| format!("载荷错误: {e}"))
+}
+
+// ═══════════════════════════════════════════
+// 短码验证 (HMAC-SHA256)
+// ═══════════════════════════════════════════
+
+fn short_hmac_key() -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(b"agent-planet-short-license-v1");
+    hasher.update(&PUBLIC_KEY_BYTES);
+    let result = hasher.finalize();
+    let mut key = [0u8; 32];
+    key.copy_from_slice(&result);
+    key
+}
+
+fn compute_short_hmac(payload: &[u8]) -> [u8; 32] {
+    let mut mac = Hmac::<Sha256>::new_from_slice(&short_hmac_key())
+        .expect("HMAC key is always 32 bytes");
+    mac.update(payload);
+    let result = mac.finalize();
+    let mut output = [0u8; 32];
+    output.copy_from_slice(&result.into_bytes());
+    output
+}
+
+/// 短码格式 v1: [version:4b|max-1:4b][expires_days:2B LE][key_id:2B][hmac:7B] = 12B
+fn verify_short(data: &[u8]) -> Result<LicensePayload, String> {
+    let payload = &data[..5];
+    let hmac_received: [u8; 7] = data[5..12].try_into().unwrap();
+
+    let expected = compute_short_hmac(payload);
+    if hmac_received != expected[..7] {
+        return Err("注册码无效：签名验证不通过".into());
+    }
+
+    let max_machines = ((data[0] & 0x0f) + 1) as u32;
+    let expires_days = u16::from_le_bytes([data[1], data[2]]) as u64;
+    let key_id = format!("{:02x}{:02x}", data[3], data[4]);
+
+    let now = now_secs();
+    let expires_at = if expires_days == 0 { 0 } else { now + expires_days * 86400 };
+
+    Ok(LicensePayload {
+        licensee: format!("短码-{}", &key_id[..4]),
+        product: "ap".into(),
+        issued_at: now,
+        expires_at,
+        max_machines,
+        key_id,
+    })
 }
 
 // ═══════════════════════════════════════════
@@ -177,6 +235,8 @@ fn activate_online(payload: &LicensePayload, fingerprint: &str) -> Result<String
     let body = serde_json::json!({
         "key_id": payload.key_id, "fingerprint": fingerprint,
         "product": payload.product, "licensee": payload.licensee,
+        "max_machines": payload.max_machines,
+        "expires_at": payload.expires_at,
     });
     let client = reqwest::blocking::Client::new()
         .post(ACTIVATION_SERVER).json(&body)

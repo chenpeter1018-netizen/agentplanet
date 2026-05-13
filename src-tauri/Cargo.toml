@@ -27,6 +27,7 @@ reqwest = { version = "0.12", features = ["json", "rustls-tls", "stream", "gzip"
 futures-util = "0.3"
 ed25519-dalek = { version = "2", features = ["rand_core"] }
 sha2 = "0.10"
+hmac = "0.12"
 rand = "0.8"
 base64 = "0.22"
 urlencoding = "2"
