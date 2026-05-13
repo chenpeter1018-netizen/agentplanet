@@ -391,6 +391,10 @@ const sidebar = document.getElementById('sidebar')
 const content = document.getElementById('content')
 
 async function boot() {
+  // 授权门禁：未激活则显示激活锁屏，阻止进入主界面
+  const licensed = await checkLicenseGate()
+  if (!licensed) return
+
   // 注册引擎
   registerEngine(openclawEngine)
   registerEngine(hermesEngine)
