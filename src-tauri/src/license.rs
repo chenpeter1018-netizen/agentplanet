@@ -109,9 +109,13 @@ fn public_key() -> Result<VerifyingKey, String> {
 }
 
 fn verify_key(key: &str) -> Result<LicensePayload, String> {
-    let cleaned: String = key.chars().filter(|c| c.is_alphanumeric()).collect();
-    if cleaned.len() < 64 { return Err("注册码格式不正确".into()); }
-    let decoded = base32_decode(&cleaned).map_err(|e| format!("注册码解码失败: {e}"))?;
+    let cleaned: String = key.chars()
+        .filter(|c| c.is_alphanumeric())
+        .collect::<String>()
+        .to_ascii_uppercase();
+    let encoded = cleaned.strip_prefix("AGPT").unwrap_or(&cleaned);
+    if encoded.len() < 64 { return Err("注册码格式不正确".into()); }
+    let decoded = base32_decode(encoded).map_err(|e| format!("注册码解码失败: {e}"))?;
     if decoded.len() < 64 { return Err("注册码内容不完整".into()); }
     let (sig_bytes, body) = decoded.split_at(64);
     let sig = Signature::from_slice(sig_bytes).map_err(|e| format!("签名错误: {e}"))?;
@@ -131,7 +135,11 @@ fn base32_decode(input: &str) -> Result<Vec<u8>, String> {
         let v = B32.iter().position(|&x| x == c.to_ascii_uppercase() as u8)
             .ok_or_else(|| format!("无效字符: {c}"))?;
         bits = (bits << 5) | v as u32; count += 5;
-        if count >= 8 { out.push((bits >> (count - 8)) as u8); count -= 8; }
+        if count >= 8 {
+            out.push((bits >> (count - 8)) as u8);
+            count -= 8;
+            bits &= (1u32 << count) - 1;
+        }
     }
     Ok(out)
 }
@@ -318,4 +326,34 @@ pub fn generate_keypair() -> (SigningKey, VerifyingKey) {
     let sk = SigningKey::generate(&mut csprng);
     let vk = sk.verifying_key();
     (sk, vk)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_base32_roundtrip() {
+        // 验证 JS BigInt + masking 编码能被 Rust u32 解码器正确解码
+        let input = b"{\"licensee\":\"1\",\"product\":\"ap\"}";
+        // 用 JS 端 base32Encode 对 input 编码的输出
+        let js_encoded = "RNTG24MDNXZHG3MFEJ7CENKCFSTHA6VRNT4YG7BCHJTGC6BCRW";
+        let decoded = base32_decode(js_encoded).unwrap();
+        assert_eq!(&decoded[..], &input[..], "base32 round-trip failed");
+    }
+
+    #[test]
+    fn test_verify_key_strips_agpt_prefix() {
+        // 构造一个完整的 AGPT-...-... 格式密钥，测试前缀剥离和签名验证
+        // 用 JS 生成的有效密钥（AGPT- 前缀 + dash 分隔）
+        let code = std::include_str!("../../licenses-100.txt")
+            .lines().next().expect("no codes").trim();
+        // 验证格式
+        assert!(code.starts_with("AGPT-"), "key should start with AGPT-");
+        // 完整验证
+        let payload = verify_key(code).expect("verify should succeed");
+        assert_eq!(payload.product, "ap");
+        assert_eq!(payload.expires_at, 0);
+        assert_eq!(payload.max_machines, 3);
+    }
 }

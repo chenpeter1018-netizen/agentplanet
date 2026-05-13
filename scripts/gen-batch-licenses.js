@@ -30,6 +30,7 @@ function base32Encode(bytes) {
     while (count >= 5n) {
       out += B32[Number((bits >> (count - 5n)) & 31n)]
       count -= 5n
+      bits &= (1n << count) - 1n
     }
   }
   if (count > 0n) out += B32[Number((bits << (5n - count)) & 31n)]

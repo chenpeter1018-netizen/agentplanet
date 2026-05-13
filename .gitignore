@@ -73,3 +73,5 @@ CONTEXT_STATE.md
 PROJECT_CONTRACT.md
 project.yaml
 .license-key.json
+.claude/settings.json
+binaries/

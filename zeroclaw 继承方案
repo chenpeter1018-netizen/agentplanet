@@ -1,0 +1,92 @@
+Agent Planet - ZeroClaw 集成  思路
+[!info] 记录目的
+本笔记记录 Agent Planet 集成 ZeroClaw 的上游依据和落地策略。产品决策是：ZeroClaw 必须预装内置，用户不用二次安装。
+
+上游来源
+仓库：
+zeroclaw-labs/zeroclaw
+ 安装文档：
+https://github.com/zeroclaw-labs/zeroclaw/blob/master/docs/book/src/setup/windows.md
+https://github.com/zeroclaw-labs/zeroclaw/blob/master/docs/book/src/setup/macos.md
+当前查阅时最新 release：
+
+ 
+ZeroClaw 是一个可配置、可本机运行的 Rust 单二进制 agent runtime。
+上游 README 描述它可以连接 LLM providers、channels、tools，并在本机工作区运行。
+Windows 文档提供 release zip + setup.bat 的安装方式。
+Windows 文档也提供 zeroclaw service install 和 zeroclaw service start 的常驻运行方式。
+当前查阅时最新 release 是 v0.7.4，发布时间 2026-05-01。
+Windows 预编译资产：zeroclaw-x86_64-pc-windows-msvc.zip。
+同 release 提供 SHA256SUMS。
+Agent Planet 集成决策
+Agent Planet 不让用户手动安装 ZeroClaw。原因：
+
+目标是安装 Agent Planet 后直接可用。
+中国区域可能无法稳定访问 GitHub Release。
+ 
+Agent Planet 需要把 ZeroClaw 纳入统一服务管理、备份、检测修复和开机自启。
+打包策略
+安装版：
+
+AgentPlanet/
+├─ engines/
+│  └─ zeroclaw/
+│     ├─ bin/
+│     │  └─ zeroclaw.exe
+│     ├─ config/
+│     ├─ knowledge/
+│     ├─ logs/
+│     └─ VERSION
+├─ backups/
+└─ runtime-cache/
+
+构建期流程
+读取 ZeroClaw 最新 release。
+下载  
+ 预安装
+打包进 Tauri 安装包 
+运行期流程
+Agent Planet 启动后检测  
+如果存在，读取版本并展示状态。
+如果缺失 
+ 
+便携版优先用相对路径作为后台子进程运行，避免写入全局用户目录。
+ZeroClaw 的配置、知识库、日志全部写 Agent Planet 自有目录。
+对话能力
+服务管理页能力
+查看 ZeroClaw 版本。
+启动/停止/重启 ZeroClaw。
+设置开机自启。
+运行健康检查。
+修复缺失二进制。
+打开知识库目录。
+打开日志目录。
+备份 OpenClaw/Hermes/ZeroClaw 关键配置。
+待实现命令
+Rust/Tauri commands：
+
+zeroclaw_status
+zeroclaw_start
+zeroclaw_stop
+zeroclaw_restart
+zeroclaw_version
+zeroclaw_health_check
+zeroclaw_backup_now
+zeroclaw_list_backups
+zeroclaw_restore_backup
+zeroclaw_runtime_probe
+zeroclaw_runtime_install
+zeroclaw_runtime_repair_path
+zeroclaw_runtime_report
+验收标准：
+全新安装 Agent Planet 后，ZeroClaw 已存在于本地目录。
+用户不需要下载 ZeroClaw。
+用户不需要运行 setup.bat。
+用户不需要手动执行 zeroclaw service install/start。
+断网环境中仍可启动 Agent Planet，并看到 ZeroClaw 本地状态。
+ZeroClaw 配置、日志、知识库不写入参考项目目录。
+
+
+
+
+
