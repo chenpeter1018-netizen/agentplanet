@@ -87,14 +87,34 @@ jobs:
         with:
           targets: ${{ matrix.platform.rust_target }}
 
-      - name: Rust 编译 (独立运行，确认正常)
+      - name: Rust 编译 (捕获日志)
         shell: bash
+        env:
+          RUST_BACKTRACE: full
+          CARGO_TERM_VERBOSE: "true"
         run: |
           echo "=== Rust: $(rustc -V) ==="
-          echo "=== 开始 cargo build --release ==="
+          echo "=== 系统: $(uname -a) ==="
+          echo "=== Git 检查: $(git rev-parse --show-toplevel 2>&1 || echo 'git failed') ==="
+          set +e
           cd src-tauri
-          cargo build --release ${{ matrix.platform.args }}
-          echo "=== cargo build 完成 ==="
+          cargo build --release ${{ matrix.platform.args }} > /tmp/cargo-build.log 2>&1
+          EXIT_CODE=$?
+          set -e
+          echo "=== cargo build exit code: $EXIT_CODE ==="
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "=== 最后 400 行编译日志 ==="
+            tail -400 /tmp/cargo-build.log
+          fi
+          exit $EXIT_CODE
+
+      - name: 上传编译日志 (失败时)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cargo-build-log-${{ matrix.platform.name }}
+          path: /tmp/cargo-build.log
+          retention-days: 3
 
       # ── macOS 构建和打包 ──────────────────────────────────────────────────
       - name: macOS Tauri 打包
