@@ -4,7 +4,6 @@
 use serde_json::Value;
 use std::path::PathBuf;
 use std::sync::Mutex;
-use tauri::Emitter;
 use tauri::Manager;
 
 fn planet_data_root() -> PathBuf {
@@ -24,14 +23,15 @@ fn zeroclaw_bin() -> PathBuf {
 }
 
 fn zeroclaw_bin_name() -> &'static str {
-    #[cfg(target_os = "windows")]
-    { "zeroclaw.exe" }
-    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-    { "zeroclaw-aarch64" }
-    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
-    { "zeroclaw-linux" }
-    #[cfg(not(target_os = "windows"))]
-    { "zeroclaw" }
+    if cfg!(target_os = "windows") {
+        "zeroclaw.exe"
+    } else if cfg!(target_os = "macos") && cfg!(target_arch = "aarch64") {
+        "zeroclaw-aarch64"
+    } else if cfg!(target_os = "linux") && cfg!(target_arch = "x86_64") {
+        "zeroclaw-linux"
+    } else {
+        "zeroclaw"
+    }
 }
 
 fn zeroclaw_config_dir() -> PathBuf {
