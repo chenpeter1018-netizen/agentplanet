@@ -15,9 +15,46 @@ on:
         default: 'v1.0.0'
 
 jobs:
+  # ── 创建 Release（只执行一次）───────────────────────────────────────────────
+  create-release:
+    name: 创建 Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tag_name: ${{ steps.vars.outputs.TAG_NAME }}
+      version: ${{ steps.vars.outputs.VERSION }}
+    steps:
+      - name: 签出代码
+        uses: actions/checkout@v4
+
+      - name: 设置版本标签
+        id: vars
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag_name }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+          VERSION="${TAG#v}"
+          echo "TAG_NAME=$TAG" >> "$GITHUB_OUTPUT"
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: 创建 GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          TAG="${{ steps.vars.outputs.TAG_NAME }}"
+          gh release create "$TAG" --title "agentplanet $TAG" \
+            --notes "正在构建所有平台安装包，请稍候..." \
+            --draft=false --prerelease=false 2>/dev/null || echo "Release 已存在"
+
   # ── 跨平台构建 job ─────────────────────────────────────────────────────────
   build:
     name: 构建 (${{ matrix.platform.name }})
+    needs: create-release
     runs-on: ${{ matrix.platform.os }}
     permissions:
       contents: write
@@ -49,6 +86,7 @@ jobs:
           fetch-depth: 0
 
       - name: 配置 Git 安全目录
+        shell: bash
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: 设置版本标签
@@ -68,6 +106,7 @@ jobs:
           cache: npm
 
       - name: 安装前端依赖
+        shell: bash
         run: npm ci
 
       - name: 同步版本号到构建产物
@@ -85,36 +124,82 @@ jobs:
         uses: swatinem/rust-cache@v2
         with:
           workspaces: src-tauri -> target
-          key: ${{ matrix.platform.name }}
 
-      - name: 构建 Tauri 应用
-        if: matrix.platform.name != 'Windows (x64) 完整包'
-        uses: tauri-apps/tauri-action@v0
+      # ── macOS 构建（Apple Silicon / Intel）────────────────────────────────
+      - name: 构建 Tauri 应用 (macOS)
+        if: runner.os == 'macOS' && matrix.platform.name != 'Windows (x64) 完整包'
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # macOS 代码签名（可选）
-          # APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          # APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          # APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          # APPLE_ID: ${{ secrets.APPLE_ID }}
-          # APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          # Windows 代码签名（可选）
-          # TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          # TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        with:
-          tagName: ${{ env.TAG_NAME }}
-          releaseName: "agentplanet ${{ env.TAG_NAME }}"
-          releaseBody: "正在构建所有平台安装包，请稍候..."
-          releaseDraft: false
-          prerelease: false
-          args: ${{ matrix.platform.args }}
-
-      # ── Windows 完整包（内嵌 WebView2 离线安装器）──────────────────────────────
-      - name: 配置 WebView2 完整包模式
-        if: matrix.platform.name == 'Windows (x64) 完整包'
-        shell: bash
         run: |
+          set -euo pipefail
+          VERSION="${TAG_NAME#v}"
+          echo "=== 开始构建 macOS: ${{ matrix.platform.args }} ==="
+          echo "Node: $(node -v), npm: $(npm -v)"
+          echo "Rust: $(rustc -V)"
+          echo "Cargo: $(cargo -V)"
+
+          # 先单独跑前端构建确认正常
+          echo "=== 前端构建 ==="
+          npm run build
+          echo "=== dist 目录 ==="
+          ls -la dist/ | head -20
+          echo "dist 文件数: $(find dist -type f | wc -l)"
+
+          # 构建 Tauri
+          echo "=== Tauri 构建 ==="
+          npm run tauri build -- ${{ matrix.platform.args }}
+
+          # 上传产物
+          echo "=== 上传产物 ==="
+          if [[ "${{ matrix.platform.args }}" == *"aarch64"* ]]; then
+            DMG="src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/Agent-Planet_${VERSION}_aarch64.dmg"
+          else
+            DMG="src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/Agent-Planet_${VERSION}_x64.dmg"
+          fi
+          echo "DMG 路径: $DMG"
+          ls -la "$DMG" || (echo "DMG 不存在!" && find src-tauri/target -name "*.dmg" 2>/dev/null && exit 1)
+          gh release upload "$TAG_NAME" "$DMG" --clobber
+          echo "✅ macOS 构建完成"
+
+      # ── Windows 标准构建 ──────────────────────────────────────────────────
+      - name: 构建 Tauri 应用 (Windows)
+        if: runner.os == 'Windows' && matrix.platform.name == 'Windows (x64)'
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          VERSION="${TAG_NAME#v}"
+          echo "=== 开始构建 Windows (x64) ==="
+          echo "Node: $(node -v), npm: $(npm -v)"
+          echo "Rust: $(rustc -V)"
+
+          echo "=== 前端构建 ==="
+          npm run build
+
+          echo "=== Tauri 构建 ==="
+          npm run tauri build
+
+          echo "=== 上传产物 ==="
+          BUNDLE="src-tauri/target/release/bundle"
+          ls -la "${BUNDLE}/nsis/" || (echo "NSIS 目录不存在!" && find src-tauri/target -name "*.exe" -o -name "*.msi" 2>/dev/null && exit 1)
+
+          gh release upload "$TAG_NAME" \
+            "${BUNDLE}/nsis/Agent-Planet_${VERSION}_x64-setup.exe" \
+            "${BUNDLE}/msi/Agent-Planet_${VERSION}_x64_en-US.msi" --clobber
+          echo "✅ Windows 构建完成"
+
+      # ── Windows 完整包（内嵌 WebView2 离线安装器）────────────────────────
+      - name: 构建 Tauri 应用 (Windows 完整包)
+        if: runner.os == 'Windows' && matrix.platform.name == 'Windows (x64) 完整包'
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          VERSION="${TAG_NAME#v}"
+          echo "=== 配置 WebView2 离线安装器 ==="
           node -e "
             const fs = require('fs');
             const f = 'src-tauri/tauri.conf.json';
@@ -123,38 +208,29 @@ jobs:
             fs.writeFileSync(f, JSON.stringify(c, null, 2));
           "
 
-      - name: 构建 Windows 完整包
-        if: matrix.platform.name == 'Windows (x64) 完整包'
-        shell: bash
-        run: npx tauri build
+          echo "=== 前端构建 ==="
+          npm run build
 
-      - name: 重命名并上传完整包
-        if: matrix.platform.name == 'Windows (x64) 完整包'
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION="${TAG_NAME#v}"
-          BUNDLE_DIR="src-tauri/target/release/bundle"
+          echo "=== Tauri 构建 ==="
+          npm run tauri build
 
-          # 确保 Release 已存在（可能被其他 matrix job 的 tauri-action 创建）
-          gh release create "$TAG_NAME" --title "agentplanet $TAG_NAME" \
-            --notes "正在构建所有平台安装包，请稍候..." 2>/dev/null || true
+          echo "=== 上传产物 ==="
+          BUNDLE="src-tauri/target/release/bundle"
 
-          # 重命名 NSIS exe 并上传
-          mv "${BUNDLE_DIR}/nsis/Agent-Planet_${VERSION}_x64-setup.exe" \
-             "${BUNDLE_DIR}/nsis/Agent-Planet_${VERSION}_x64-setup-full.exe"
+          # 重命名 + 上传 NSIS
+          cp "${BUNDLE}/nsis/Agent-Planet_${VERSION}_x64-setup.exe" \
+             "${BUNDLE}/nsis/Agent-Planet_${VERSION}_x64-setup-full.exe"
           gh release upload "$TAG_NAME" \
-             "${BUNDLE_DIR}/nsis/Agent-Planet_${VERSION}_x64-setup-full.exe" --clobber
+             "${BUNDLE}/nsis/Agent-Planet_${VERSION}_x64-setup-full.exe" --clobber
 
-          # 重命名 MSI 并上传
-          mv "${BUNDLE_DIR}/msi/Agent-Planet_${VERSION}_x64_en-US.msi" \
-             "${BUNDLE_DIR}/msi/Agent-Planet_${VERSION}_x64-full_en-US.msi"
+          # 重命名 + 上传 MSI
+          cp "${BUNDLE}/msi/Agent-Planet_${VERSION}_x64_en-US.msi" \
+             "${BUNDLE}/msi/Agent-Planet_${VERSION}_x64-full_en-US.msi"
           gh release upload "$TAG_NAME" \
-             "${BUNDLE_DIR}/msi/Agent-Planet_${VERSION}_x64-full_en-US.msi" --clobber
+             "${BUNDLE}/msi/Agent-Planet_${VERSION}_x64-full_en-US.msi" --clobber
+          echo "✅ Windows 完整包构建完成"
 
-  # ── 所有平台构建完成后，统一更新 Release Notes ─────────────────────────────
-  # 独立 job 确保只执行一次，彻底避免多个 matrix job 的竞争条件
+  # ── 所有平台构建完成后，统一更新 Release Notes ─────────────────────────
   update-release-notes:
     name: 更新 Release Notes
     needs: build
@@ -170,6 +246,7 @@ jobs:
           fetch-depth: 0
 
       - name: 配置 Git 安全目录
+        shell: bash
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: 设置版本标签
@@ -192,30 +269,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           VERSION="${TAG_NAME#v}"
 
-          # 构建前端
           npm ci
           npm run build
 
-          # 打包 dist 目录为 zip
           cd dist
           zip -r "../web-${VERSION}.zip" .
           cd ..
 
-          # 计算 SHA-256
           HASH=$(sha256sum "web-${VERSION}.zip" | cut -d' ' -f1)
-          SIZE=$(stat -c%s "web-${VERSION}.zip" 2>/dev/null || stat -f%z "web-${VERSION}.zip")
+          SIZE=$(stat -c%s "web-${VERSION}.zip")
 
-          # 上传为 Release Asset
           gh release upload "$TAG_NAME" "web-${VERSION}.zip" --clobber
 
-          # 读取现有 minAppVersion（前端热更新通常不需要更新 Rust 后端，保留旧值）
           MIN_APP_VER=$(cat docs/update/latest.json 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('minAppVersion','0.9.0'))" 2>/dev/null || echo "0.9.0")
 
-          # 更新 docs/update/latest.json
           DL_URL="https://github.com/${{ github.repository }}/releases/download/${TAG_NAME}/web-${VERSION}.zip"
-          cat > docs/update/latest.json << EOF
+          cat > docs/update/latest.json << JSONEOF
           {
             "version": "${VERSION}",
             "minAppVersion": "${MIN_APP_VER}",
@@ -225,11 +297,9 @@ jobs:
             "changelog": "",
             "releasedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           }
-          EOF
-          # 去掉 heredoc 缩进
+          JSONEOF
           sed -i 's/^          //' docs/update/latest.json
 
-          # 提交 latest.json 到 main 分支
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/update/latest.json
@@ -243,10 +313,10 @@ jobs:
           BUILD_RESULT: ${{ needs.build.result }}
           REPO: ${{ github.repository }}
         run: |
+          set -euo pipefail
           VERSION="${TAG_NAME#v}"
           DL="https://github.com/${REPO}/releases/download/${TAG_NAME}"
 
-          # ── 生成分类 Changelog ──
           PREV_TAG=$(git tag --sort=-v:refname | grep -E '^v' | sed -n '2p' || echo "")
           if [ -n "$PREV_TAG" ]; then
             RANGE="${PREV_TAG}..HEAD"
@@ -256,7 +326,6 @@ jobs:
             CHANGELOG_HEADER="主要变更"
           fi
 
-          # 按 conventional commit 前缀分类
           get_logs() {
             local prefix="$1"
             if [ -n "$RANGE" ]; then
@@ -290,14 +359,12 @@ jobs:
             CHANGELOG_BODY=$'\n- 常规更新与优化\n'
           fi
 
-          # ── 构建状态 ──
           if [ "$BUILD_RESULT" = "success" ]; then
             STATUS_BADGE="✅ 全部平台构建成功"
           else
             STATUS_BADGE="⚠️ 部分平台构建失败，请查看 [Actions 日志](https://github.com/${REPO}/actions)"
           fi
 
-          # ── 写入 Release Notes ──
           {
             echo "${STATUS_BADGE}"
             echo ""
