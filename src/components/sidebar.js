@@ -111,44 +111,18 @@ let _delegated = false
 // === 引擎切换器 ===
 function _renderEngineSwitcher() {
   const engines = listEngines()
-  if (engines.length < 2) return '' // 只有一个引擎时不显示
-  const active = getActiveEngine()
-  if (!active) return ''
+  if (engines.length < 2) return ''
+  const activeId = getActiveEngineId()
   return `<div class="engine-switcher" id="engine-switcher">
     <div class="engine-switcher-label">${_escSidebar(t('engine.switcherSectionLabel'))}</div>
-    <button class="engine-current" id="btn-engine-toggle" title="${_escSidebar(t('engine.switcherTooltip'))}" aria-haspopup="listbox" aria-expanded="false">
-      <span class="engine-icon">${active.icon || ''}</span>
-      <span class="engine-label">${_escSidebar(active.name)}</span>
-      <svg class="engine-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M6 9l6 6 6-6"/></svg>
-    </button>
-    <div class="engine-dropdown" id="engine-dropdown">
-      ${engines.map(e => `<div class="engine-option${e.id === active.id ? ' active' : ''}" data-engine="${e.id}">
+    <div class="engine-list">
+      ${engines.map(e => `<div class="engine-row${e.id === activeId ? ' active' : ''}" data-engine="${e.id}">
         <span class="engine-opt-icon">${e.icon || ''}</span>
         <span class="engine-opt-name">${_escSidebar(e.name)}</span>
-        ${e.id === active.id ? '<span class="engine-active-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>' : ''}
+        ${e.id === activeId ? '<span class="engine-active-dot"></span>' : ''}
       </div>`).join('')}
     </div>
   </div>`
-}
-
-function _closeEngineDropdown() {
-  const dd = document.getElementById('engine-dropdown')
-  if (dd) dd.classList.remove('open')
-  const btn = document.getElementById('btn-engine-toggle')
-  if (btn) btn.setAttribute('aria-expanded', 'false')
-}
-
-function _toggleEngineDropdown() {
-  const dd = document.getElementById('engine-dropdown')
-  if (!dd) return
-  const btn = document.getElementById('btn-engine-toggle')
-  if (dd.classList.contains('open')) {
-    dd.classList.remove('open')
-    if (btn) btn.setAttribute('aria-expanded', 'false')
-    return
-  }
-  dd.classList.add('open')
-  if (btn) btn.setAttribute('aria-expanded', 'true')
 }
 
 const LS_SIDEBAR_COLLAPSED = 'agent_planet_sidebar_collapsed'
@@ -356,20 +330,12 @@ export function renderSidebar(el) {
         }
         return
       }
-      // 引擎切换器：打开/关闭下拉
-      const engineBtn = e.target.closest('#btn-engine-toggle')
-      if (engineBtn) {
-        _toggleEngineDropdown()
-        return
-      }
-      // 引擎选项点击
-      const engineOpt = e.target.closest('.engine-option[data-engine]')
-      if (engineOpt) {
-        const eid = engineOpt.dataset.engine
-        _closeEngineDropdown()
+      // 引擎行点击
+      const engineRow = e.target.closest('.engine-row[data-engine]')
+      if (engineRow) {
+        const eid = engineRow.dataset.engine
         if (eid !== getActiveEngineId()) {
-          engineOpt.style.opacity = '0.5'
-          // 立即在内容区显示加载骨架，避免切换期间空白
+          engineRow.style.opacity = '0.5'
           const contentEl = document.getElementById('content')
           if (contentEl) {
             contentEl.innerHTML = `<div class="page" style="padding:32px">
@@ -383,7 +349,6 @@ export function renderSidebar(el) {
           switchEngine(eid).then(() => {
             toast(t('engine.switchedTo', { name: getActiveEngine()?.name || eid }), 'success')
             renderSidebar(el)
-            // 跳转到新引擎的默认或 setup 页
             const eng = getActiveEngine()
             if (eng) {
               navigate(eng.isReady() ? eng.getDefaultRoute() : eng.getSetupRoute())
@@ -392,7 +357,6 @@ export function renderSidebar(el) {
             console.error('[sidebar] 切换引擎失败:', err)
             toast(t('engine.switchFailed') || '引擎切换失败，请稍后重试', 'error')
             renderSidebar(el)
-            // 恢复内容区：重新加载当前路由或显示错误占位
             const contentEl = document.getElementById('content')
             if (contentEl) {
               const hash = window.location.hash.slice(1) || '/'
@@ -405,10 +369,6 @@ export function renderSidebar(el) {
           })
         }
         return
-      }
-      // 点击其他区域关闭下拉
-      if (!e.target.closest('.engine-switcher')) {
-        _closeEngineDropdown()
       }
     })
 

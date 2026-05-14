@@ -9,10 +9,59 @@ import { wsClient } from '../lib/ws-client.js'
 
 let _loadSeq = 0
 let _selectedAgentId = null // null = default (main)
+const _translations = new Map() // 翻译缓存
 
 function esc(str) {
   if (!str) return ''
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+async function translateText(text) {
+  if (!text || !text.trim()) return ''
+  // 如果已经全是中文或没有英文字母，直接返回
+  if (!/[a-zA-Z]{4,}/.test(text) && /[一-鿿]/.test(text)) return text
+  const cached = _translations.get(text)
+  if (cached) return cached
+
+  try {
+    const config = await api.readOpenclawConfig().catch(() => null)
+    const port = config?.gateway?.port || 18789
+    const token = config?.gateway?.auth?.token || ''
+    // 从模型列表取第一个可用模型
+    let model = 'claude-sonnet-4-6'
+    const providers = config?.models?.providers || {}
+    for (const [, pv] of Object.entries(providers)) {
+      for (const m of (pv.models || [])) {
+        const mid = typeof m === 'string' ? m : m.id
+        if (mid && mid.includes('sonnet')) { model = mid; break }
+      }
+    }
+
+    const resp = await fetch(`http://127.0.0.1:${port}/v1/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: '你是一个专业翻译。将用户输入的英文翻译为简洁准确的中文。只输出中文译文，不要解释。' },
+          { role: 'user', content: text },
+        ],
+        temperature: 0.1,
+        max_tokens: 2048,
+      }),
+    })
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+    const data = await resp.json()
+    const translated = data?.choices?.[0]?.message?.content?.trim() || ''
+    if (translated) _translations.set(text, translated)
+    return translated || text
+  } catch (e) {
+    console.warn('[Skills] 翻译失败:', e)
+    return text // 失败返回原文
+  }
 }
 
 export async function render() {
@@ -178,8 +227,6 @@ function renderSkills(el, data) {
         <div class="form-hint">${t('skills.noSkillsHint')}</div>
       </div>
     </div>` : ''}
-
-    <div id="skill-detail-area"></div>
   `
 
   // 实时过滤
@@ -229,7 +276,7 @@ function renderSkillCard(skill, status) {
   }
 
   return `
-    <div class="clawhub-item skill-card-item" data-name="${esc(name)}" data-desc="${esc(desc)}">
+    <div class="clawhub-item skill-card-item" data-name="${esc(name)}" data-desc="${esc(desc)}" data-skill='${esc(JSON.stringify({ emoji, name, desc, source, homepage: skill.homepage || '', status }))}'>
       <div class="clawhub-item-main">
         <div class="clawhub-item-title">${emoji} ${esc(name)}</div>
         <div class="clawhub-item-meta">${esc(source)}${skill.homepage ? ` · <a href="${esc(skill.homepage)}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(skill.homepage)}</a>` : ''}</div>
@@ -247,13 +294,29 @@ function renderSkillCard(skill, status) {
 }
 
 async function handleInfo(page, name) {
-  const detail = page.querySelector('#skill-detail-area')
-  if (!detail) return
-  detail.innerHTML = `<div class="form-hint" style="margin-top:var(--space-md)">${t('skills.loadingDetail')}</div>`
-  detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  const card = page.querySelector(`.skill-card-item[data-name="${esc(name)}"]`)
+  if (!card) return
+
+  // 如果已展开同一个 skill，关闭它
+  const existing = card.nextElementSibling
+  if (existing && existing.classList.contains('skill-detail-inline') && existing.dataset.skillName === name) {
+    existing.remove()
+    return
+  }
+
+  // 关闭其他已展开的详情
+  page.querySelectorAll('.skill-detail-inline').forEach(el => el.remove())
+
+  // 创建行内详情容器
+  const panel = document.createElement('div')
+  panel.className = 'skill-detail-inline'
+  panel.dataset.skillName = name
+  panel.innerHTML = `<div class="form-hint" style="padding:12px 16px">${t('skills.loadingDetail')}</div>`
+  card.insertAdjacentElement('afterend', panel)
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+
   try {
     let skill = null
-    // 优先 Gateway RPC（可获取 ClawHub 远程详情），回退 Tauri 本地
     if (wsClient.connected && wsClient.gatewayReady) {
       try { skill = await wsClient.skillsDetail(name) } catch {}
     }
@@ -261,7 +324,6 @@ async function handleInfo(page, name) {
     const s = skill || {}
     const reqs = s.requirements || {}
     const miss = s.missing || {}
-
     let reqsHtml = ''
     if (reqs.bins?.length) {
       reqsHtml += `<div style="margin-top:8px"><strong>${t('skills.reqBins')}:</strong> ${reqs.bins.map(b => {
@@ -276,20 +338,29 @@ async function handleInfo(page, name) {
       }).join(' ')}</div>`
     }
 
-    detail.innerHTML = `
-      <div class="clawhub-detail-card">
-        <div class="clawhub-detail-title">${esc(s.emoji || '📦')} ${esc(s.name || name)}</div>
-        <div class="clawhub-detail-meta">
+    const desc = s.description || ''
+    const hasEn = /[a-zA-Z]{4,}/.test(desc)
+
+    panel.innerHTML = `
+      <div class="skill-detail-inline-card">
+        <div class="skill-detail-inline-header">
+          <span class="skill-detail-inline-title">${esc(s.emoji || '📦')} ${esc(s.name || name)}</span>
+          <button class="skill-detail-inline-close" data-action="skill-info-close" data-name="${esc(name)}">&times;</button>
+        </div>
+        <div class="skill-detail-inline-meta">
           ${t('skills.detailSource')}: ${esc(s.source || '')} · ${t('skills.detailPath')}: <code>${esc(s.filePath || '')}</code>
           ${s.homepage ? ` · <a href="${esc(s.homepage)}" target="_blank" rel="noopener">${esc(s.homepage)}</a>` : ''}
         </div>
-        <div class="clawhub-detail-desc" style="margin-top:8px">${esc(s.description || '')}</div>
+        <div class="skill-detail-inline-desc" data-original="${esc(desc)}">
+          ${desc ? esc(desc) : `<span style="color:var(--text-tertiary)">${t('skills.noDescription')}</span>`}
+          ${hasEn ? `<button class="btn btn-sm btn-secondary" data-action="skill-translate" data-name="${esc(name)}" style="margin-left:8px;font-size:var(--font-size-xs);padding:2px 8px">${t('skills.translate')}</button>` : ''}
+        </div>
         ${reqsHtml}
-        ${(s.install || []).length && !s.eligible ? `<div style="margin-top:8px"><strong>${t('skills.installOptions')}:</strong> ${s.install.map(i => `<span class="form-hint">→ ${esc(i.label)}</span>`).join(' ')}</div>` : ''}
+        ${(s.install || []).length && !s.eligible ? `<div style="margin-top:8px;color:var(--text-secondary);font-size:var(--font-size-sm)"><strong>${t('skills.installOptions')}:</strong> ${s.install.map(i => `<span class="form-hint">→ ${esc(i.label)}</span>`).join(' ')}</div>` : ''}
       </div>
     `
   } catch (e) {
-    detail.innerHTML = `<div style="color:var(--error);margin-top:var(--space-md)">${t('skills.detailLoadFailed')}: ${esc(e?.message || e)}</div>`
+    panel.innerHTML = `<div class="skill-detail-inline-card" style="color:var(--error);padding:12px 16px">${t('skills.detailLoadFailed')}: ${esc(e?.message || e)}</div>`
   }
 }
 
@@ -462,6 +533,36 @@ function bindEvents(page) {
       case 'skill-info':
         await handleInfo(page, btn.dataset.name)
         break
+      case 'skill-info-close': {
+        const inline = btn.closest('.skill-detail-inline')
+        if (inline) inline.remove()
+        break
+      }
+      case 'skill-translate': {
+        const descEl = btn.closest('.skill-detail-inline-desc')
+        const original = descEl?.dataset.original || ''
+        if (original) {
+          btn.disabled = true
+          btn.textContent = t('skills.translating')
+          const result = await translateText(original)
+          if (result && result !== original) {
+            descEl.innerHTML = `${esc(result)}<button class="btn btn-sm btn-secondary" data-action="skill-translate-back" data-original="${esc(original)}" style="margin-left:8px;font-size:var(--font-size-xs);padding:2px 8px">${t('skills.showOriginal')}</button>`
+          } else {
+            btn.disabled = false
+            btn.textContent = t('skills.translate')
+          }
+        }
+        break
+      }
+      case 'skill-translate-back': {
+        const descEl = btn.closest('.skill-detail-inline-desc')
+        const original = btn.dataset.original || ''
+        const hasEn = /[a-zA-Z]{4,}/.test(original)
+        if (descEl) {
+          descEl.innerHTML = `${esc(original)}${hasEn ? `<button class="btn btn-sm btn-secondary" data-action="skill-translate" data-name="${esc(btn.dataset.name || '')}" style="margin-left:8px;font-size:var(--font-size-xs);padding:2px 8px">${t('skills.translate')}</button>` : ''}`
+        }
+        break
+      }
       case 'skill-install-dep':
         await handleInstallDep(page, btn)
         break

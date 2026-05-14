@@ -26,13 +26,6 @@ export default {
   hermesFound: _('Hermes Agent {version} 已安装', 'Hermes Agent {version} installed', 'Hermes Agent {version} 已安裝'),
   hermesNotFound: _('Hermes Agent 未安装', 'Hermes Agent not installed', 'Hermes Agent 未安裝'),
   hermesReady: _('Hermes Agent 已就绪，Gateway 运行中', 'Hermes Agent ready, Gateway running', 'Hermes Agent 已就緒，Gateway 運行中'),
-  // ZeroClaw
-  zeroclawSetupDesc: _('安装并配置 ZeroClaw', 'Install and configure ZeroClaw', '安裝並配置 ZeroClaw'),
-  zeroclawPhaseClickHint: _('点击可返回此步骤', 'Click to go back to this step', '點擊可返回此步驟'),
-  zeroclawSetupIntro: _('ZeroClaw 是一个轻量级 AI Agent 引擎。点击下方按钮一键安装，无需终端操作。', 'ZeroClaw is a lightweight AI Agent engine. Click the button below to install — no terminal needed.', 'ZeroClaw 是一個輕量級 AI Agent 引擎。點擊下方按鈕一鍵安裝，無需終端操作。'),
-  zeroclawFound: _('ZeroClaw {version} 已安装', 'ZeroClaw {version} installed', 'ZeroClaw {version} 已安裝'),
-  zeroclawNotFound: _('ZeroClaw 未安装', 'ZeroClaw not installed', 'ZeroClaw 未安裝'),
-  zeroclawReady: _('ZeroClaw 已就绪，Gateway 运行中', 'ZeroClaw ready, Gateway running', 'ZeroClaw 已就緒，Gateway 運行中'),
   // 安装阶段
   installTitle: _('安装 Hermes Agent', 'Install Hermes Agent', '安裝 Hermes Agent'),
   installDesc: _('通过 uv 自动安装（含 Python 环境），无需手动操作', 'Auto-install via uv (includes Python), no manual steps', '透過 uv 自動安裝（含 Python 環境），無需手動操作'),
@@ -526,6 +519,10 @@ export default {
   skillsFileLoadFailed: _('文件加载失败', 'File load failed', '檔案載入失敗'),
   skillsAttachedFiles: _('附带资源', 'Attached Files', '附帶資源'),
   skillsBackTo: _('返回', 'Back to', '返回'),
+  skillsTranslate: _('翻译', 'Translate', '翻譯'),
+  skillsTranslating: _('翻译中...', 'Translating...', '翻譯中...'),
+  skillsShowOriginal: _('显示原文', 'Show Original', '顯示原文'),
+  skillsNoDescription: _('无描述', 'No description', '無描述'),
   // Skills 页面 — Toolsets 区（hermes tools list --platform cli）
   toolsetsTitle: _('内置工具集',
     'Built-in Toolsets',
@@ -649,18 +646,7 @@ export default {
   extensionsDocDashboard: _('Dashboard', 'Dashboard', 'Dashboard'),
   comingSoonPhase2: _('即将在 Phase 2 中推出', 'Coming in Phase 2', '即將在 Phase 2 中推出'),
 
-  // ============================================================
-  // ZeroClaw 引擎 — 便携运维工具箱
-  // ============================================================
-  zcSetupDesc: _('安装 ZeroClaw 便携运维引擎', 'Install ZeroClaw portable ops engine', '安裝 ZeroClaw 便攜運維引擎'),
-  zcSetupHint: _('ZeroClaw 是一个独立的便携运维工具箱，可维护/修复/备份其他引擎', 'ZeroClaw is a standalone portable ops toolbox that can maintain/repair/backup other engines', 'ZeroClaw 是一個獨立的便攜運維工具箱，可維護/修復/備份其他引擎'),
-  zcInstallHint: _('点击安装 ZeroClaw 便携运维引擎，用于维护和修复其他引擎', 'Install ZeroClaw portable ops engine to maintain and repair other engines', '點擊安裝 ZeroClaw 便攜運維引擎，用於維護和修復其他引擎'),
-  zcInstallNote: _('ZeroClaw 将安装到 Agent Planet 数据目录，无需手动配置', 'ZeroClaw will be installed to the Agent Planet data directory, no manual setup needed', 'ZeroClaw 將安裝到 Agent Planet 資料目錄，無需手動配置'),
-  zcChatDesc: _('连接 ZeroClaw Gateway 后即可在此对话，支持所有已安装的 Skills', 'Chat here after connecting to ZeroClaw Gateway, supports all installed Skills', '連接 ZeroClaw Gateway 後即可在此對話，支援所有已安裝的 Skills'),
-  zcBackupDesc: _('创建和管理 Agent Planet 配置快照', 'Create and manage Agent Planet configuration snapshots', '建立和管理 Agent Planet 配置快照'),
-  zcLogsDesc: _('查看 ZeroClaw Gateway 运行日志', 'View ZeroClaw Gateway runtime logs', '查看 ZeroClaw Gateway 執行日誌'),
-  zcKnowledgeDesc: _('管理 ZeroClaw 本地知识库', 'Manage ZeroClaw local knowledge base', '管理 ZeroClaw 本地知識庫'),
-  createBackup: _('创建备份', 'Create Backup', '建立備份'),
+  // 备份
   backupCreated: _('备份已创建', 'Backup created', '備份已建立'),
   backupRestored: _('备份已恢复', 'Backup restored', '備份已恢復'),
   noBackups: _('暂无备份', 'No backups', '暫無備份'),

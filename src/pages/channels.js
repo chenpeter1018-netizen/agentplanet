@@ -839,7 +839,10 @@ async function openAddAgentBindingModal(agentId, page, state) {
 
       <div class="form-group" id="add-bind-account-wrap" style="display:none">
         <label class="form-label">${t('channels.subAccount')}</label>
-        <select class="form-input" id="add-bind-account"></select>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select class="form-input" id="add-bind-account" style="flex:1"></select>
+          <button type="button" class="btn btn-sm btn-secondary" id="add-bind-new-account-btn" style="display:none;white-space:nowrap">+ ${t('channels.createNewAccount')}</button>
+        </div>
       </div>
 
       <div class="form-group" id="add-bind-peer-section">
@@ -900,14 +903,24 @@ async function openAddAgentBindingModal(agentId, page, state) {
     const pid = selPlat?.value
     const p = configured.find(x => x.id === pid)
     const accounts = Array.isArray(p?.accounts) ? p.accounts : []
+    const supportsMulti = MULTI_INSTANCE_PLATFORMS.includes(pid)
+    const newAcctBtn = modal.querySelector('#add-bind-new-account-btn')
+    wrapAcct.style.display = ''
     if (accounts.length) {
-      wrapAcct.style.display = ''
+      selAcct.disabled = false
       selAcct.innerHTML = accounts.map(a => `<option value="${escapeAttr(a.accountId || '')}">${escapeAttr(a.accountId || 'default')}${a.appId ? ` · ${escapeAttr(a.appId)}` : ''}</option>`).join('')
+      if (supportsMulti) {
+        selAcct.innerHTML += `<option value="__new__" style="color:var(--accent);font-weight:600">+ ${t('channels.createNewAccount')}...</option>`
+        if (newAcctBtn) newAcctBtn.style.display = ''
+      }
+    } else if (supportsMulti) {
+      selAcct.innerHTML = `<option value="__new__" style="color:var(--accent);font-weight:600">+ ${t('channels.createNewAccount')}...</option>`
+      selAcct.disabled = false
+      if (newAcctBtn) newAcctBtn.style.display = ''
     } else {
-      // 无多账号时，也显示一行提示，方便用户去渠道列表添加
-      wrapAcct.style.display = ''
       selAcct.innerHTML = `<option value="">— ${t('channels.noMultiAccount')} —</option>`
       selAcct.disabled = true
+      if (newAcctBtn) newAcctBtn.style.display = 'none'
     }
   }
 
@@ -936,6 +949,18 @@ async function openAddAgentBindingModal(agentId, page, state) {
 
   selPlat?.addEventListener('change', () => { syncAccounts(); hideWarning() })
   selPeerKind?.addEventListener('change', syncPeerHint)
+
+  // 新建子账号：下拉选中或点击按钮 → 打开平台配置弹窗
+  const handleNewAccount = () => {
+    const pid = selPlat?.value
+    if (!pid) return
+    modal.close()
+    openConfigDialog(pid, page, state, '', agentId)
+  }
+  selAcct?.addEventListener('change', () => {
+    if (selAcct.value === '__new__') handleNewAccount()
+  })
+  modal.querySelector('#add-bind-new-account-btn')?.addEventListener('click', handleNewAccount)
 
   syncAccounts()
   syncPeerHint()
@@ -1296,7 +1321,7 @@ async function handleGatewayWhatsAppLogin(btn, resultEl, actionDef) {
 
 // ── 配置弹窗（新增 / 编辑共用） ──
 
-async function openConfigDialog(pid, page, state, accountId) {
+async function openConfigDialog(pid, page, state, accountId, preferredAgentId) {
   const reg = PLATFORM_REGISTRY[pid]
   if (!reg) { toast(t('channels.unknownPlatform'), 'error'); return }
 
@@ -1631,9 +1656,9 @@ async function openConfigDialog(pid, page, state, accountId) {
   // Agent 绑定选择（一个 channel+accountId 可以绑定到多个不同 agent）
   const agentOptions = agents.map(a => {
     const label = a.identityName ? a.identityName.split(',')[0].trim() : a.id
-    // 默认预选第一个 agent，不依赖当前 binding
-    const isFirst = a === agents[0]
-    return `<option value="${escapeAttr(a.id)}" ${isFirst ? 'selected' : ''}>${a.id}${a.id !== label ? ' — ' + escapeAttr(label) : ''}</option>`
+    // 优先使用 preferredAgentId，否则预选第一个
+    const preselected = preferredAgentId ? a.id === preferredAgentId : a === agents[0]
+    return `<option value="${escapeAttr(a.id)}" ${preselected ? 'selected' : ''}>${a.id}${a.id !== label ? ' — ' + escapeAttr(label) : ''}</option>`
   }).join('')
   const agentBindingHtml = `
     <div class="form-group">

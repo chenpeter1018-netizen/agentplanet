@@ -427,32 +427,7 @@ export const api = {
   hermesSetGatewayUrl: (url) => invoke('hermes_set_gateway_url', { url: url || null }),
   updateHermes: () => invoke('update_hermes'),
   uninstallHermes: (cleanConfig = false) => invoke('uninstall_hermes', { cleanConfig }),
-
-  // === ZeroClaw 引擎 ===
-  checkZeroclaw: () => cachedInvoke('check_zeroclaw', {}, 10000),
-  installZeroclaw: (url, mirrorUrl) => { invalidate('check_zeroclaw'); return invoke('install_zeroclaw', { url: url || null, mirrorUrl: mirrorUrl || null }) },
-  zeroclawHealthCheck: () => invoke('zeroclaw_health_check'),
-  zeroclawStart: () => { invalidate('check_zeroclaw'); return invoke('zeroclaw_start') },
-  zeroclawStop: () => { invalidate('check_zeroclaw'); return invoke('zeroclaw_stop') },
-  zeroclawRestart: () => { invalidate('check_zeroclaw'); return invoke('zeroclaw_restart') },
-  zeroclawRuntimeProbe: () => invoke('zeroclaw_runtime_probe'),
-  zeroclawCreateSnapshot: (name) => { invalidate('check_zeroclaw'); return invoke('zeroclaw_create_snapshot', { name }) },
-  zeroclawListSnapshots: () => cachedInvoke('zeroclaw_list_snapshots', {}, 5000),
-  zeroclawRestoreSnapshot: (name) => { invalidate('check_zeroclaw'); return invoke('zeroclaw_restore_snapshot', { name }) },
-  zeroclawOpenDir: (kind) => invoke('zeroclaw_open_dir', { kind }),
-  zeroclawApiProxy: (method, path, body, headers) => invoke('zeroclaw_api_proxy', { method, path, body: body || null, headers: headers || null }),
-  zeroclawChatSend: (sessionId, message) => invoke('zeroclaw_chat_send', { sessionId, message }),
   getOpenclawGatewayModels: () => invoke('get_openclaw_gateway_models'),
-
-  // ZeroClaw REST API shortcuts (via apiProxy)
-  zeroclawSessionsList: (limit) => invoke('zeroclaw_api_proxy', { method: 'GET', path: `/api/sessions${limit ? `?limit=${limit}` : ''}`, body: null, headers: null }),
-  zeroclawSessionDetail: (sessionId) => invoke('zeroclaw_api_proxy', { method: 'GET', path: `/api/sessions/${sessionId}/messages`, body: null, headers: null }),
-  zeroclawSessionDelete: (sessionId) => invoke('zeroclaw_api_proxy', { method: 'DELETE', path: `/api/sessions/${sessionId}`, body: null, headers: null }),
-  zeroclawMemoryList: () => invoke('zeroclaw_api_proxy', { method: 'GET', path: '/api/memory', body: null, headers: null }),
-  zeroclawMemoryWrite: (type, content) => invoke('zeroclaw_api_proxy', { method: 'POST', path: '/api/memory', body: { type, content }, headers: null }),
-  zeroclawMemoryDelete: (id) => invoke('zeroclaw_api_proxy', { method: 'DELETE', path: `/api/memory/${id}`, body: null, headers: null }),
-  zeroclawCronList: () => invoke('zeroclaw_api_proxy', { method: 'GET', path: '/api/cron', body: null, headers: null }),
-  zeroclawUsageAnalytics: (days) => invoke('zeroclaw_api_proxy', { method: 'GET', path: `/api/cost${days ? `?days=${days}` : ''}`, body: null, headers: null }),
 
   // Hermes Sessions / Logs / Skills / Memory
   hermesSessionsList: (source, limit, profile) => invoke('hermes_sessions_list', { source: source || null, limit: limit || null, profile: profile || null }),

@@ -493,6 +493,57 @@
   font-size: var(--font-size-sm);
 }
 
+/* Skills 行内详情面板 */
+.skill-detail-inline {
+  margin: 0 0 4px 0;
+  padding: 0 0 0 28px;
+}
+
+.skill-detail-inline-card {
+  padding: 12px 16px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  border-left: 3px solid var(--accent);
+}
+
+.skill-detail-inline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.skill-detail-inline-title {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+}
+
+.skill-detail-inline-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+.skill-detail-inline-close:hover {
+  color: var(--text-primary);
+}
+
+.skill-detail-inline-meta {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+  margin-bottom: 8px;
+}
+
+.skill-detail-inline-desc {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: var(--font-size-sm);
+}
+
 
 .skills-loading-panel,
 .skills-load-error {

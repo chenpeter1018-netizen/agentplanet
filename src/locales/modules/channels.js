@@ -188,6 +188,8 @@ export default {
   subAccount: _('子账号', 'Sub-account', '子账號'),
   noMultiAccount: _('该渠道不支持多账号', 'This channel does not support multiple accounts', '該頻道不支援多账號'),
   noMultiAccountHint: _('请先在渠道列表中添加多个账号', 'Add multiple accounts in the channel list first', '請先在頻道列表中新增多個账號'),
+  noAccountYet: _('暂无子账号', 'No sub-accounts yet', '暫無子账號'),
+  createNewAccount: _('新建子账号', 'New Sub-account', '新建子账號'),
   confirmRemoveAccount: _('确定移除该账号及其所有配置？', 'Remove this account and all its config?', '確定移除該账號及其所有設定？'),
   removed: _('已移除', 'Removed'),
   removeFailed: _('移除失败', 'Remove failed', '移除失敗'),

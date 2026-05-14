@@ -29,7 +29,6 @@ import { initFeatureGates } from './lib/feature-gates.js'
 import { registerEngine, initEngineManager, getActiveEngine, getActiveEngineId, onEngineChange } from './lib/engine-manager.js'
 import openclawEngine from './engines/openclaw/index.js'
 import hermesEngine from './engines/hermes/index.js'
-import zeroclawEngine from './engines/zeroclaw/index.js'
 
 // 样式
 import './style/variables.css'
@@ -44,7 +43,6 @@ import './style/assistant.css'
 import './style/notes.css'
 // 引擎专属样式（scope 到 [data-engine="<id>"] 子树，不影响其他引擎）
 import './engines/hermes/style/hermes.css'
-import './engines/zeroclaw/style/zeroclaw.css'
 
 
 // 初始化主题 + 国际化
@@ -398,7 +396,6 @@ async function boot() {
   // 注册引擎
   registerEngine(openclawEngine)
   registerEngine(hermesEngine)
-  registerEngine(zeroclawEngine)
 
   // 初始化引擎管理器：读取 agent-planet.json 的 engineMode，注册对应路由
   await initEngineManager()
