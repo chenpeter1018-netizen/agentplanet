@@ -1277,6 +1277,22 @@ fn uv_bin_name() -> &'static str {
     #[cfg(not(target_os = "windows"))] { "uv" }
 }
 
+fn is_valid_binary(path: &std::path::Path) -> bool {
+    if let Ok(data) = std::fs::read(path) {
+        if data.is_empty() { return false }
+        if data.starts_with(b"#!") { return false }
+        if data.starts_with(b"@echo") { return false }
+        if data.starts_with(b"REM ") || data.starts_with(b"rem ") { return false }
+        if data.starts_with(b"MZ") { return true }
+        if data.starts_with(&[0xFE, 0xED, 0xFA, 0xCE]) { return true }
+        if data.starts_with(&[0xFE, 0xED, 0xFA, 0xCF]) { return true }
+        if data.starts_with(&[0xCF, 0xFA, 0xED, 0xFE]) { return true }
+        if data.starts_with(&[0xCE, 0xFA, 0xED, 0xFE]) { return true }
+        if data.starts_with(&[0x7F, b'E', b'L', b'F']) { return true }
+    }
+    false
+}
+
 /// 从 Tauri 资源复制内嵌的 uv 二进制（离线免下载）
 fn install_bundled_uv(app: &tauri::AppHandle) -> std::result::Result<PathBuf, String> {
     let bin_dir = uv_bin_dir();
@@ -1286,7 +1302,7 @@ fn install_bundled_uv(app: &tauri::AppHandle) -> std::result::Result<PathBuf, St
     // 生产模式 — 通过 AppHandle 解析资源目录
     if let Ok(resource_dir) = app.path().resource_dir() {
         let bundled = resource_dir.join("binaries").join(uv_bin_name());
-        if bundled.exists() && super::zeroclaw::is_valid_binary(&bundled) {
+        if bundled.exists() && is_valid_binary(&bundled) {
             std::fs::copy(&bundled, &dest).map_err(|e| format!("复制失败: {e}"))?;
             #[cfg(unix)]
             {
@@ -1303,7 +1319,7 @@ fn install_bundled_uv(app: &tauri::AppHandle) -> std::result::Result<PathBuf, St
     let dev_bin = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("binaries")
         .join(uv_bin_name());
-    if dev_bin.exists() && super::zeroclaw::is_valid_binary(&dev_bin) {
+    if dev_bin.exists() && is_valid_binary(&dev_bin) {
         std::fs::copy(&dev_bin, &dest).map_err(|e| format!("复制失败: {e}"))?;
         #[cfg(unix)]
         {
