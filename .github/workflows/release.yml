@@ -160,10 +160,10 @@ jobs:
 
           echo "=== 上传 Windows 产物 ==="
           BUNDLE="src-tauri/target/release/bundle"
-          if [ -f "${BUNDLE}/nsis/Agent-Planet_${VERSION}_x64-setup.exe" ]; then
-            gh release upload "$TAG_NAME" \
-              "${BUNDLE}/nsis/Agent-Planet_${VERSION}_x64-setup.exe" \
-              "${BUNDLE}/msi/Agent-Planet_${VERSION}_x64_en-US.msi" --clobber
+          SETUP_EXE=$(find "$BUNDLE" -name "*_x64-setup.exe" -not -name "*-full*" 2>/dev/null | head -1)
+          MSI=$(find "$BUNDLE" -name "*_x64_en-US.msi" -not -name "*-full*" 2>/dev/null | head -1)
+          if [ -n "$SETUP_EXE" ] && [ -n "$MSI" ]; then
+            gh release upload "$TAG_NAME" "$SETUP_EXE" "$MSI" --clobber
             echo "已上传 Windows 标准包"
           else
             echo "错误: 找不到 Windows 产物!"
@@ -192,16 +192,20 @@ jobs:
 
           BUNDLE="src-tauri/target/release/bundle"
 
-          echo "=== 重命名并上传完整包 ==="
-          cp "${BUNDLE}/nsis/Agent-Planet_${VERSION}_x64-setup.exe" \
-             "${BUNDLE}/nsis/Agent-Planet_${VERSION}_x64-setup-full.exe"
-          cp "${BUNDLE}/msi/Agent-Planet_${VERSION}_x64_en-US.msi" \
-             "${BUNDLE}/msi/Agent-Planet_${VERSION}_x64-full_en-US.msi"
+          echo "=== 查找产物并上传完整包 ==="
+          SETUP_EXE=$(find "${BUNDLE}/nsis" -name "*_x64-setup.exe" 2>/dev/null | head -1)
+          MSI=$(find "${BUNDLE}/msi" -name "*_x64_en-US.msi" 2>/dev/null | head -1)
 
-          gh release upload "$TAG_NAME" \
-             "${BUNDLE}/nsis/Agent-Planet_${VERSION}_x64-setup-full.exe" \
-             "${BUNDLE}/msi/Agent-Planet_${VERSION}_x64-full_en-US.msi" --clobber
-          echo "已上传 Windows 完整包"
+          if [ -n "$SETUP_EXE" ]; then
+            cp "$SETUP_EXE" "${BUNDLE}/nsis/Agent-Planet_${VERSION}_x64-setup-full.exe"
+            gh release upload "$TAG_NAME" "${BUNDLE}/nsis/Agent-Planet_${VERSION}_x64-setup-full.exe" --clobber
+            echo "已上传 Windows 完整包 EXE"
+          fi
+          if [ -n "$MSI" ]; then
+            cp "$MSI" "${BUNDLE}/msi/Agent-Planet_${VERSION}_x64-full_en-US.msi"
+            gh release upload "$TAG_NAME" "${BUNDLE}/msi/Agent-Planet_${VERSION}_x64-full_en-US.msi" --clobber
+            echo "已上传 Windows 完整包 MSI"
+          fi
 
   # ── 所有平台构建完成后，统一更新 Release Notes ─────────────────────────
   update-release-notes:
