@@ -1,6 +1,6 @@
 [package]
 name = "agent-planet"
-version = "0.2.9"
+version = "0.3.0"
 edition = "2021"
 description = "Agent Planet - OpenClaw 可视化管理面板"
 authors = ["Agent Planet Systems"]

@@ -12,6 +12,59 @@ import { showModal, showConfirm } from '../components/modal.js'
 import { icon as svgIcon } from '../lib/icons.js'
 import { t } from '../lib/i18n.js'
 
+// ── MEDIA: 本地图片渲染 ──
+let _convertFileSrc = null
+let _convertFileSrcReady = false
+
+async function _loadConvertFileSrc() {
+  if (_convertFileSrcReady) return
+  try {
+    const mod = await import('@tauri-apps/api/core')
+    _convertFileSrc = mod.convertFileSrc
+  } catch {
+    // 浏览器开发模式：退化为 file:// 协议
+    _convertFileSrc = (p) => {
+      const escaped = p.replace(/\\/g, '/')
+      return `file:///${escaped.replace(/^([a-zA-Z]):\//, '$1:/')}`
+    }
+  }
+  _convertFileSrcReady = true
+}
+
+// 预热 Tauri convertFileSrc（后台加载，不阻塞渲染）
+_loadConvertFileSrc()
+
+const VIDEO_EXTS = new Set(['mp4', 'webm', 'mov', 'mkv', 'avi', 'flv', 'wmv'])
+const AUDIO_EXTS = new Set(['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'opus', 'wma'])
+const IMAGE_EXTS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'heic', 'bmp', 'ico', 'tiff'])
+
+function convertMediaRefs(text) {
+  if (!text || !_convertFileSrcReady) return text
+  return text.replace(/MEDIA:(\S+)/g, (match, filePath) => {
+    const trimmed = filePath.trim()
+    if (!trimmed) return match
+    try {
+      const url = _convertFileSrc(trimmed)
+      const filename = escHtml(trimmed.split(/[\\/]/g).pop() || 'media')
+      const ext = trimmed.split('.').pop().toLowerCase()
+      if (VIDEO_EXTS.has(ext)) {
+        return `<video src="${url}" controls style="max-width:100%;border-radius:8px" title="${filename}"></video>`
+      }
+      if (AUDIO_EXTS.has(ext)) {
+        return `<audio src="${url}" controls style="max-width:100%" title="${filename}"></audio>`
+      }
+      return `![${filename}](${url})`
+    } catch {
+      return match
+    }
+  })
+}
+
+function renderAiText(text) {
+  return renderMarkdown(convertMediaRefs(text || ''))
+}
+// ── MEDIA 渲染 END ──
+
 const RENDER_THROTTLE = 30
 const STORAGE_SESSION_KEY = 'agent-planet-last-session'
 const STORAGE_MODEL_KEY = 'agent-planet-chat-selected-model'
@@ -2042,7 +2095,7 @@ function handleChatEvent(payload) {
         if (_isStreaming) {
           console.warn('[chat] 流式输出超时（90s 无新数据），强制结束')
           if (_currentAiBubble && _currentAiText) {
-            _currentAiBubble.innerHTML = renderMarkdown(_currentAiText)
+            _currentAiBubble.innerHTML = renderAiText(_currentAiText)
           }
           appendSystemMessage(t('chat.streamTimeout'))
           resetStreamState()
@@ -2090,7 +2143,7 @@ function handleChatEvent(payload) {
       _currentAiText = finalText
     }
     if (_currentAiBubble) {
-      if (_currentAiText) _currentAiBubble.innerHTML = renderMarkdown(_currentAiText)
+      if (_currentAiText) _currentAiBubble.innerHTML = renderAiText(_currentAiText)
       appendImagesToEl(_currentAiBubble, _currentAiImages)
       appendVideosToEl(_currentAiBubble, _currentAiVideos)
       appendAudiosToEl(_currentAiBubble, _currentAiAudios)
@@ -2184,7 +2237,7 @@ function handleChatEvent(payload) {
   if (state === 'aborted') {
     showTyping(false)
     if (_currentAiBubble && _currentAiText) {
-      _currentAiBubble.innerHTML = renderMarkdown(_currentAiText)
+      _currentAiBubble.innerHTML = renderAiText(_currentAiText)
     }
     appendSystemMessage(t('chat.generationStopped'))
     resetStreamState()
@@ -2479,7 +2532,7 @@ function throttledRender() {
 function doRender() {
   _lastRenderTime = performance.now()
   if (_currentAiBubble && _currentAiText) {
-    _currentAiBubble.innerHTML = renderMarkdown(_currentAiText)
+    _currentAiBubble.innerHTML = renderAiText(_currentAiText)
     scrollToBottom()
   }
 }
@@ -2586,7 +2639,7 @@ function resetStreamState() {
   clearInterval(_typingElapsedInterval)
   _typingElapsedInterval = null
   if (_currentAiBubble && (_currentAiText || _currentAiImages.length || _currentAiVideos.length || _currentAiAudios.length || _currentAiFiles.length || _currentAiTools.length)) {
-    _currentAiBubble.innerHTML = renderMarkdown(_currentAiText)
+    _currentAiBubble.innerHTML = renderAiText(_currentAiText)
     appendImagesToEl(_currentAiBubble, _currentAiImages)
     appendVideosToEl(_currentAiBubble, _currentAiVideos)
     appendAudiosToEl(_currentAiBubble, _currentAiAudios)
@@ -2877,7 +2930,7 @@ function appendAiMessage(text, msgTime, images, videos, audios, files, tools) {
   appendToolsToEl(bubble, tools)
   const textEl = document.createElement('div')
   textEl.className = 'msg-text'
-  textEl.innerHTML = renderMarkdown(text || '')
+  textEl.innerHTML = renderAiText(text || '')
   bubble.appendChild(textEl)
   appendImagesToEl(bubble, images)
   appendVideosToEl(bubble, videos)
