@@ -315,9 +315,8 @@ async function openWorkspace(state, id) {
     return
   }
   try {
-    // 使用 Command 而非 open()，避免 URL regex scope 校验
-    const cmd = navigator.platform.includes('Win') ? 'explorer' : 'open'
-    await (await import('@tauri-apps/plugin-shell')).Command.create(cmd, [agent.workspace]).execute()
+    const { invoke } = await import('@tauri-apps/api/core')
+    await invoke('open_in_file_manager', { path: agent.workspace })
   } catch (e) {
     toast(t('agents.openWorkspaceFailed') + ': ' + (e?.message || e), 'error')
   }
@@ -342,8 +341,8 @@ async function backupAgent(id) {
     const zipPath = await api.backupAgent(id)
     try {
       const dir = zipPath.substring(0, zipPath.lastIndexOf('/')) || zipPath
-      const cmd = navigator.platform.includes('Win') ? 'explorer' : 'open'
-      await (await import('@tauri-apps/plugin-shell')).Command.create(cmd, [dir]).execute()
+      const { invoke } = await import('@tauri-apps/api/core')
+      await invoke('open_in_file_manager', { path: dir })
     } catch { /* fallback */ }
     toast(t('agents.backupDone', { file: zipPath.split('/').pop() }), 'success')
   } catch (e) {
