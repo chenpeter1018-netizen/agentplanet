@@ -1621,18 +1621,24 @@ async function openConfigDialog(pid, page, state, accountId, preferredAgentId) {
     return
   }
 
+  // 添加新账号（accountId 为空字符串时表示强制新建，不读取已有根配置）
+  const isNewAccount = accountId === ''
+  const effectiveAccountId = isNewAccount ? null : accountId
+
   // 尝试加载已有配置（accountId 用于多账号读取）
   let existing = {}
   let isEdit = false
-  try {
-    const res = await api.readPlatformConfig(pid, accountId)
-    if (res?.values) {
-      existing = res.values
-    }
-    if (res?.exists) {
-      isEdit = true
-    }
-  } catch {}
+  if (!isNewAccount) {
+    try {
+      const res = await api.readPlatformConfig(pid, effectiveAccountId)
+      if (res?.values) {
+        existing = res.values
+      }
+      if (res?.exists) {
+        isEdit = true
+      }
+    } catch {}
+  }
 
   // 加载 Agent 列表（不预选，因为一个 channel+accountId 可以被多个 agent 绑定）
   let agents = []
@@ -2095,7 +2101,11 @@ async function openConfigDialog(pid, page, state, accountId, preferredAgentId) {
 
       // 写入配置
       btnSave.textContent = t('channels.writingConfig')
-      const saveAccountId = modal.querySelector('input[name="__accountId"]')?.value?.trim() || null
+      let saveAccountId = modal.querySelector('input[name="__accountId"]')?.value?.trim() || null
+      // 多账号平台新建账号时自动生成 accountId，避免写入根级别覆盖已有凭据
+      if (!saveAccountId && isNewAccount) {
+        saveAccountId = 'acct-' + Date.now().toString(36)
+      }
       const saveAgentId = modal.querySelector('select[name="__agentId"]')?.value?.trim() || 'main'
       await api.saveMessagingPlatform(pid, form, saveAccountId, null)
 
