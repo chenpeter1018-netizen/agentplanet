@@ -81,7 +81,10 @@ async function loadDetail(page, state) {
     // 解析可用模型
     state.models = parseModelList(config)
     state.skillsCatalog = Array.isArray(skillsResp?.skills) ? skillsResp.skills : []
-    // 更新头像
+    // 更新标题和头像
+    const name = detail.identity?.name || detail.name || detail.id
+    const title = page.querySelector('#agent-detail-title')
+    title.textContent = `${name}`.trim()
     const avatarEl = page.querySelector('#agent-detail-avatar')
     if (avatarEl) {
       const emoji = detail.identity?.emoji || ''
@@ -93,10 +96,6 @@ async function loadDetail(page, state) {
         avatarEl.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32" style="color:var(--text-tertiary)"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`
       }
     }
-    // 更新标题
-    const title = page.querySelector('#agent-detail-title')
-    const name = detail.identity?.name || detail.name || detail.id
-    title.textContent = `${name}`.trim()
     if (detail.isDefault) {
       title.insertAdjacentHTML('beforeend', ` <span class="badge badge-success">${t('agentDetail.defaultAgent')}</span>`)
     }

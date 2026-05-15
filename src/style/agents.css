@@ -336,23 +336,36 @@
   gap: 12px;
 }
 
+.agent-skills-list > * {
+  min-width: 0;
+}
+
 .agent-skill-card {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-md);
   padding: 14px;
   cursor: pointer;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .agent-skill-card.is-muted {
   opacity: 0.7;
 }
 
+.agent-skill-card input[type="checkbox"] {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
 .agent-skill-main {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .agent-skill-head {
@@ -366,12 +379,16 @@
 .agent-skill-name {
   font-weight: 600;
   color: var(--text-primary);
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .agent-skill-desc {
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
   line-height: 1.6;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .agent-skill-badge {
