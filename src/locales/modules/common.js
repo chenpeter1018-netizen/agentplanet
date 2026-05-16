@@ -69,4 +69,22 @@ export default {
   upgradeFailed: _('升级失败', 'Upgrade failed', '升級失敗', 'アップグレード失敗', '업그레이드 실패', 'Nâng cấp thất bại'),
   unknownCommand: _('未知命令', 'Unknown command', '未知命令', '不明なコマンド', '알 수 없는 명령', 'Lệnh không xác định'),
   processing: _('处理中...', 'Processing...', '處理中...', '処理中...', '처리 중...', 'Đang xử lý...', 'Procesando...', 'Processando...', 'Обработка...', 'Traitement...', 'Verarbeitung...'),
+
+  // 登录相关
+  login: {
+    title: _('手机验证登录', 'Phone Verification', '手機驗證登入', '電話番号認証', '전화번호 인증', 'Xác minh điện thoại'),
+    desc: _('使用飞书妙搭平台完成手机短信验证登录，每个账号最多登录 6 台设备', 'Login via SMS verification. Max 6 devices per account.', '使用飛書妙搭平台完成手機簡訊驗證登入，每個帳號最多登入 6 台裝置', 'SMS認証でログイン。1アカウントあたり最大6台まで。', 'SMS 인증으로 로그인. 계정당 최대 6대 기기.', 'Đăng nhập qua SMS. Tối đa 6 thiết bị mỗi tài khoản.'),
+    step1: _('点击下方按钮打开登录页面', 'Click the button below to open the login page', '', '', '', ''),
+    step2: _('输入手机号获取验证码', 'Enter your phone number to get a verification code', '', '', '', ''),
+    step3: _('登录成功后自动跳转回来', 'After successful login, you will be redirected automatically', '', '', '', ''),
+    openPage: _('打开登录页面', 'Open Login Page', '開啟登入頁面', 'ログインページを開く', '로그인 페이지 열기', 'Mở trang đăng nhập'),
+    deviceId: _('设备ID', 'Device ID', '裝置ID', 'デバイスID', '기기 ID', 'ID thiết bị'),
+    processing: _('正在处理登录...', 'Processing login...', '正在處理登入...', 'ログイン処理中...', '로그인 처리 중...', 'Đang xử lý đăng nhập...'),
+    registering: _('正在注册设备...', 'Registering device...', '正在註冊裝置...', 'デバイス登録中...', '기기 등록 중...', 'Đang đăng ký thiết bị...'),
+    deviceRejected: _('设备注册失败，可能是网络问题', 'Device registration failed', '裝置註冊失敗', 'デバイス登録失敗', '기기 등록 실패', 'Đăng ký thiết bị thất bại'),
+    success: _('登录成功', 'Login successful', '登入成功', 'ログイン成功', '로그인 성공', 'Đăng nhập thành công'),
+    failed: _('登录失败', 'Login failed', '登入失敗', 'ログイン失敗', '로그인 실패', 'Đăng nhập thất bại'),
+    backToLogin: _('返回登录', 'Back to Login', '返回登入', 'ログインに戻る', '로그인으로 돌아가기', 'Quay lại đăng nhập'),
+    deviceExceeded: _('已超出终端登录数量(6台)，请先解绑旧设备', 'Device limit exceeded (6). Please unbind an old device first.', '已超出終端登入數量(6台)，請先解綁舊裝置', 'デバイス数の上限(6台)を超えました。古いデバイスの登録を解除してください。', '기기 한도(6대)를 초과했습니다. 이전 기기를 먼저 해제하세요.', 'Đã vượt quá số lượng thiết bị (6). Vui lòng hủy liên kết thiết bị cũ.'),
+  },
 }

@@ -1,10 +1,32 @@
-/// 设备密钥管理 + Gateway connect 握手签名
+/// 设备密钥管理 + Gateway connect 握手签名 + 设备注册/校验
 use ed25519_dalek::{Signer, SigningKey, VerifyingKey};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::fs;
 
 const DEVICE_KEY_FILE: &str = "agent-planet-device-key.json";
+const DEVICE_API_BASE: &str = "https://1344713238-grdts5pifw.ap-shanghai.tencentscf.com";
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeviceInfo {
+    pub fingerprint: String,
+    pub device_name: String,
+    pub registered_at: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeviceResult {
+    pub ok: bool,
+    pub device_count: usize,
+    pub max_devices: u32,
+    #[serde(default)]
+    pub devices: Vec<DeviceInfo>,
+    #[serde(default)]
+    pub message: String,
+}
 const SCOPES: &[&str] = &[
     "operator.admin",
     "operator.approvals",
@@ -164,4 +186,112 @@ pub fn create_connect_frame(
     });
 
     Ok(frame)
+}
+
+// ══════════════════════════════════════════════
+// 设备注册/校验（调用云端 API）
+// ══════════════════════════════════════════════
+
+fn device_name() -> String {
+    let host = crate::license::machine_fingerprint();
+    let os = std::env::consts::OS;
+    format!("{}-{}", os, &host[..8.min(host.len())])
+}
+
+fn api_client() -> Result<reqwest::Client, String> {
+    reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .gzip(true)
+        .build()
+        .map_err(|e| format!("创建 HTTP 客户端失败: {e}"))
+}
+
+#[tauri::command]
+pub async fn register_device(
+    user_id: String,
+    token: String,
+) -> Result<DeviceResult, String> {
+    let hwfp = crate::license::machine_fingerprint();
+    let body = serde_json::json!({
+        "userId": user_id,
+        "token": token,
+        "hardwareFingerprint": hwfp,
+        "deviceName": device_name(),
+    });
+    let resp = api_client()?
+        .post(format!("{}/api/device/register", DEVICE_API_BASE))
+        .json(&body)
+        .send()
+        .await
+        .map_err(|e| format!("请求设备注册失败: {e}"))?;
+    if !resp.status().is_success() {
+        return Err(format!("设备注册被拒绝: {}", resp.text().await.unwrap_or_default()));
+    }
+    resp.json().await.map_err(|e| format!("解析响应失败: {e}"))
+}
+
+#[tauri::command]
+pub async fn check_device_limit(
+    user_id: String,
+    token: String,
+) -> Result<DeviceResult, String> {
+    // 通过 /api/device/list 获取设备列表，派生设备数量
+    let body = serde_json::json!({
+        "userId": user_id,
+        "token": token,
+    });
+    let resp = api_client()?
+        .post(format!("{}/api/device/list", DEVICE_API_BASE))
+        .json(&body)
+        .send()
+        .await
+        .map_err(|e| format!("请求设备检查失败: {e}"))?;
+    if !resp.status().is_success() {
+        return Err(format!("设备检查失败: {}", resp.text().await.unwrap_or_default()));
+    }
+    resp.json().await.map_err(|e| format!("解析响应失败: {e}"))
+}
+
+#[tauri::command]
+pub async fn list_devices(
+    user_id: String,
+    token: String,
+) -> Result<DeviceResult, String> {
+    let body = serde_json::json!({
+        "userId": user_id,
+        "token": token,
+    });
+    let resp = api_client()?
+        .post(format!("{}/api/device/list", DEVICE_API_BASE))
+        .json(&body)
+        .send()
+        .await
+        .map_err(|e| format!("请求设备列表失败: {e}"))?;
+    if !resp.status().is_success() {
+        return Err(format!("获取设备列表失败: {}", resp.text().await.unwrap_or_default()));
+    }
+    resp.json().await.map_err(|e| format!("解析响应失败: {e}"))
+}
+
+#[tauri::command]
+pub async fn unbind_device(
+    user_id: String,
+    token: String,
+    fingerprint: String,
+) -> Result<DeviceResult, String> {
+    let body = serde_json::json!({
+        "userId": user_id,
+        "token": token,
+        "fingerprint": fingerprint,
+    });
+    let resp = api_client()?
+        .post(format!("{}/api/device/unbind", DEVICE_API_BASE))
+        .json(&body)
+        .send()
+        .await
+        .map_err(|e| format!("请求解绑失败: {e}"))?;
+    if !resp.status().is_success() {
+        return Err(format!("解绑失败: {}", resp.text().await.unwrap_or_default()));
+    }
+    resp.json().await.map_err(|e| format!("解析响应失败: {e}"))
 }

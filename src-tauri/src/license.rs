@@ -61,7 +61,7 @@ pub struct LicenseStatus {
 // 硬件指纹
 // ═══════════════════════════════════════════
 
-fn machine_fingerprint() -> String {
+pub fn machine_fingerprint() -> String {
     let mut hasher = Sha256::new();
     hasher.update(std::env::consts::OS.as_bytes());
     hasher.update(std::env::consts::ARCH.as_bytes());
@@ -252,6 +252,12 @@ fn activate_online(payload: &LicensePayload, fingerprint: &str) -> Result<String
 // ═══════════════════════════════════════════
 // Tauri 命令
 // ═══════════════════════════════════════════
+
+/// 获取本机硬件指纹（供前端登录/设备绑定使用）
+#[tauri::command]
+pub fn get_machine_fingerprint() -> String {
+    machine_fingerprint()
+}
 
 /// 检查授权状态（程序启动时调用，决定是否锁屏）
 #[tauri::command]

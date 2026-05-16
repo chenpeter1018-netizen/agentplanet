@@ -2796,3 +2796,118 @@
   margin-top: 4px;
 }
    JS / CSS 引用，已在此处删除。 */
+
+/* ═══════ 登录引导页 ═══════ */
+.login-guide-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+.login-guide-container {
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space-lg);
+}
+
+.login-guide-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+  box-shadow: var(--shadow-md);
+}
+
+.login-guide-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--accent-muted);
+  color: var(--accent);
+  margin-bottom: var(--space-md);
+}
+
+.login-guide-card h2 {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-sm);
+}
+
+.login-guide-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 var(--space-lg);
+}
+
+.login-guide-steps {
+  text-align: left;
+  margin-bottom: var(--space-lg);
+}
+
+.login-step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.login-step-num {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent-muted);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-guide-hwfp {
+  margin-top: var(--space-md);
+  color: var(--text-tertiary);
+}
+
+/* ═══════ 登录回调页 ═══════ */
+.login-callback-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+.login-callback-container {
+  text-align: center;
+}
+
+.login-callback-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-primary);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: login-spin 0.8s linear infinite;
+  margin: 0 auto var(--space-md);
+}
+
+@keyframes login-spin {
+  to { transform: rotate(360deg); }
+}
+
+.login-callback-container p {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}

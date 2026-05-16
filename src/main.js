@@ -389,19 +389,20 @@ const sidebar = document.getElementById('sidebar')
 const content = document.getElementById('content')
 
 async function boot() {
-  // 授权门禁：未激活则显示激活锁屏，阻止进入主界面
-  const licensed = await checkLicenseGate()
-  if (!licensed) return
-
-  // 注册引擎
+  // 注册引擎（需在路由初始化之前）
   registerEngine(openclawEngine)
   registerEngine(hermesEngine)
 
   // 初始化引擎管理器：读取 agent-planet.json 的 engineMode，注册对应路由
   await initEngineManager()
 
+  // 初始化路由（所有 gate 页面前需要准备好路由系统）
   renderSidebar(sidebar)
   initRouter(content)
+
+  // 登录门禁：无登录态 → 显示登录引导（手机验证码登录，每账号最多 6 台设备）
+  const loggedIn = await checkWebLoginGate()
+  if (!loggedIn) return
 
   // 移动端顶栏（汉堡菜单 + 标题）
   const mainCol = document.getElementById('main-col')
@@ -954,6 +955,35 @@ function startUpdateChecker() {
   setTimeout(checkGlobalUpdate, 5000)
   // 之后每 30 分钟检查一次
   _updateCheckTimer = setInterval(checkGlobalUpdate, UPDATE_CHECK_INTERVAL)
+}
+
+// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+// Web 登录门禁
+// ═══════════════════════════════════════════
+
+async function checkWebLoginGate() {
+  // Web 模式下不拦
+  if (!isTauriRuntime()) return true
+
+  try {
+    const cfg = await api.readPanelConfig()
+    const loginData = cfg?.webLogin
+
+    if (!loginData?.token || !loginData?.userId) {
+      // 无登录态 → 重定向到登录引导页
+      navigate('/login')
+      _hideSplash()
+      return false
+    }
+
+    // 已登录 → 继续
+    sessionStorage.setItem('agent_planet_login', JSON.stringify(loginData))
+    return true
+  } catch {
+    // 读配置失败不拦，允许进入
+    return true
+  }
 }
 
 // ═══════════════════════════════════════════

@@ -4,6 +4,8 @@ mod models;
 mod tray;
 mod utils;
 
+use tauri::Listener;
+use tauri::Manager;
 use commands::{
     agent, assistant, config, device, diagnose, extensions, hermes, hermes_providers, logs, memory,
     messaging, pairing, service, skills, update,
@@ -62,6 +64,7 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             None,
@@ -109,6 +112,29 @@ pub fn run() {
         .setup(|app| {
             service::start_backend_guardian(app.handle().clone());
             tray::setup_tray(app.handle())?;
+
+            // 深链回调监听
+            let handle = app.handle().clone();
+            app.listen("deep-link://new-url", move |event| {
+                let payload = event.payload();
+                println!("[deep-link] 收到回调: {}", payload);
+                // 解析 agentplanet://login-callback?token=...&userId=...&phone=...&nickname=...
+                if let Some(url) = payload.strip_prefix("agentplanet://login-callback") {
+                    let query = url.strip_prefix('?').unwrap_or(url);
+                    let _ = handle.webview_windows()
+                        .values()
+                        .next()
+                        .map(|w| {
+                            w.eval(&format!(
+                                "window.__agentplanet_login_callback__ = {{}};
+                                 new URLSearchParams('{}').forEach((v,k) => {{ window.__agentplanet_login_callback__[k] = v }});
+                                 window.dispatchEvent(new CustomEvent('agentplanet:login-callback', {{ detail: window.__agentplanet_login_callback__ }}));",
+                                query.replace('\'', "\\'")
+                            )).ok();
+                        });
+                }
+            });
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -160,6 +186,7 @@ pub fn run() {
             config::copy_env_installers,
             license::activate_license,
             license::check_license,
+            license::get_machine_fingerprint,
             config::open_in_file_manager,
             config::get_status_summary,
             config::doctor_fix,
@@ -167,6 +194,11 @@ pub fn run() {
             config::relaunch_app,
             // 设备密钥 + Gateway 握手
             device::create_connect_frame,
+            // 设备注册/校验
+            device::register_device,
+            device::check_device_limit,
+            device::list_devices,
+            device::unbind_device,
             // 设备配对
             pairing::auto_pair_device,
             pairing::check_pairing_status,

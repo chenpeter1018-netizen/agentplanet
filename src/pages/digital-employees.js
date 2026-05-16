@@ -140,7 +140,34 @@ const MARKET_EMPLOYEES = [
   },
 ]
 
+const MARKET_URL = 'https://m2gtpsn7tp.aiforce.cloud/app/app_4k541hw8u493p/market'
+
 function renderMarket(container) {
+  if (!navigator.onLine) {
+    renderMarketFallback(container)
+    return
+  }
+
+  container.innerHTML = `<iframe id="market-iframe" src="${MARKET_URL}"
+    style="width:100%;height:calc(100vh - 180px);border:none;border-radius:var(--radius-lg, 8px);background:var(--bg-card, #fff)"
+    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+    loading="lazy"
+  ></iframe>`
+
+  const iframe = container.querySelector('#market-iframe')
+  let resolved = false
+
+  const fallback = () => {
+    if (resolved) return
+    resolved = true
+    renderMarketFallback(container)
+  }
+
+  iframe.addEventListener('error', fallback)
+  setTimeout(() => { if (!resolved) fallback() }, 10000)
+}
+
+function renderMarketFallback(container) {
   container.innerHTML = `
     <div class="market-hint">${t('agents.marketHint', '选择一个数字员工加入你的团队，他们将协助完成各类专业任务。')}</div>
     <div class="market-grid">
@@ -166,7 +193,6 @@ function renderMarket(container) {
     </div>
   `
 
-  // 绑定"加入团队"按钮
   container.querySelectorAll('.market-hire-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const id = btn.dataset.id
@@ -176,7 +202,6 @@ function renderMarket(container) {
       btn.textContent = t('agents.adding', '添加中...')
       try {
         const { api } = await import('../lib/tauri-api.js')
-        // 获取可用模型
         let model = 'newapi/claude-opus-4-6'
         try {
           const config = await api.readOpenclawConfig()
@@ -189,9 +214,7 @@ function renderMarket(container) {
             }
           }
         } catch {}
-        // 创建 Agent
         await api.addAgent(id, model, null)
-        // 更新身份
         if (name || emp?.avatar) {
           try {
             await api.updateAgentIdentity(id, name || null, emp?.avatar || null)

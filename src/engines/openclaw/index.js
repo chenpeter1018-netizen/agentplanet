@@ -105,6 +105,8 @@ export default {
       { path: '/settings', loader: () => import('../../pages/settings.js') },
       { path: '/plugin-hub', loader: () => import('../../pages/plugin-hub.js') },
       { path: '/diagnose', loader: () => import('../../pages/chat-debug.js') },
+      { path: '/login', loader: () => import('../../components/login-guide.js') },
+      { path: '/login-callback', loader: () => import('../../pages/login-callback.js') },
     ]
   },
 

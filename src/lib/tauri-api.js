@@ -334,6 +334,13 @@ export const api = {
   // 设备密钥 + Gateway 握手
   createConnectFrame: (nonce, gatewayToken, gatewayPassword) => invoke('create_connect_frame', { nonce, gatewayToken, gatewayPassword: gatewayPassword || null }),
 
+  // 硬件指纹 + 设备注册/校验
+  getMachineFingerprint: () => invoke('get_machine_fingerprint'),
+  registerDevice: (userId, token) => invoke('register_device', { userId, token }),
+  checkDeviceLimit: (userId, token) => invoke('check_device_limit', { userId, token }),
+  listDevices: (userId, token) => invoke('list_devices', { userId, token }),
+  unbindDevice: (userId, token, fingerprint) => invoke('unbind_device', { userId, token, fingerprint }),
+
   // 设备配对
   autoPairDevice: () => invoke('auto_pair_device'),
   checkPairingStatus: () => invoke('check_pairing_status'),
