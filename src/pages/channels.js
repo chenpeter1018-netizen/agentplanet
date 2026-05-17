@@ -2027,76 +2027,7 @@ async function openConfigDialog(pid, page, state, accountId, preferredAgentId) {
     btnSave.textContent = t('channels.saving')
 
     try {
-      // 如果需要安装插件，先安装并显示日志
-      if (reg.pluginRequired) {
-        const pluginPackage = reg.pluginRequired
-        const pluginId = reg.pluginId || pid
-        let pluginStatus = null
-        try { pluginStatus = await api.getChannelPluginStatus(pluginId) } catch {}
-        // 跳过安装：插件已安装/内置，或检测失败不阻塞保存
-        if (pluginStatus && !pluginStatus.installed && !pluginStatus.builtin) {
-          btnSave.textContent = t('channels.installingPlugin')
-          resultEl.innerHTML = `
-            <div style="background:var(--bg-tertiary);border-radius:var(--radius-md);padding:12px;margin-top:var(--space-sm)">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                ${icon('download', 14)}
-                <span style="font-size:var(--font-size-sm);font-weight:600">${t('channels.installPlugin')}</span>
-                <span id="plugin-progress-text" style="font-size:var(--font-size-xs);color:var(--text-tertiary);margin-left:auto">0%</span>
-              </div>
-              <div style="height:4px;background:var(--bg-secondary);border-radius:2px;overflow:hidden;margin-bottom:8px">
-                <div id="plugin-progress-bar" style="height:100%;background:var(--accent);width:0%;transition:width 0.3s"></div>
-              </div>
-              <div id="plugin-log-box" style="font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);max-height:120px;overflow-y:auto;line-height:1.6;white-space:pre-wrap;word-break:break-all"></div>
-            </div>
-          `
-          const logBox = resultEl.querySelector('#plugin-log-box')
-          const progressBar = resultEl.querySelector('#plugin-progress-bar')
-          const progressText = resultEl.querySelector('#plugin-progress-text')
-          let unlistenLog, unlistenProgress
-          try {
-            const { listen } = await import('@tauri-apps/api/event')
-            unlistenLog = await listen('plugin-log', (e) => {
-              logBox.textContent += e.payload + '\n'
-              logBox.scrollTop = logBox.scrollHeight
-            })
-            unlistenProgress = await listen('plugin-progress', (e) => {
-              const pct = e.payload
-              progressBar.style.width = pct + '%'
-              progressText.textContent = pct + '%'
-            })
-          } catch {}
-
-          try {
-            // 自动 pin 插件版本：仅 @openclaw/ 前缀的包与 OpenClaw 版本号同步，其他包（微信 CLI、QQ Bot）版本号独立
-            let pluginVersion = null
-            if (pluginPackage && pluginPackage.startsWith('@openclaw/')) {
-              try {
-                const vInfo = await api.getVersionInfo()
-                if (vInfo?.current) pluginVersion = vInfo.current.split('-')[0]
-              } catch {}
-            }
-            // QQ 必须用专用安装命令：官方包目录为 openclaw-qqbot，与 install_channel_plugin(…, "qqbot") 的备份路径不一致
-            if (pid === 'qqbot') {
-              await api.installQqbotPlugin(null)
-            } else {
-              await api.installChannelPlugin(pluginPackage, pluginId, pluginVersion)
-            }
-          } catch (e) {
-            // 插件安装失败不阻塞配置保存——用户可稍后手动安装
-            logBox.textContent += `\n⚠ ${t('channels.pluginInstallFailed')}: ${e}\n`
-            logBox.textContent += `${t('channels.pluginInstallSkipHint')}\n`
-            logBox.scrollTop = logBox.scrollHeight
-            toast(t('channels.pluginInstallFailed') + ': ' + e, 'warning')
-          }
-          if (unlistenLog) unlistenLog()
-          if (unlistenProgress) unlistenProgress()
-        } else {
-          resultEl.innerHTML = `
-            <div style="background:var(--accent-muted);color:var(--accent);padding:10px 14px;border-radius:var(--radius-md);font-size:var(--font-size-sm)">
-              ${icon('check', 14)} ${t('channels.pluginDetected')}
-            </div>`
-        }
-      }
+	      // 插件安装独立于绑定——OpenClaw 自带飞书/QQ/钉钉插件，绑定页只做配置写入
 
       // 写入配置
       btnSave.textContent = t('channels.writingConfig')
