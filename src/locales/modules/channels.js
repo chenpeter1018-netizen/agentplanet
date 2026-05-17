@@ -313,6 +313,7 @@ export default {
   installingPlugin: _('安装插件中...', 'Installing plugin...', '安裝外掛中...'),
   installPlugin: _('安装插件', 'Install Plugin', '安裝外掛', 'プラグインインストール', '플러그인 설치', 'Cài đặt plugin', 'Instalar plugin', 'Instalar plugin', 'Установить плагин', 'Installer le plugin', 'Plugin installieren'),
   pluginInstallFailed: _('插件安装失败', 'Plugin installation failed', '外掛安裝失敗'),
+  pluginInstallSkipHint: _('插件安装失败，但配置会继续保存。你可以在之后通过命令行手动安装插件。', 'Plugin install failed, but config will still be saved. You can manually install the plugin later via command line.', '外掛安裝失敗，但設定會繼續儲存。你可以稍後透過命令列手動安裝外掛。'),
   pluginDetected: _('已检测到插件，无需重复安装，本次仅更新配置', 'Plugin detected, no need to reinstall; only updating config', '已檢測到外掛，無需重複安裝，本次僅更新設定'),
   writingConfig: _('写入配置...', 'Writing config...', '写入設定...'),
   configSaved: _('{platform} 配置已保存，Gateway 正在重载', '{platform} config saved, Gateway is reloading', '{platform} 設定已儲存，Gateway 正在重載'),

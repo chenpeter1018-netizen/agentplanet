@@ -2031,9 +2031,10 @@ async function openConfigDialog(pid, page, state, accountId, preferredAgentId) {
       if (reg.pluginRequired) {
         const pluginPackage = reg.pluginRequired
         const pluginId = reg.pluginId || pid
-        const pluginStatus = await api.getChannelPluginStatus(pluginId)
-        // 跳过安装：插件已安装或已内置
-        if (!pluginStatus?.installed && !pluginStatus?.builtin) {
+        let pluginStatus = null
+        try { pluginStatus = await api.getChannelPluginStatus(pluginId) } catch {}
+        // 跳过安装：插件已安装/内置，或检测失败不阻塞保存
+        if (pluginStatus && !pluginStatus.installed && !pluginStatus.builtin) {
           btnSave.textContent = t('channels.installingPlugin')
           resultEl.innerHTML = `
             <div style="background:var(--bg-tertiary);border-radius:var(--radius-md);padding:12px;margin-top:var(--space-sm)">
@@ -2081,13 +2082,11 @@ async function openConfigDialog(pid, page, state, accountId, preferredAgentId) {
               await api.installChannelPlugin(pluginPackage, pluginId, pluginVersion)
             }
           } catch (e) {
-            toast(t('channels.pluginInstallFailed') + ': ' + e, 'error')
-            btnSave.disabled = false
-            btnVerify.disabled = false
-            btnSave.textContent = isEdit ? t('channels.save') : t('channels.connectAndSave')
-            if (unlistenLog) unlistenLog()
-            if (unlistenProgress) unlistenProgress()
-            return
+            // 插件安装失败不阻塞配置保存——用户可稍后手动安装
+            logBox.textContent += `\n⚠ ${t('channels.pluginInstallFailed')}: ${e}\n`
+            logBox.textContent += `${t('channels.pluginInstallSkipHint')}\n`
+            logBox.scrollTop = logBox.scrollHeight
+            toast(t('channels.pluginInstallFailed') + ': ' + e, 'warning')
           }
           if (unlistenLog) unlistenLog()
           if (unlistenProgress) unlistenProgress()
