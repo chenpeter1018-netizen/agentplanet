@@ -150,7 +150,7 @@ function renderMarket(container) {
 
   container.innerHTML = `<iframe id="market-iframe" src="${MARKET_URL}"
     style="width:100%;height:calc(100vh - 180px);border:none;border-radius:var(--radius-lg, 8px);background:var(--bg-card, #fff)"
-    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+    allow="camera;microphone"
     loading="lazy"
   ></iframe>`
 
@@ -164,7 +164,7 @@ function renderMarket(container) {
   }
 
   iframe.addEventListener('error', fallback)
-  setTimeout(() => { if (!resolved) fallback() }, 10000)
+  setTimeout(() => { if (!resolved) fallback() }, 15000)
 }
 
 function renderMarketFallback(container) {

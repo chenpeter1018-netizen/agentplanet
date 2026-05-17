@@ -378,11 +378,9 @@ function showLoginOverlay(defaultPw) {
   })
 }
 
-// 全局 401 拦截：API 返回 401 时弹出登录
+// 全局 401 拦截：API 返回 401 时跳转妙搭登录
 window.__agent_planet_show_login = async function() {
-  if (document.getElementById('login-overlay')) return
-  await showLoginOverlay()
-  location.reload()
+  navigate('/login')
 }
 
 const sidebar = document.getElementById('sidebar')
@@ -491,6 +489,10 @@ async function boot() {
     engine.boot().then(() => {
       renderSidebar(sidebar)
       bindEngineListeners(engine)
+      // boot 完成后如果引擎已就绪但仍在 setup 页，自动跳转默认路由
+      if (engine.isReady() && window.location.hash === '#/setup') {
+        navigate(engine.getDefaultRoute())
+      }
     })
 
     // 监听引擎状态变化（如 setup 完成后 ready 变为 true），自动刷新侧边栏
@@ -1079,7 +1081,7 @@ function showActivationOverlay(status) {
   input.focus()
 }
 
-// 启动：先检查后端 → 认证 → 加载应用
+// 启动：先检查后端 → 加载应用
 ;(async () => {
   // Web 模式：先检测后端是否在线（不在线则显示提示，不加载应用）
   if (!isTauri) {
@@ -1090,8 +1092,7 @@ function showActivationOverlay(status) {
     }
   }
 
-  const auth = await checkAuth()
-  if (!auth.ok) await showLoginOverlay(auth.defaultPw)
+  // 旧的访问密码登录已移除，统一使用妙搭手机验证登录（checkWebLoginGate）
   try {
     await boot()
     window._bootDone = true

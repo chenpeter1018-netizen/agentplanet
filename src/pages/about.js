@@ -16,10 +16,7 @@ export async function render() {
     <div class="config-section" id="license-section"></div>
   `
 
-  if (isTauriRuntime()) {
-    renderLicenseCard(page)
-  }
-
+  // 注册码激活已由妙搭手机验证登录替代，不再展示激活卡片
   return page
 }
 

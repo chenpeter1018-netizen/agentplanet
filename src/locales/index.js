@@ -50,10 +50,22 @@ export function buildLocales() {
   for (const lang of SUPPORTED_LANGS) {
     result[lang] = {}
     for (const [mod, entries] of Object.entries(MODULES)) {
-      result[lang][mod] = {}
-      for (const [key, translations] of Object.entries(entries)) {
-        result[lang][mod][key] = translations[lang] || translations['zh-CN'] || key
-      }
+      result[lang][mod] = buildDict(entries, lang)
+    }
+  }
+  return result
+}
+
+/** 递归构建字典：处理嵌套对象（如 common.login.title） */
+function buildDict(entries, lang) {
+  const result = {}
+  for (const [key, value] of Object.entries(entries)) {
+    if (value && typeof value === 'object' && 'zh-CN' in value) {
+      result[key] = value[lang] || value['zh-CN'] || key
+    } else if (value && typeof value === 'object') {
+      result[key] = buildDict(value, lang)
+    } else {
+      result[key] = value
     }
   }
   return result
