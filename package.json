@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.5.0",
+    "@volcengine/sdk-core": "^1.0.0",
     "vite": "^6.4.2"
   }
 }

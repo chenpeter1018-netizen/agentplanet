@@ -341,6 +341,17 @@ export const api = {
   listDevices: (userId, token) => invoke('list_devices', { userId, token }),
   unbindDevice: (userId, token, fingerprint) => invoke('unbind_device', { userId, token, fingerprint }),
 
+  // 认证（云函数代理 → 妙搭 OpenAPI）
+  sendSmsCode: (phone) => invoke('send_sms_code', { phone }),
+  smsLogin: (phone, code, hwfp) => invoke('sms_login', { phone, code, hwfp }),
+  completeUserInfo: (phone, username, password) => invoke('complete_user_info', { phone, username, password }),
+  passwordLogin: (phone, password, hwfp) => invoke('password_login', { phone, password, hwfp }),
+
+  // 密码管理（云函数代理 → 妙搭 OpenAPI）
+  changePassword: (token, oldPassword, newPassword) => invoke('change_password', { token, oldPassword, newPassword }),
+  sendResetCode: (phone) => invoke('send_reset_code', { phone }),
+  resetPassword: (phone, code, password) => invoke('reset_password', { phone, code, password }),
+
   // 设备配对
   autoPairDevice: () => invoke('auto_pair_device'),
   checkPairingStatus: () => invoke('check_pairing_status'),

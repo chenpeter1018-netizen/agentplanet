@@ -73,7 +73,7 @@ export default {
   // 登录相关
   login: {
     title: _('手机验证登录', 'Phone Verification', '手機驗證登入', '電話番号認証', '전화번호 인증', 'Xác minh điện thoại'),
-    desc: _('使用飞书妙搭平台完成手机短信验证登录，每个账号最多登录 6 台设备', 'Login via SMS verification. Max 6 devices per account.', '使用飛書妙搭平台完成手機簡訊驗證登入，每個帳號最多登入 6 台裝置', 'SMS認証でログイン。1アカウントあたり最大6台まで。', 'SMS 인증으로 로그인. 계정당 최대 6대 기기.', 'Đăng nhập qua SMS. Tối đa 6 thiết bị mỗi tài khoản.'),
+    desc: _('手机短信验证登录，每个账号最多登录 6 台设备', 'SMS verification login. Max 6 devices per account.', '手機簡訊驗證登入，每個帳號最多登入 6 台裝置', 'SMS認証でログイン。1アカウントあたり最大6台まで。', 'SMS 인증으로 로그인. 계정당 최대 6대 기기.', 'Đăng nhập qua SMS. Tối đa 6 thiết bị mỗi tài khoản.'),
     step1: _('点击下方按钮打开登录页面', 'Click the button below to open the login page', '', '', '', ''),
     step2: _('输入手机号获取验证码', 'Enter your phone number to get a verification code', '', '', '', ''),
     step3: _('登录成功后自动跳转回来', 'After successful login, you will be redirected automatically', '', '', '', ''),

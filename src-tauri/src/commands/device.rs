@@ -6,7 +6,7 @@ use sha2::{Digest, Sha256};
 use std::fs;
 
 const DEVICE_KEY_FILE: &str = "agent-planet-device-key.json";
-const DEVICE_API_BASE: &str = "https://1344713238-grdts5pifw.ap-shanghai.tencentscf.com";
+const DEVICE_API_BASE: &str = "https://sd84t8hjkpqvmcmkmcbd0.apigateway-cn-beijing.volceapi.com";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -271,6 +271,55 @@ pub async fn list_devices(
         return Err(format!("获取设备列表失败: {}", resp.text().await.unwrap_or_default()));
     }
     resp.json().await.map_err(|e| format!("解析响应失败: {e}"))
+}
+
+// ══════════════════════════════════════════════
+// 认证代理（调用云函数 → 妙搭 OpenAPI）
+// ══════════════════════════════════════════════
+
+async fn auth_api(path: &str, body: Value) -> Result<Value, String> {
+    let resp = api_client()?
+        .post(format!("{}/api/auth/{}", DEVICE_API_BASE, path))
+        .json(&body)
+        .send()
+        .await
+        .map_err(|e| format!("请求认证服务失败: {e}"))?;
+    resp.json().await.map_err(|e| format!("解析认证响应失败: {e}"))
+}
+
+#[tauri::command]
+pub async fn send_sms_code(phone: String) -> Result<Value, String> {
+    auth_api("send-sms-code", serde_json::json!({ "phone": phone })).await
+}
+
+#[tauri::command]
+pub async fn sms_login(phone: String, code: String, hwfp: String) -> Result<Value, String> {
+    auth_api("sms-login", serde_json::json!({ "phone": phone, "code": code, "hwfp": hwfp })).await
+}
+
+#[tauri::command]
+pub async fn complete_user_info(phone: String, username: String, password: String) -> Result<Value, String> {
+    auth_api("complete-info", serde_json::json!({ "phone": phone, "username": username, "password": password })).await
+}
+
+#[tauri::command]
+pub async fn password_login(phone: String, password: String, hwfp: String) -> Result<Value, String> {
+    auth_api("password-login", serde_json::json!({ "phone": phone, "password": password, "hwfp": hwfp })).await
+}
+
+#[tauri::command]
+pub async fn change_password(token: String, old_password: String, new_password: String) -> Result<Value, String> {
+    auth_api("change-password", serde_json::json!({ "token": token, "oldPassword": old_password, "newPassword": new_password })).await
+}
+
+#[tauri::command]
+pub async fn send_reset_code(phone: String) -> Result<Value, String> {
+    auth_api("send-reset-code", serde_json::json!({ "phone": phone })).await
+}
+
+#[tauri::command]
+pub async fn reset_password(phone: String, code: String, password: String) -> Result<Value, String> {
+    auth_api("reset-password", serde_json::json!({ "phone": phone, "code": code, "password": password })).await
 }
 
 #[tauri::command]

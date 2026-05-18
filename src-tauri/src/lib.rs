@@ -199,6 +199,14 @@ pub fn run() {
             device::check_device_limit,
             device::list_devices,
             device::unbind_device,
+            // 认证代理（云函数 → 妙搭 OpenAPI）
+            device::send_sms_code,
+            device::sms_login,
+            device::complete_user_info,
+            device::password_login,
+            device::change_password,
+            device::send_reset_code,
+            device::reset_password,
             // 设备配对
             pairing::auto_pair_device,
             pairing::check_pairing_status,

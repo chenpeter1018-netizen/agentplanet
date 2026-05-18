@@ -105,7 +105,10 @@ export default {
       { path: '/settings', loader: () => import('../../pages/settings.js') },
       { path: '/plugin-hub', loader: () => import('../../pages/plugin-hub.js') },
       { path: '/diagnose', loader: () => import('../../pages/chat-debug.js') },
-      { path: '/login', loader: () => import('../../components/login-guide.js') },
+      { path: '/login', loader: () => import('../../pages/phone-login.js') },
+      { path: '/complete-info', loader: () => import('../../pages/complete-info.js') },
+      { path: '/change-password', loader: () => import('../../pages/change-password.js') },
+      { path: '/forgot-password', loader: () => import('../../pages/forgot-password.js') },
       { path: '/login-callback', loader: () => import('../../pages/login-callback.js') },
     ]
   },
