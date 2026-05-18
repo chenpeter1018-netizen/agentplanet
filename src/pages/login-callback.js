@@ -62,16 +62,19 @@ async function processCallback(page) {
     }
 
     statusEl.textContent = t('common.login.success')
-    toast.success(t('common.login.success'))
+    toast(t('common.login.success'), 'success')
 
     // 4. 跳转主页
     setTimeout(() => navigate('/agents'), 800)
 
   } catch (err) {
-    // 设备超限 → 弹窗提示 → 退回登录页
+    // 停止 spinner
+    const spinner = page.querySelector('.login-callback-spinner')
+    if (spinner) spinner.style.display = 'none'
+
     const msg = err.message || t('common.login.failed')
     statusEl.textContent = msg
-    toast.error(msg)
+    statusEl.style.color = 'var(--error)'
 
     // 清除可能已保存的登录数据
     try {
@@ -79,19 +82,13 @@ async function processCallback(page) {
     } catch (_) {}
     localStorage.removeItem('agent_planet_login')
 
-    // 弹窗提示并跳转回登录页
-    if (typeof showModal !== 'undefined') {
-      import('../components/modal.js').then(({ showModal }) => {
-        showModal({
-          title: t('common.login.failed'),
-          message: msg,
-          confirmText: t('common.login.backToLogin'),
-          onConfirm: () => navigate('/login'),
-        })
-      })
-    } else {
-      setTimeout(() => navigate('/login'), 2000)
-    }
+    // 添加重试按钮
+    const retryBtn = document.createElement('button')
+    retryBtn.className = 'btn btn-primary'
+    retryBtn.style.cssText = 'margin-top:16px'
+    retryBtn.textContent = t('common.login.backToLogin')
+    retryBtn.addEventListener('click', () => navigate('/login'))
+    statusEl.parentElement.appendChild(retryBtn)
   }
 }
 

@@ -90,7 +90,6 @@ function renderContent(container, cfg, phone) {
           </div>
           <div>
             <div style="font-weight:600;color:var(--text-primary)">${maskPhone(phone)}</div>
-            <div style="font-size:var(--font-size-xs);color:var(--text-tertiary)">妙搭账号</div>
           </div>
         </div>
       </div>

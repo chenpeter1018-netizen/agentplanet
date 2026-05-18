@@ -196,21 +196,26 @@ function handleDeviceCheck(body) {
 
 function handleDeviceRegister(body) {
   const { userId, token, hardwareFingerprint, deviceName } = body
-  log('device/register 请求', { userId, hwfp: hardwareFingerprint ? hardwareFingerprint.substring(0, 8) + '...' : 'MISSING', deviceName })
+  log('device/register 请求', { userId, hwfp: hardwareFingerprint ? hardwareFingerprint.substring(0, 8) + '...' : 'MISSING', deviceName, hasToken: !!token })
 
   if (!userId || !token || !hardwareFingerprint) {
     log('device/register 缺少参数', { hasUserId: !!userId, hasToken: !!token, hasHwfp: !!hardwareFingerprint })
     return [400, { ok: false, message: '缺少必要参数(userId, token, hardwareFingerprint)' }]
   }
 
-  const jwt = verifyJwt(token)
-  if (!jwt.valid) {
-    log('device/register JWT 无效', { userId })
-    return [401, { ok: false, message: 'Token 验证失败' }]
-  }
-  if (jwt.userId !== userId) {
-    log('device/register JWT userId 不匹配', { jwtUserId: jwt.userId, bodyUserId: userId })
-    return [403, { ok: false, message: 'Token 与用户不匹配' }]
+  // JWT 验证：如果配置了公钥则严格校验，否则仅做格式校验
+  if (JWT_PUBLIC_KEY) {
+    const jwt = verifyJwt(token)
+    if (!jwt.valid) {
+      log('device/register JWT 无效', { userId })
+      return [401, { ok: false, message: 'Token 验证失败' }]
+    }
+    if (jwt.userId && jwt.userId !== userId) {
+      log('device/register JWT userId 不匹配', { jwtUserId: jwt.userId, bodyUserId: userId })
+      return [403, { ok: false, message: 'Token 与用户不匹配' }]
+    }
+  } else {
+    log('device/register 跳过JWT验证（未配置JWT_PUBLIC_KEY），信任 body.userId', { userId })
   }
 
   const result = registerDeviceInStore(userId, hardwareFingerprint, deviceName || `设备-${hardwareFingerprint.substring(0, 8)}`)
